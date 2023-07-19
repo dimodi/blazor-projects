@@ -1,0 +1,19 @@
+﻿@page "/calendar"
+
+@using System.Threading
+@using System.Globalization
+
+<TelerikCalendar />
+
+@code {
+    protected override void OnInitialized()
+    {
+        CultureInfo c = new CultureInfo("en-US");
+        c.DateTimeFormat.FirstDayOfWeek = DayOfWeek.Wednesday;
+
+        CultureInfo.DefaultThreadCurrentCulture = c;
+        CultureInfo.DefaultThreadCurrentUICulture = c;
+
+        base.OnInitialized();
+    }
+}

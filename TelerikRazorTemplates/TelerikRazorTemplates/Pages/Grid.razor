@@ -1,0 +1,59 @@
+﻿@page "/grid"
+
+@using Telerik.DataSource
+@using Telerik.DataSource.Extensions
+
+<TelerikGrid Data="@GridData"
+             TItem="@Product"
+             Pageable="true"
+             Sortable="true"
+             FilterMode="GridFilterMode.FilterRow">
+    <GridColumns>
+        <GridColumn Field="@nameof(Product.Name)" Title="Product Name" />
+        <GridColumn Field="@nameof(Product.Price)" />
+        <GridColumn Field="@nameof(Product.ReleaseDate)" Title="Release Date" />
+        <GridColumn Field="@nameof(Product.Active)" />
+    </GridColumns>
+</TelerikGrid>
+
+@code {
+    List<Product> GridData { get; set; } = new List<Product>();
+
+    async Task OnGridRead(GridReadEventArgs args)
+    {
+        await Task.Delay(200);
+
+        DataSourceResult result = GridData.ToDataSourceResult(args.Request);
+
+        args.Data = result.Data;
+        args.Total = result.Total;
+        args.AggregateResults = result.AggregateResults;
+    }
+
+    protected override void OnInitialized()
+    {
+        GridData = new List<Product>();
+        var rnd = new Random();
+
+        for (int i = 1; i <= 7; i++)
+        {
+            GridData.Add(new Product()
+            {
+                Id = i,
+                Name = $"Product {i}",
+                Price = (decimal)rnd.Next(1, 100),
+                ReleaseDate = DateTime.Now.AddDays(-rnd.Next(60, 1000)),
+                Active = i % 3 == 0
+            });
+        }
+    }
+
+    public class Product
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public decimal Price { get; set; }
+        public DateTime ReleaseDate { get; set; }
+        public bool Active { get; set; }
+    }
+}

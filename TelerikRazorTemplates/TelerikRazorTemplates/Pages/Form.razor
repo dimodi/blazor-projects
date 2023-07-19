@@ -1,0 +1,49 @@
+﻿@page "/form"
+
+@using System.ComponentModel.DataAnnotations
+
+<TelerikForm Model="@Employee"
+             Width="300px">
+    <FormValidation>
+        <DataAnnotationsValidator></DataAnnotationsValidator>
+        <TelerikValidationSummary />
+    </FormValidation>
+    <FormItems>
+        <FormItem Field="@nameof(Person.Id)" Enabled="false"></FormItem>
+        <FormItem Field="@nameof(Person.FirstName)" LabelText="First Name" Hint="Enter your first name"></FormItem>
+        <FormItem Field="@nameof(Person.LastName)" LabelText="Last Name" Hint="Enter your last name"></FormItem>
+        <FormItem Field="@nameof(Person.BirthDate)" LabelText="Date of Birth" Hint="Enter your Date of Birth"></FormItem>
+    </FormItems>
+</TelerikForm>
+
+@code {
+    private Person Employee = new Person();
+
+    protected override void OnInitialized()
+    {
+        Employee = new Person()
+        {
+            Id = 1,
+            FirstName = "John",
+            LastName = "Doe",
+            BirthDate = DateTime.Today.AddYears(-30)
+        };
+
+        base.OnInitialized();
+    }
+
+    public class Person
+    {
+        public int Id { get; set; }
+        [Required]
+        [MinLength(2)]
+        [MaxLength(24)]
+        public string FirstName { get; set; } = string.Empty;
+        [Required]
+        [MinLength(2)]
+        [MaxLength(24)]
+        public string LastName { get; set; } = string.Empty;
+        [Required]
+        public DateTime BirthDate { get; set; } = DateTime.Today;
+    }
+}

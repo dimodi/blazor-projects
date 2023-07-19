@@ -1,0 +1,64 @@
+﻿
+
+@code {
+    List<int> SelectedIds { get; set; } = new List<int>();
+
+    List<Employee> Employees { get; set; } = new List<Employee>();
+
+    protected override void OnInitialized()
+    {
+        var rnd = new Random();
+
+        for (int i = 1; i <= 96; i++)
+        {
+            Employees.Add(new Employee()
+            {
+                Id = i,
+                FirstName = $"{Letter(true)}{Vowel()}{Letter()}{Letter()}{Vowel()}{Letter()} {i}",
+                LastName = $"{Letter(true)}{Vowel()}{Letter()}{Letter()}{Vowel()}{Letter()} {i}"
+            });
+        }
+
+        base.OnInitialized();
+    }
+
+    private List<string> Vowels => new List<string>() { "a", "e", "i", "o", "u", "y" };
+
+    private string Word(int minLenth = 3, int maxLength = 7)
+    {
+        var result = "";
+        var rnd = new Random();
+        var wordLength = rnd.Next(minLenth, maxLength);
+
+        result += Letter(true);
+
+        for (int i = 1; i <= wordLength; i++)
+        {
+            result += Letter();
+        }
+
+        return "";
+    }
+
+    private string Vowel()
+    {
+        var rnd = new Random();
+        return Vowels.ElementAt(rnd.Next(0, Vowels.Count));
+    }
+
+    private string Letter(bool upperCase = false)
+    {
+        var rnd = new Random();
+        var minAsciiCode = upperCase ? 65 : 97;
+        var maxAsciiCode = upperCase ? 91 : 122;
+
+        return ((char)rnd.Next(minAsciiCode, maxAsciiCode)).ToString();
+    }
+
+    public class Employee
+    {
+        public int Id { get; set; }
+        public string FirstName { get; set; } = string.Empty;
+        public string LastName { get; set; } = string.Empty;
+    }
+}

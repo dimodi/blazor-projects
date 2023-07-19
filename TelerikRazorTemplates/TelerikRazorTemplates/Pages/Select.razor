@@ -1,0 +1,49 @@
+﻿@page "/select"
+
+@using Telerik.DataSource
+@using Telerik.DataSource.Extensions
+
+<TelerikDropDownList Data="@ListItems"
+                     @bind-Value="@SelectedValue"
+                     TextField="@nameof(ListItem.Text)"
+                     ValueField="@nameof(ListItem.Id)"
+                     Width="300px" />
+
+@code {
+    List<ListItem> ListItems { get; set; } = new();
+
+    int SelectedValue { get; set; } = 3;
+
+    async Task OnSelectRead(ReadEventArgs args)
+    {
+        await Task.Delay(1);
+        DataSourceResult result = ListItems.ToDataSourceResult(args.Request);
+
+        args.Data = result.Data;
+        args.Total = result.Total;
+    }
+
+    protected override void OnInitialized()
+    {
+        ListItems = new List<ListItem>();
+
+        for (int i = 1; i <= 24; i++)
+        {
+            ListItems.Add(new ListItem()
+            {
+                Id = i,
+                Text = $"Item {i}",
+                Category = $"Category {i % 6 + 1}"
+            });
+        }
+
+        base.OnInitialized();
+    }
+
+    public class ListItem
+    {
+        public int Id { get; set; }
+        public string Text { get; set; } = default!;
+        public string Category { get; set; } = default!;
+    }
+}

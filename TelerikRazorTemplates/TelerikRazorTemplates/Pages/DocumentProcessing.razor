@@ -1,0 +1,66 @@
+﻿@*@page "/dpl"
+
+@using System.IO
+
+@using Telerik.Windows.Documents.Flow.Model
+@using Telerik.Windows.Documents.Common.FormatProviders
+@using Telerik.Windows.Documents.Flow.FormatProviders.Txt
+@using Telerik.Windows.Documents.Flow.FormatProviders.Html
+@using Telerik.Windows.Documents.Flow.FormatProviders.Docx
+
+Convert HTML to TXT:
+
+<TelerikEditor @bind-Value="@HtmlValue" />
+
+<p><TelerikButton OnClick="@ConvertHtmlToTxt">Convert to Plain Text</TelerikButton></p>
+
+<TelerikTextArea @bind-Value="@PlainTxtValue" Width="100%" AutoSize="true" />
+
+Convert DOCS to HTML:
+
+<TelerikFileSelect AllowedExtensions="@( new List<string> { ".docx" } )"
+                   OnSelect="@OnSelect" />
+
+<TelerikEditor @bind-Value="@EditorValue" />
+
+@code {
+    string HtmlValue { get; set; } =
+        @"
+<h1>Title</h1>
+<p>Paragraph paragraph paragraph.</p>
+<ul>
+<li>List item 1</li>
+<li>List item 2</li>
+</ul>
+";
+    string PlainTxtValue { get; set; }
+
+    private void ConvertHtmlToTxt(MouseEventArgs e)
+    {
+        HtmlFormatProvider htmlProvider = new HtmlFormatProvider();
+        RadFlowDocument document = htmlProvider.Import(HtmlValue);
+        TxtFormatProvider txtProvider = new TxtFormatProvider();
+        PlainTxtValue = txtProvider.Export(document);
+    }
+
+    string EditorValue { get; set; }
+
+    async Task OnSelect(FileSelectEventArgs args)
+    {
+        var file = args.Files.FirstOrDefault();
+        var byteArray = new byte[file.Size];
+
+        var fileFormatProvider = new DocxFormatProvider();
+        var convertFormatProvider = new HtmlFormatProvider();
+
+        await using MemoryStream ms = new MemoryStream(byteArray);
+        await file.Stream.CopyToAsync(ms);
+        RadFlowDocument document = fileFormatProvider.Import(ms);
+
+        using (MemoryStream resultStream = new MemoryStream())
+        {
+            convertFormatProvider.Export(document, resultStream);
+            EditorValue = System.Text.Encoding.UTF8.GetString(resultStream.ToArray());
+        }
+    }
+}*@

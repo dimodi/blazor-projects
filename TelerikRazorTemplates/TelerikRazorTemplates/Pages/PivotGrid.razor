@@ -1,0 +1,72 @@
+﻿@page "/pivotgrid"
+
+@using Telerik.DataSource
+
+<TelerikGrid Data="@PivotData"
+             Groupable="true"
+             OnStateInit="@( (GridStateEventArgs<PivotModel> args) => OnGridStateInit(args) )">
+    <GridAggregates>
+        <GridAggregate Field="@nameof(PivotModel.ContractValue)" Aggregate="@GridAggregateType.Sum" />
+    </GridAggregates>
+    <GridColumns>
+        <GridColumn Field="@nameof(PivotModel.Product)" />
+        <GridColumn Field="@nameof(PivotModel.City)" />
+        <GridColumn Field="@nameof(PivotModel.ContractDate)" />
+        <GridColumn Field="@nameof(PivotModel.ContractValue)">
+            <GroupFooterTemplate>
+                @context.Sum?.ToString("C2")
+            </GroupFooterTemplate>
+            <FooterTemplate>
+                @context.Sum?.ToString("C2")
+            </FooterTemplate>
+        </GridColumn>
+    </GridColumns>
+</TelerikGrid>
+
+@code {
+    List<PivotModel> PivotData { get; set; } = new List<PivotModel>();
+
+    void OnGridStateInit(GridStateEventArgs<PivotModel> args)
+    {
+        args.GridState.GroupDescriptors.Add(new GroupDescriptor()
+        {
+            Member = nameof(PivotModel.City),
+            MemberType = typeof(decimal)
+        });
+
+        args.GridState.GroupDescriptors.Add(new GroupDescriptor()
+        {
+            Member = nameof(PivotModel.Product),
+            MemberType = typeof(decimal)
+        });
+    }
+
+    protected override void OnInitialized()
+    {
+        var dataItemCount = 100;
+        var productCount = 5 + 1;
+        var cityCount = 5 + 1;
+        var rnd = new Random();
+
+        for (int i = 1; i <= dataItemCount; i++)
+        {
+            PivotData.Add(new PivotModel()
+            {
+                Product = $"Product {rnd.Next(1, productCount)}",
+                City = $"City {rnd.Next(1, cityCount)}",
+                ContractDate = DateTime.Now.AddDays(-rnd.Next(1, 31)).AddMonths(-rnd.Next(1, 12)).AddYears(-rnd.Next(0, 5)),
+                ContractValue = rnd.Next(123, 987)
+            });
+        }
+
+        base.OnInitialized();
+    }
+
+    public class PivotModel
+    {
+        public string Product { get; set; } = null!;
+        public string City { get; set; } = null!;
+        public DateTime ContractDate { get; set; }
+        public decimal ContractValue { get; set; }
+    }
+}

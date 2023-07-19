@@ -1,0 +1,126 @@
+﻿@page "/grid-filtering"
+
+@using Telerik.DataSource
+
+<TelerikGrid Data="@ProductsList" Height="400px"
+             Pageable="true" Sortable="true" Groupable="true"
+             FilterMode="@GridFilterMode.FilterMenu"
+             Resizable="true" Reorderable="true">
+    <GridColumns>
+        <GridColumn Field="@(nameof(Product.ProductName))" DefaultFilterOperator="@FilterOperator.DoesNotContain"></GridColumn>
+        <GridColumn Field="@(nameof(Product.DeliveryOn))" Title="Hire Date" DisplayFormat="{0:dd MMM yyyy HH:mm}">
+            <FilterCellTemplate>
+                <TelerikDateTimePicker Format="dd MMM yyyy HH:mm" Value="@FilterDate"
+                                       ValueChanged="@( (DateTime? val) => PickerValueChanged(val, context) )">
+                </TelerikDateTimePicker>
+                @if (FilterDate != null)
+                {
+                    <TelerikButton Icon="@("filter-clear")" OnClick="@( async () => await context.ClearFilterAsync() )" />
+                }
+            </FilterCellTemplate>
+        </GridColumn>
+    </GridColumns>
+</TelerikGrid>
+
+@code {
+
+    async Task PickerValueChanged(DateTime? val, FilterCellTemplateContext context)
+    {
+        FilterDate = val;
+
+        if (FilterDate == null)
+        {
+            await context.ClearFilterAsync();
+        }
+        else
+        {
+            var filter = context.FilterDescriptor.FilterDescriptors[0] as FilterDescriptor;
+            filter.Value = new DateTime(FilterDate.Value.Year, FilterDate.Value.Month, FilterDate.Value.Day, 0, 0, 0);
+
+            await context.FilterAsync();
+        }
+    }
+
+    private DateTime? FilterDate;
+
+    public List<Product> ProductsList { get; set; } = new List<Product>() {
+                new Product() { ProductId = 1, ProductName = "Chai", UnitInStock = 18, UnitPrice = 10.5m, DeliveryOn = new DateTime(2021, 12, 11) },
+                new Product() { ProductId = 2, ProductName = "Chang", UnitInStock = 0, UnitPrice = 13m, DeliveryOn = new DateTime(2021, 12, 11) },
+                new Product() { ProductId = 3, ProductName = "Aniseed Syrup", UnitInStock = 1, UnitPrice = 6m, DeliveryOn = new DateTime(2021, 12, 11) },
+                new Product() { ProductId = 4, ProductName = "Chef Anton's Cajun Seasoning", UnitInStock = 10, UnitPrice = 11.2m, DeliveryOn = new DateTime(2021, 11, 13) },
+                new Product() { ProductId = 5, ProductName = "Chef Anton's Gumbo Mix", UnitInStock = 0, UnitPrice = 33m, DeliveryOn = new DateTime(2021, 11, 13) },
+                new Product() { ProductId = 6, ProductName = "Grandma's Boysenberry Spread", UnitInStock = 5, UnitPrice = 22m, DeliveryOn = new DateTime(2021, 11, 13) },
+                new Product() { ProductId = 7, ProductName = "Uncle Bob's Organic Dried Pears", UnitInStock = 22, UnitPrice = 18.9m, DeliveryOn = new DateTime(2021, 11, 13) },
+                new Product() { ProductId = 8, ProductName = "Northwoods Cranberry Sauce", UnitInStock = 3, UnitPrice = 15m, DeliveryOn = new DateTime(2021, 11, 22) },
+                new Product() { ProductId = 9, ProductName = "Mishi Kobe Niku", UnitInStock = 0, UnitPrice = 21m, DeliveryOn = new DateTime(2021, 11, 22) },
+                new Product() { ProductId = 10, ProductName = "Ikura", UnitInStock = 13, UnitPrice = 8m, DeliveryOn = new DateTime(2021, 11, 22) }
+            };
+
+    public class Product
+    {
+        public int? ProductId { get; set; }
+        public string ProductName { get; set; }
+        public decimal UnitPrice { get; set; }
+        public int UnitInStock { get; set; }
+        public DateTime DeliveryOn { get; set; }
+    }
+}
+
+@*@using Telerik.DataSource.Extensions
+
+    <TelerikGrid Data="@CurrentGridData"
+                 OnRead="@OnGridRead"
+                 Pageable="true"
+                 PageSize="5"
+                 TotalCount="@CurrentTotal"
+                 Sortable="true"
+                 FilterMode="GridFilterMode.FilterMenu">
+        <GridColumns>
+            <GridColumn Field=@nameof(Product.Name) Title="Product Name" />
+            <GridColumn Field=@nameof(Product.Price) Title="Price" />
+            <GridColumn Field=@nameof(Product.Quantity) Title="Units In Stock" />
+            <GridColumn Field=@nameof(Product.ReleaseDate) Title="Release Date" />
+        </GridColumns>
+    </TelerikGrid>
+
+    @code {
+        List<Product> GridData { get; set; }
+        List<Product> CurrentGridData { get; set; }
+        int CurrentTotal { get; set; }
+
+        async Task OnGridRead(GridReadEventArgs args)
+        {
+            var result = GridData.ToDataSourceResult(args.Request);
+            CurrentGridData = (result.Data as IEnumerable<Product>).ToList();
+            CurrentTotal = result.Total;
+        }
+
+        protected override void OnInitialized()
+        {
+            GridData = new List<Product>();
+            var rnd = new Random();
+
+            for (int i = 1; i <= 15; i++)
+            {
+
+                GridData.Add(new Product()
+                {
+                    ID = i,
+                    Name = "Product " + i.ToString(),
+                    Price = (decimal)rnd.Next(1, 100),
+                    Quantity = (short)rnd.Next(1, 100),
+                    //ReleaseDate = DateTime.Now.AddDays(-i)
+                    ReleaseDate = new DateTime(2021, 11, i)
+                });
+            }
+        }
+
+        public class Product
+        {
+            public int ID { get; set; }
+            public string Name { get; set; }
+            public decimal Price { get; set; }
+            public short Quantity { get; set; }
+            public DateTime ReleaseDate { get; set; }
+        }
+    }*@

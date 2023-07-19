@@ -1,0 +1,52 @@
+﻿@page "/splitter"
+
+<style>
+    .outer-splitter .foo {
+        flex-shrink: 1;
+    }
+</style>
+
+<TelerikSplitter Height="100vh" Class="outer-splitter"
+                 Orientation="@SplitterOrientation.Vertical">
+    <SplitterPanes>
+        <SplitterPane Collapsible="false"
+                      Resizable="false"
+                      Size="100px">
+            Top pane content
+        </SplitterPane>
+        <SplitterPane Collapsible="false"
+                      Resizable="false"
+                      Class="foo">
+
+            <TelerikSplitter Height="100%"
+                             Orientation="@SplitterOrientation.Horizontal">
+                <SplitterPanes>
+                    <SplitterPane Collapsible="true"
+                                  Resizable="true"
+                                  Size="16%">
+                        Left pane content
+                    </SplitterPane>
+                    <SplitterPane Collapsible="false"
+                                  Resizable="true">
+                        Center pane content
+                    </SplitterPane>
+                    <SplitterPane Collapsible="true"
+                                  Resizable="true"
+                                  Size="24%">
+                        Right pane content
+                    </SplitterPane>
+                </SplitterPanes>
+            </TelerikSplitter>
+
+        </SplitterPane>
+        <SplitterPane Collapsible="false"
+                      Resizable="false"
+                      Size="100px">
+            Bottom pane content
+        </SplitterPane>
+    </SplitterPanes>
+</TelerikSplitter>
+
+@code {
+
+}

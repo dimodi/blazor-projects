@@ -1,0 +1,149 @@
+﻿@page "/gantt"
+
+<TelerikButton OnClick="@ShowData">Show Data</TelerikButton>
+<TelerikButton OnClick="@RemoveData">Remove Data</TelerikButton>
+
+<TelerikGantt Data="@GanttData"
+              Height="600px"
+              IdField="Id"
+              ParentIdField="ParentId"
+              Sortable="true"
+              SortMode="@SortMode.Multiple"
+              FilterMode="@GanttFilterMode.FilterMenu"
+              FilterMenuType="@FilterMenuType.Menu"
+              @bind-View="@CurrentView"
+              OnUpdate="@OnGanttUpdate"
+              OnDelete="@OnGanttDelete">
+    <GanttViews>
+        <GanttDayView></GanttDayView>
+        <GanttWeekView></GanttWeekView>
+        <GanttMonthView></GanttMonthView>
+        <GanttYearView></GanttYearView>
+    </GanttViews>
+    <GanttColumns>
+        <GanttColumn Field="Id"
+                     Visible="false">
+        </GanttColumn>
+        <GanttColumn Field="Title"
+                     Expandable="true"
+                     Width="160px"
+                     Title="Task Title">
+        </GanttColumn>
+        <GanttColumn Field="PercentComplete"
+                     Title="Completed"
+                     Width="60px">
+        </GanttColumn>
+        <GanttColumn Field="Start"
+                     Width="100px"
+                     TextAlign="@ColumnTextAlign.Right">
+        </GanttColumn>
+        <GanttColumn Field="End"
+                     DisplayFormat="End: {0:d}"
+                     Width="100px">
+        </GanttColumn>
+    </GanttColumns>
+</TelerikGantt>
+
+@code {
+    List<FlatModel> GanttData { get; set; }
+    List<FlatModel> Data { get; set; }
+
+    GanttView CurrentView { get; set; } = GanttView.Week;
+
+    public int LastId { get; set; } = 1;
+
+    private async Task ShowData()
+    {
+        GanttData = new List<FlatModel>(Data);
+    }
+
+    private async Task RemoveData()
+    {
+        GanttData = new List<FlatModel>();
+    }
+
+    private void OnGanttUpdate(GanttUpdateEventArgs args)
+    {
+        var item = args.Item as FlatModel;
+
+        var foundItem = GanttData.FirstOrDefault(i => i.Id.Equals(item.Id));
+
+        if (foundItem != null)
+        {
+            foundItem.Title = item.Title;
+            foundItem.Start = item.Start;
+            foundItem.End = item.End;
+            foundItem.PercentComplete = item.PercentComplete;
+        }
+    }
+
+    private void OnGanttDelete(GanttDeleteEventArgs args)
+    {
+        var item = GanttData.FirstOrDefault(i => i.Id.Equals((args.Item as FlatModel).Id));
+
+        RemoveChildRecursive(item);
+    }
+
+    private void RemoveChildRecursive(FlatModel item)
+    {
+        var children = GanttData.Where(i => item.Id.Equals(i.ParentId)).ToList();
+
+        foreach (var child in children)
+        {
+            RemoveChildRecursive(child);
+        }
+
+        GanttData.Remove(item);
+    }
+
+    protected override void OnInitialized()
+    {
+        Data = new List<FlatModel>();
+        var random = new Random();
+
+        for (int i = 1; i <= 3; i++)
+        {
+            var newItem = new FlatModel()
+            {
+                Id = LastId,
+                Title = "Employee  " + i.ToString(),
+                Start = new DateTime(2020, 12, 10 + i),
+                End = new DateTime(2020, 12, 11 + i),
+                PercentComplete = Math.Round(random.NextDouble(), 2),
+                HasChildren = true
+            };
+
+            Data.Add(newItem);
+            var parentId = LastId;
+            LastId++;
+
+            for (int j = 1; j <= 2; j++)
+            {
+                Data.Add(new FlatModel()
+                {
+                    Id = LastId,
+                    ParentId = parentId,
+                    Title = "    Employee " + i + " : " + j.ToString(),
+                    Start = new DateTime(2020, 12, 20 + j),
+                    End = new DateTime(2020, 12, 21 + i + j),
+                    PercentComplete = Math.Round(random.NextDouble(), 2)
+                });
+
+                LastId++;
+            }
+        }
+
+        base.OnInitialized();
+    }
+
+    class FlatModel
+    {
+        public int Id { get; set; }
+        public int? ParentId { get; set; }
+        public string Title { get; set; }
+        public double PercentComplete { get; set; }
+        public DateTime Start { get; set; }
+        public DateTime End { get; set; }
+        public bool HasChildren { get; set; }
+    }
+}

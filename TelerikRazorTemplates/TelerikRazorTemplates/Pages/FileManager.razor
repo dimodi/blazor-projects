@@ -1,0 +1,644 @@
+﻿@page "/filemanager"
+@*@using Microsoft.AspNetCore.Hosting;
+    @inject IWebHostEnvironment HostingEnvironment*@
+
+@using Microsoft.AspNetCore.StaticFiles
+@using System.IO
+
+@inject NavigationManager NavigationManager
+
+<h2>Flat Data</h2>
+
+<p>Path: @FlatDirectoryPath</p>
+
+<TelerikFileManager Data="@FlatData"
+                    @bind-Path="@FlatDirectoryPath"
+                    NameField="@(nameof(FileEntry.Name))"
+                    SizeField="@(nameof(FileEntry.Size))"
+                    PathField="@(nameof(FileEntry.Path))"
+                    ExtensionField="@(nameof(FileEntry.Extension))"
+                    IsDirectoryField="@(nameof(FileEntry.IsDirectory))"
+                    HasDirectoriesField="@(nameof(FileEntry.HasDirectories))"
+                    DateCreatedField="@(nameof(FileEntry.DateCreated))"
+                    DateCreatedUtcField="@(nameof(FileEntry.DateCreatedUtc))"
+                    DateModifiedField="@(nameof(FileEntry.DateModified))"
+                    DateModifiedUtcField="@(nameof(FileEntry.DateModifiedUtc))"
+                    ParentIdField="@(nameof(FlatFileEntry.ParentId))"
+                    OnDownload="@OnFileManagerDownload"
+                    Height="350px">
+</TelerikFileManager>
+
+<h2>Hierarchical Data</h2>
+
+<p>Path: @HierarchicalDirectoryPath</p>
+
+<TelerikFileManager Data="@HierarchicalData"
+                    @bind-Path="@HierarchicalDirectoryPath"
+                    NameField="@(nameof(FileEntry.Name))"
+                    SizeField="@(nameof(FileEntry.Size))"
+                    PathField="@(nameof(FileEntry.Path))"
+                    ExtensionField="@(nameof(FileEntry.Extension))"
+                    IsDirectoryField="@(nameof(FileEntry.IsDirectory))"
+                    HasDirectoriesField="@(nameof(FileEntry.HasDirectories))"
+                    DateCreatedField="@(nameof(FileEntry.DateCreated))"
+                    DateCreatedUtcField="@(nameof(FileEntry.DateCreatedUtc))"
+                    DateModifiedField="@(nameof(FileEntry.DateModified))"
+                    DateModifiedUtcField="@(nameof(FileEntry.DateModifiedUtc))"
+                    ParentIdField="@(nameof(FlatFileEntry.ParentId))"
+                    ItemsField="@(nameof(HierarchicalFileEntry.Items))"
+                    DirectoriesField="@(nameof(HierarchicalFileEntry.Directories))"
+                    OnDownload="@OnFileManagerDownload"
+                    Height="350px">
+</TelerikFileManager>
+
+@code {
+    private string FlatDirectoryPath { get; set; } = string.Empty;
+    private string HierarchicalDirectoryPath { get; set; } = string.Empty;
+
+    private List<HierarchicalFileEntry> HierarchicalData { get; set; } = new List<HierarchicalFileEntry>();
+
+    private List<FlatFileEntry> FlatData { get; set; } = new List<FlatFileEntry>();
+
+    private const int ActionDelay = 1;
+
+    private static string StartPath { get; set; } = null!;
+
+    private async Task OnFileManagerDownload(FileManagerDownloadEventArgs args)
+    {
+        var file = (FileEntry)args.Item;
+        //var fileBytes = new byte[file.Size];
+        var filePathWithoutStartSeparator = file.Path.IndexOf(Path.DirectorySeparatorChar) == 0 ? file.Path.Substring(1) : file.Path;
+        var fullFilePath = Path.Combine(StartPath, filePathWithoutStartSeparator);
+        var fileBytes = await System.IO.File.ReadAllBytesAsync(fullFilePath);
+        var fileStream = new MemoryStream(fileBytes);
+
+        args.FileName = file.Name;
+        args.Stream = fileStream;
+        args.MimeType = "application/octet-stream"; // default
+
+        var mimeProvider = new FileExtensionContentTypeProvider();
+        string? mimeType;
+        mimeProvider.TryGetContentType(file.Extension, out mimeType);
+        if (!String.IsNullOrEmpty(mimeType))
+        {
+            args.MimeType = mimeType;
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        StartPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+
+        await LoadFlatDataAsync();
+        await LoadHierarchicalDataAsync();
+
+        await base.OnInitializedAsync();
+    }
+
+    #region Flat File Data
+
+    private async Task LoadFlatDataAsync()
+    {
+        if (FlatData == null || FlatData.Count == 0)
+        {
+            FlatData = await ReadFlatDataAsync();
+        }
+    }
+
+    private async Task<List<FlatFileEntry>> ReadFlatDataAsync()
+    {
+        await Task.Delay(ActionDelay);
+
+        return ReadCustomFlatData();
+    }
+
+    public List<FlatFileEntry> ReadCustomFlatData()
+    {
+        var entries = new List<FlatFileEntry>();
+
+        var rootPath = Path.Combine(StartPath);
+        var rootDirectory = new DirectoryInfo(rootPath);
+
+        var files = rootDirectory.EnumerateFiles();
+        foreach (var file in files)
+        {
+            var entry = ConvertToFlatEntry(file, null);
+            entries.Add(entry);
+        }
+
+        var directories = rootDirectory.EnumerateDirectories();
+        foreach (var directory in directories)
+        {
+            PopulateFlatEntryItemsRecursive(entries, directory, null);
+        }
+
+        return entries;
+    }
+
+    private void PopulateFlatEntryItemsRecursive(List<FlatFileEntry> entries, DirectoryInfo directoryInfo, string? parentId)
+    {
+        var directoryEntry = ConvertToFlatEntry(directoryInfo, parentId);
+        entries.Add(directoryEntry);
+
+        var files = directoryInfo.EnumerateFiles();
+
+        foreach (var file in files)
+        {
+            var entry = ConvertToFlatEntry(file, directoryEntry.Id);
+            entries.Add(entry);
+        }
+
+        var directories = directoryInfo.EnumerateDirectories();
+
+        foreach (var directory in directories)
+        {
+            PopulateFlatEntryItemsRecursive(entries, directory, directoryEntry.Id);
+        }
+    }
+
+    private static FlatFileEntry ConvertToFlatEntry(DirectoryInfo directory, string? parentId)
+    {
+        var entry = new FlatFileEntry()
+        {
+            ParentId = parentId,
+            Name = directory.Name,
+            IsDirectory = true,
+            HasDirectories = directory.GetDirectories().Count() > 0,
+            DateCreated = directory.CreationTime,
+            DateCreatedUtc = directory.CreationTimeUtc,
+            DateModified = directory.LastWriteTime,
+            DateModifiedUtc = directory.LastWriteTimeUtc,
+            // trim the real path to avoid exposing it
+            // for security purposes
+            Path = directory.FullName.Substring(directory.FullName.IndexOf(StartPath) + StartPath.Length),
+            Extension = directory.Extension,
+            Size = 2 * 1024 * directory.GetFiles().LongCount()
+        };
+
+        return entry;
+    }
+
+    private static FlatFileEntry ConvertToFlatEntry(FileInfo file, string? parentId)
+    {
+        var entry = new FlatFileEntry()
+        {
+            ParentId = parentId,
+            Name = Path.GetFileNameWithoutExtension(file.FullName),
+            IsDirectory = false,
+            HasDirectories = false,
+            DateCreated = file.CreationTime,
+            DateCreatedUtc = file.CreationTimeUtc,
+            DateModified = file.LastWriteTime,
+            DateModifiedUtc = file.LastWriteTimeUtc,
+            // trim the real path to avoid exposing it
+            // for security purposes
+            Path = file.FullName.Substring(file.FullName.IndexOf(StartPath) + StartPath.Length),
+            Extension = file.Extension,
+            Size = file.Length
+        };
+
+        return entry;
+    }
+
+    #endregion Flat File Data
+
+    #region Hierarchical File Data
+
+    private async Task LoadHierarchicalDataAsync()
+    {
+        if (HierarchicalData == null || HierarchicalData.Count == 0)
+        {
+            HierarchicalData = await ReadHierarchicalDataAsync();
+        }
+    }
+
+    private async Task<List<HierarchicalFileEntry>> ReadHierarchicalDataAsync()
+    {
+        await Task.Delay(ActionDelay);
+
+        return ReadCustomHierarchicalData();
+    }
+
+    private List<HierarchicalFileEntry> ReadCustomHierarchicalData()
+    {
+        var rootPath = Path.Combine(StartPath);
+        var rootDirectory = new DirectoryInfo(rootPath);
+        var directories = rootDirectory.EnumerateDirectories();
+        var files = rootDirectory.EnumerateFiles();
+
+        var data = new List<HierarchicalFileEntry>();
+
+        foreach (var directory in directories)
+        {
+            var entry = ConvertToHierarchicalEntry(directory);
+            data.Add(entry);
+        }
+
+        foreach (var file in files)
+        {
+            var entry = ConvertToHierarchicalEntry(file);
+            data.Add(entry);
+        }
+
+        return data;
+    }
+
+    private static HierarchicalFileEntry ConvertToHierarchicalEntry(DirectoryInfo directory)
+    {
+        var directories = directory.GetDirectories()
+            .Select(x => ConvertToHierarchicalEntry(x))
+            .ToList();
+        var files = directory.GetFiles()
+            .Select(x => ConvertToHierarchicalEntry(x))
+            .ToList();
+        var items = directories.Union(files).ToList();
+
+        var entry = new HierarchicalFileEntry()
+        {
+            Name = directory.Name,
+            IsDirectory = true,
+            HasDirectories = directory.GetDirectories().Count() > 0,
+            Items = items,
+            Directories = directories,
+            DateCreated = directory.CreationTime,
+            DateCreatedUtc = directory.CreationTimeUtc,
+            DateModified = directory.LastWriteTime,
+            DateModifiedUtc = directory.LastWriteTimeUtc,
+            // trim the real path to avoid exposing it
+            // for security purposes
+            Path = directory.FullName.Substring(directory.FullName.IndexOf(StartPath) + StartPath.Length),
+            Extension = directory.Extension,
+            Size = 2 * 1024 * directory.GetFiles().LongCount()
+        };
+
+        return entry;
+    }
+
+    private static HierarchicalFileEntry ConvertToHierarchicalEntry(FileInfo file)
+    {
+        var entry = new HierarchicalFileEntry()
+        {
+            Name = Path.GetFileNameWithoutExtension(file.FullName),
+            IsDirectory = false,
+            HasDirectories = false,
+            Items = new List<HierarchicalFileEntry>(),
+            Directories = new List<HierarchicalFileEntry>(),
+            DateCreated = file.CreationTime,
+            DateCreatedUtc = file.CreationTimeUtc,
+            DateModified = file.LastWriteTime,
+            DateModifiedUtc = file.LastWriteTimeUtc,
+            // trim the real path to avoid exposing it
+            // for security purposes
+            Path = file.FullName.Substring(file.FullName.IndexOf(StartPath) + StartPath.Length),
+            Extension = file.Extension,
+            Size = file.Length
+        };
+
+        return entry;
+    }
+
+    #endregion Hierarchical File Data
+
+    #region Class Definitions
+
+    public class HierarchicalFileEntry : FileEntry
+    {
+        public List<HierarchicalFileEntry> Items { get; set; } = new List<HierarchicalFileEntry>();
+
+        public List<HierarchicalFileEntry> Directories { get; set; } = new List<HierarchicalFileEntry>();
+    }
+
+    public class FlatFileEntry : FileEntry
+    {
+        public string? ParentId { get; set; }
+    }
+
+    public class FileEntry
+    {
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+
+        public string Name { get; set; } = null!;
+
+        public long Size { get; set; }
+
+        public string Path { get; set; } = null!;
+
+        public string Extension { get; set; } = string.Empty;
+
+        public bool IsDirectory { get; set; }
+
+        public bool HasDirectories { get; set; }
+
+        public DateTime DateCreated { get; set; }
+
+        public DateTime DateCreatedUtc { get; set; }
+
+        public DateTime DateModified { get; set; }
+
+        public DateTime DateModifiedUtc { get; set; }
+    }
+
+    #endregion Class Definitions
+}
+
+
+@*@using System.IO
+
+    <p>
+        DirectoryData contains
+        @( DirectoryData.Where(x => x.IsDirectory).Count() ) folders
+        and
+        @( DirectoryData.Where(x => !x.IsDirectory).Count() ) files.
+    </p>
+
+    <TelerikFileManager @ref="@FileManagerRef"
+                        Data="@DirectoryData"
+                        Path="@DirectoryPath"
+                        PathChanged="@DirectoryPathChanged"
+                        OnModelInit="@OnModelInitHandler"
+                        Height="400px"
+                        IdField="Id"
+                        NameField="Name"
+                        SizeField="Size"
+                        PathField="Path"
+                        ExtensionField="Extension"
+                        IsDirectoryField="IsDirectory"
+                        HasDirectoriesField="HasDirectories"
+                        ParentIdField="ParentId"
+                        DateCreatedField="DateCreated"
+                        DateCreatedUtcField="DateCreatedUtc"
+                        DateModifiedField="DateModified"
+                        DateModifiedUtcField="DateModifiedUtc">
+    </TelerikFileManager>
+
+    @code {
+        List<FlatFileEntry> AllData = new List<FlatFileEntry>();
+        List<FlatFileEntry> DirectoryData = new List<FlatFileEntry>();
+
+        TelerikFileManager<FlatFileEntry> FileManagerRef { get; set; }
+
+        string DirectoryPath { get; set; } = "files";
+
+        async Task DirectoryPathChanged(string newPath)
+        {
+            DirectoryPath = newPath;
+
+            DirectoryData = await GetItemsForPath(newPath);
+
+            FileManagerRef.Rebind();
+        }
+
+        private FlatFileEntry OnModelInitHandler()
+        {
+            var item = new FlatFileEntry();
+            item.Name = $"New folder";
+            item.Size = 0;
+            item.Path = Path.Combine(DirectoryPath, item.Name);
+            item.IsDirectory = true;
+            item.HasDirectories = false;
+            item.DateCreated = DateTime.Now;
+            item.DateCreatedUtc = DateTime.Now;
+            item.DateModified = DateTime.Now;
+            item.DateModifiedUtc = DateTime.Now;
+
+            return item;
+        }
+
+        private void RefreshData()
+        {
+            AllData = new List<FlatFileEntry>(AllData);
+        }
+
+        // fetch the FileManager data
+        protected override async Task OnInitializedAsync()
+        {
+            AllData = await PopulateAll();
+
+            DirectoryData = await GetItemsForPath(DirectoryPath);
+        }
+
+        async Task<List<FlatFileEntry>> GetItemsForPath(string path)
+        {
+            var newDirectory = AllData.Find(x => x.IsDirectory && x.Path.EndsWith(path));
+
+            var allVisibleFolders = AllData.Where(x => x.IsDirectory && (
+                x.Id == newDirectory.Id || // current folder
+                x.ParentId == newDirectory.ParentId || // all sibling folders
+                x.Id == newDirectory.ParentId || // parent folder
+                x.ParentId == null // all folders 2 levels up
+            )).ToList();
+
+            var newData = new List<FlatFileEntry>();
+
+            //newData.Add(newDirectory);
+            newData.AddRange(allVisibleFolders);
+            newData.AddRange(AllData.Where(x => !x.IsDirectory && x.ParentId == newDirectory.Id));
+
+            return await Task.FromResult(newData);
+        }
+
+        async Task<List<FlatFileEntry>> GetAllParentFolders(string folderId)
+        {
+            var result = new List<FlatFileEntry>();
+            var currentFolder = AllData.Find(x => x.Id == folderId);
+
+            result.AddRange( AllData.Where(x => x.Id == currentFolder.ParentId) );
+
+            return result;
+        }
+
+        async Task<List<FlatFileEntry>> PopulateAll()
+        {
+
+            var workFiles = new FlatFileEntry()
+            {
+                Id = "1",
+                ParentId = null,
+                Name = "Work Files",
+                IsDirectory = true,
+                HasDirectories = true,
+                DateCreated = new DateTime(2022, 1, 2),
+                DateCreatedUtc = new DateTime(2022, 1, 2),
+                DateModified = new DateTime(2022, 2, 3),
+                DateModifiedUtc = new DateTime(2022, 2, 3),
+                Path = Path.Combine("files"),
+                Size = 3 * 1024 * 1024
+            };
+
+            var Documents = new FlatFileEntry()
+            {
+                Id = "2",
+                ParentId = workFiles.Id,
+                Name = "Documents",
+                IsDirectory = true,
+                HasDirectories = false,
+                DateCreated = new DateTime(2022, 1, 2),
+                DateCreatedUtc = new DateTime(2022, 1, 2),
+                DateModified = new DateTime(2022, 2, 3),
+                DateModifiedUtc = new DateTime(2022, 2, 3),
+                Path = Path.Combine(workFiles.Path, "documents"),
+                Size = 1024 * 1024
+            };
+
+            var Images = new FlatFileEntry()
+            {
+                Id = "3",
+                ParentId = workFiles.Id,
+                Name = "Images",
+                IsDirectory = true,
+                HasDirectories = true,
+                DateCreated = new DateTime(2022, 1, 2),
+                DateCreatedUtc = new DateTime(2022, 1, 2),
+                DateModified = new DateTime(2022, 2, 3),
+                DateModifiedUtc = new DateTime(2022, 2, 3),
+                Path = Path.Combine(workFiles.Path, "images"),
+                Size = 2 * 1024 * 1024
+            };
+
+            var specification = new FlatFileEntry()
+            {
+                Id = "4",
+                ParentId = Documents.Id,
+                Name = "Specification",
+                IsDirectory = false,
+                HasDirectories = false,
+                Extension = ".docx",
+                DateCreated = new DateTime(2022, 1, 5),
+                DateCreatedUtc = new DateTime(2022, 1, 5),
+                DateModified = new DateTime(2022, 2, 3),
+                DateModifiedUtc = new DateTime(2022, 2, 3),
+                Path = Path.Combine(Documents.Path, "specification.docx"),
+                Size = 462 * 1024
+            };
+
+            var report = new FlatFileEntry()
+            {
+                Id = "5",
+                ParentId = Documents.Id,
+                Name = "Monthly report",
+                IsDirectory = false,
+                HasDirectories = false,
+                Extension = ".xlsx",
+                DateCreated = new DateTime(2022, 1, 20),
+                DateCreatedUtc = new DateTime(2022, 1, 20),
+                DateModified = new DateTime(2022, 1, 25),
+                DateModifiedUtc = new DateTime(2022, 1, 25),
+                Path = Path.Combine(Documents.Path, "monthly-report.xlsx"),
+                Size = 538 * 1024
+            };
+
+            var cv = new FlatFileEntry()
+            {
+                Id = "8",
+                ParentId = Documents.Id,
+                Name = "Application CV",
+                IsDirectory = false,
+                HasDirectories = false,
+                Extension = ".pdf",
+                DateCreated = new DateTime(2022, 1, 20),
+                DateCreatedUtc = new DateTime(2022, 1, 20),
+                DateModified = new DateTime(2022, 1, 25),
+                DateModifiedUtc = new DateTime(2022, 1, 25),
+                Path = Path.Combine(Documents.Path, "application-cv.pdf"),
+                Size = 538 * 1024
+            };
+
+            var dashboardDesign = new FlatFileEntry()
+            {
+                Id = "6",
+                ParentId = Images.Id,
+                Name = "Dashboard Design",
+                IsDirectory = false,
+                HasDirectories = false,
+                Extension = ".png",
+                DateCreated = new DateTime(2022, 1, 10),
+                DateCreatedUtc = new DateTime(2022, 1, 10),
+                DateModified = new DateTime(2022, 2, 13),
+                DateModifiedUtc = new DateTime(2022, 2, 13),
+                Path = Path.Combine(Images.Path, "dashboard-design.png"),
+                Size = 1024
+            };
+
+            var gridDesign = new FlatFileEntry()
+            {
+                Id = "7",
+                ParentId = Images.Id,
+                Name = "Grid Design",
+                IsDirectory = false,
+                HasDirectories = false,
+                Extension = ".jpg",
+                DateCreated = new DateTime(2022, 1, 12),
+                DateCreatedUtc = new DateTime(2022, 1, 12),
+                DateModified = new DateTime(2022, 2, 13),
+                DateModifiedUtc = new DateTime(2022, 2, 13),
+                Path = Path.Combine(Images.Path, "grid-design.jpg"),
+                Size = 1024
+            };
+
+            var mobilePhotos = new FlatFileEntry()
+            {
+                Id = "9",
+                ParentId = Images.Id,
+                Name = "Mobile",
+                IsDirectory = true,
+                HasDirectories = false,
+                DateCreated = new DateTime(2022, 1, 2),
+                DateCreatedUtc = new DateTime(2022, 1, 2),
+                DateModified = new DateTime(2022, 2, 3),
+                DateModifiedUtc = new DateTime(2022, 2, 3),
+                Path = Path.Combine(Images.Path, "mobile"),
+                Size = 2 * 1024 * 1024
+            };
+
+            var mobilePhoto = new FlatFileEntry()
+            {
+                Id = "10",
+                ParentId = mobilePhotos.Id,
+                Name = "img_1234",
+                IsDirectory = false,
+                HasDirectories = false,
+                Extension = ".jpg",
+                DateCreated = new DateTime(2022, 1, 12),
+                DateCreatedUtc = new DateTime(2022, 1, 12),
+                DateModified = new DateTime(2022, 2, 13),
+                DateModifiedUtc = new DateTime(2022, 2, 13),
+                Path = Path.Combine(mobilePhotos.Path, "img_1234.jpg"),
+                Size = 1024
+            };
+
+            var files = new List<FlatFileEntry>()
+        {
+                    workFiles,
+
+                    Documents,
+                    specification,
+                    report,
+                    cv,
+
+                    Images,
+                    dashboardDesign,
+                    gridDesign,
+                    mobilePhotos,
+                    mobilePhoto
+            };
+
+            return await Task.FromResult(files);
+        }
+
+        public class FlatFileEntry
+        {
+            public string Id { get; set; }
+            public string ParentId { get; set; }
+            public string Name { get; set; }
+            public long Size { get; set; }
+            public string Path { get; set; }
+            public string Extension { get; set; }
+            public bool IsDirectory { get; set; }
+            public bool HasDirectories { get; set; }
+            public DateTime DateCreated { get; set; }
+            public DateTime DateCreatedUtc { get; set; }
+            public DateTime DateModified { get; set; }
+            public DateTime DateModifiedUtc { get; set; }
+        }
+
+    }*@

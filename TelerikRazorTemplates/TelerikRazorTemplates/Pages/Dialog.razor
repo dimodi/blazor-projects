@@ -1,0 +1,37 @@
+﻿@page "/dialog"
+
+<TelerikButton OnClick="@( _ => DialogVisible = true )">Show Dialog</TelerikButton>
+
+<TelerikDialog Visible="@DialogVisible"
+               VisibleChanged="@VisibleChanged"
+               @ref="@DialogRef"
+               Width="600px"
+               ShowCloseButton="true"
+               CloseOnOverlayClick="true"
+               ButtonsLayout="@DialogButtonsLayout.End">
+    <DialogTitle>
+        Title
+    </DialogTitle>
+    <DialogContent>
+        <p>Text</p>
+    </DialogContent>
+    <DialogButtons>
+        <TelerikButton OnClick="@( () => HandleButtonClick(true) )" ThemeColor="@ThemeConstants.Button.ThemeColor.Success">Yes</TelerikButton>
+        <TelerikButton OnClick="@( () => HandleButtonClick(false) )" ThemeColor="@ThemeConstants.Button.ThemeColor.Error">No</TelerikButton>
+    </DialogButtons>
+</TelerikDialog>
+
+@code {
+    bool DialogVisible { get; set; }
+    TelerikDialog DialogRef { get; set; }
+
+    async Task HandleButtonClick(bool result)
+    {
+        DialogVisible = false;
+    }
+
+    async Task VisibleChanged(bool newVisible)
+    {
+        DialogVisible = newVisible;
+    }
+}

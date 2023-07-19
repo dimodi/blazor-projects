@@ -1,0 +1,33 @@
+﻿@page "/window"
+
+<TelerikButton OnClick="@( _ => WindowVisible = !WindowVisible )">Toggle Window 1</TelerikButton>
+<TelerikButton OnClick="@OnButtonClick">Show Alert</TelerikButton>
+
+<label><TelerikCheckBox @bind-Value="@WindowModal" /> Use modality</label>
+
+<TelerikWindow @bind-Visible="@WindowVisible" Modal="@WindowModal">
+    <WindowActions>
+        <WindowAction Name="Minimize" />
+        <WindowAction Name="Close" />
+    </WindowActions>
+    <WindowTitle>
+        Window 1
+    </WindowTitle>
+    <WindowContent>
+        Content 1
+    </WindowContent>
+</TelerikWindow>
+
+@code {
+    bool WindowVisible { get; set; }
+
+    bool WindowModal { get; set; }
+
+    [CascadingParameter]
+    DialogFactory DF { get; set; }
+
+    async Task OnButtonClick()
+    {
+        await DF.AlertAsync("message", "title");
+    }
+}

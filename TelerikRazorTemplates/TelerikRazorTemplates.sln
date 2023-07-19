@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 25.0.1705.2
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelerikRazorTemplates", "TelerikRazorTemplates\TelerikRazorTemplates.csproj", "{3E2CC246-37FA-49E3-84B0-D0DDF81F0EBA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3E2CC246-37FA-49E3-84B0-D0DDF81F0EBA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3E2CC246-37FA-49E3-84B0-D0DDF81F0EBA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3E2CC246-37FA-49E3-84B0-D0DDF81F0EBA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3E2CC246-37FA-49E3-84B0-D0DDF81F0EBA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9118EBE9-E1CA-41ED-BAA7-E4255295F26D}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,113 @@
+﻿@page "/fileselect"
+
+@using System.IO
+@using Microsoft.AspNetCore.Hosting
+@using System.Threading
+@using Telerik.Blazor.Components.FileSelect
+
+@inject IWebHostEnvironment HostingEnvironment
+
+<TelerikFileSelect OnSelect=@HandleFiles
+                   OnRemove="@RemoveFiles"
+                   AllowedExtensions="@AllowedExtensions">
+</TelerikFileSelect>
+
+@code {
+    List<string> AllowedExtensions { get; set; } = new List<string>() { ".jpg", ".jpeg", ".png", ".gif", ".txt" };
+
+    Dictionary<string, CancellationTokenSource> Tokens { get; set; } = new Dictionary<string, CancellationTokenSource>();
+
+    private async Task HandleFiles(FileSelectEventArgs args)
+    {
+        foreach (var file in args.Files)
+        {
+            if (!file.InvalidExtension)
+            {
+                //await UploadFile(file);
+                await ReadFile(file);
+            }
+        }
+    }
+
+    private async Task RemoveFiles(FileSelectEventArgs args)
+    {
+        foreach (var file in args.Files)
+        {
+            // If you're still uploading the file, cancel the process first.
+            Tokens[file.Id].Cancel();
+            Tokens.Remove(file.Id);
+
+            await Task.Delay(1);
+
+            var path = Path.Combine(HostingEnvironment?.WebRootPath, file.Name);
+
+            // Remove the file from the file system
+            System.IO.File.Delete(path);
+        }
+    }
+
+    private async Task ReadFile(FileSelectFileInfo file)
+    {
+        Tokens.Add(file.Id, new CancellationTokenSource());
+        var path = Path.Combine(HostingEnvironment?.WebRootPath, file.Name);
+        var byteArray = new byte[file.Size];
+        await using MemoryStream ms = new MemoryStream(byteArray);
+        await file.Stream.CopyToAsync(ms, Tokens[file.Id].Token);
+        //await file.Stream.CopyToAsync(ms);
+        Console.WriteLine(file.Name + " - " + file.Size.ToString());
+    }
+
+    private async Task UploadFile(FileSelectFileInfo file)
+    {
+        Tokens.Add(file.Id, new CancellationTokenSource());
+        var path = Path.Combine(HostingEnvironment?.WebRootPath, file.Name);
+        await using FileStream fs = new FileStream(path, FileMode.Create);
+        await file.Stream.CopyToAsync(fs, Tokens[file.Id].Token);
+    }
+}
+
+
+@*
+    <div class="fileselect-container">
+        <TelerikButton Class="fake-fileselect-button" Icon="upload">My Button Text</TelerikButton>
+        <TelerikFileSelect Class="custom-fileselect" />
+    </div>
+
+    <style>
+        /* prepare for absolute positioning of children */
+        .fileselect-container {
+            position: relative;
+        }
+
+            /* position two components one on top of the other */
+            .fileselect-container > .k-button,
+            .fileselect-container > .k-fileselect {
+                position: absolute;
+            }
+
+        /* shrink width, remove border and background */
+        .custom-fileselect {
+            display: inline-block;
+            border-width: 0;
+            background: none transparent;
+        }
+
+        /* remove background and spacing around default FileSelect button */
+        .custom-fileselect .k-dropzone {
+            background: none transparent;
+            padding: 0;
+        }
+
+            /* make default FileSelect invisible */
+            .custom-fileselect .k-dropzone .k-upload-button {
+                opacity: 0;
+                min-width: 10em;
+            }
+
+        /* custom styles for the fake FileSelect button */
+        .fake-fileselect-button {
+
+        }
+    </style>
+
+*@

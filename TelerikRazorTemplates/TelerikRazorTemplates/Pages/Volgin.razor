@@ -1,0 +1,176 @@
+﻿@page "/volgin"
+
+@using Microsoft.AspNetCore.Hosting
+@using System.IO
+@using System.Text.RegularExpressions
+@inject IHttpClientFactory http
+@inject IWebHostEnvironment HostingEnvironment
+
+@*<TelerikTextArea @bind-Value="@Output" Class="ta"></TelerikTextArea>*@
+
+<p><TelerikButton OnClick="@ProcessUrls">Extract Content</TelerikButton></p>
+
+<p>Processing @CurrentUrl of @TotalUrls ...</p>
+
+<p>@Success</p>
+
+<style>
+    .k-textarea.ta {
+        width: 80%;
+        margin: 0 auto;
+        height: 400px;
+    }
+</style>
+
+@code {
+    string Output { get; set; }
+    int CurrentUrl { get; set; }
+    int TotalUrls { get; set; }
+    string Success { get; set; }
+
+    const string OutputFileName = "volgin-all.txt";
+
+    async Task ProcessUrls()
+    {
+        var urls = AllUrls.Split("\n");
+        TotalUrls = urls.Length;
+
+        var httpClient = http.CreateClient();
+
+        foreach (var url in urls)
+        {
+            ++CurrentUrl;
+            await Task.Delay(1);
+
+            var response = await httpClient.GetStringAsync(url);
+
+            // article title
+
+            var startPositionTitle = response.IndexOf("<h1 itemprop=\"name\">") + 20;
+            var endPositionTitle = response.IndexOf("</h1>");
+
+            var titleText = response.Substring(startPositionTitle, endPositionTitle - startPositionTitle)
+                .Trim().Replace("Коментар на Петър Волгин: ", "");
+
+            // article content
+
+            var startPosition0 = response.IndexOf("</module>") + 9;
+            var startPosition1 = response.IndexOf("<span itemprop=\"articleBody\">") + 29;
+            var endPosition0 = response.IndexOf("<div class=\"editor\"");
+            var endPosition1 = response.IndexOf("<h2 class=\"prelated\">БНР подкасти");
+            var endPosition2 = response.IndexOf("<div class=\"bnr-social\">");
+
+            var startPosition = startPosition0 >= 9 ? startPosition0 : startPosition1;
+            var endPosition = endPosition0 >= 0 ? endPosition0 : (endPosition1 >= 0 ? endPosition1 : endPosition2);
+
+            var tempHtml = response.Substring(startPosition, endPosition - startPosition);
+
+            tempHtml = Regex.Replace(tempHtml, "<.*?>", String.Empty);
+
+            Output += titleText + "\n\n" + tempHtml.Replace("\n\n", "").Replace("  ", " ").Trim() + "\n\n";
+
+            await Task.Delay(1);
+            StateHasChanged();
+        }
+
+        var saveLocation = Path.Combine(HostingEnvironment.WebRootPath, OutputFileName);
+        System.IO.File.WriteAllText(saveLocation, Output);
+
+        Success = "Article content saved.";
+    }
+
+    string AllUrlsTest = @"https://bnr.bg/horizont/post/101752497/komentar-na-petar-volgin-kraat-na-falshivia-svetoven-red";
+
+    string AllUrls = @"https://bnr.bg/horizont/post/101350674/kakvo-predstavlava-razbuntuvaniat-chovek
+https://bnr.bg/horizont/post/101354446/bruksel-se-interesuva-edinstveno-ot-sebe-si
+https://bnr.bg/horizont/post/101358206/komentar-na-petar-volgin-sauchastnicite-na-borisov
+https://bnr.bg/horizont/post/101362146/zashto-horata-se-buntuvat-sreshtu-covid-merkite
+https://bnr.bg/horizont/post/101365974/komentar-na-petar-volgin-islamistite-i-glupavata-evropa
+https://bnr.bg/horizont/post/101369757/komentar-na-petar-volgin-tramp-si-otiva-politikata-mu-ostava
+https://bnr.bg/horizont/post/101373525/komentar-na-petar-volgin-ako-iska-v-es-makedonia-da-spre-s-lajite
+https://bnr.bg/horizont/post/101384810/ima-li-statukvoto-alternativa
+https://bnr.bg/horizont/post/101388378/komentar-na-petar-volgin-balgarofobia-v-skopie
+https://bnr.bg/horizont/post/101392150/komentar-na-petar-volgin-ima-li-naprejenie-mejdu-bsp-i-rumen-radev
+https://bnr.bg/horizont/post/101395209
+https://bnr.bg/horizont/post/101398041/komentar-na-petar-volgin-kak-shte-izglejda-noviat-svat
+https://bnr.bg/horizont/post/101401800/komentar-na-petar-volgin-velikoto-amerikansko-licemerie
+https://bnr.bg/horizont/post/101405735/komentar-na-petar-volgin-kraat-na-amerikanskata-demokracia
+https://bnr.bg/horizont/post/101409517/komentar-na-petar-volgin-kasniat-sssr-i-dneshnite-sasht
+https://bnr.bg/horizont/post/101413479/komentar-na-petar-volgin-maidan-v-rusia-e-nevazmojen
+https://bnr.bg/horizont/post/101417397/komentar-na-petar-volgin-kak-prezidentat-radev-moje-da-specheli-vtori-mandat
+https://bnr.bg/horizont/post/101421214/komentar-na-petar-volgin-shte-ni-iznenadat-li-partiite-s-novi-idei-v-predizbornata-kampania
+https://bnr.bg/horizont/post/101425028/komentar-na-petar-volgin-vreme-e-gerb-da-si-pochine-ot-vlastta
+https://bnr.bg/horizont/post/101428901/komentar-na-petar-volgin-ne-slushaite-sorosoidnite-analizatori
+https://bnr.bg/horizont/post/101451417/komentar-na-petar-volgin-predsrochnite-izbori-sa-neizbejni
+https://bnr.bg/horizont/post/101454922/komentar-na-petar-volgin-evroatlantizam-na-kilogram
+https://bnr.bg/horizont/post/101458499/komentar-na-petar-volgin-slavi-trifonov-pecheli-predsrochnite-izbori-ako-varne-vednaga-mandata
+https://bnr.bg/horizont/post/101461850/komentar-na-petar-volgin-nishto-strashno-nama-v-predsrochnite-izbori
+https://bnr.bg/horizont/post/101468003
+https://bnr.bg/horizont/post/101471605/komentar-na-petar-volgin-ne-uvolnavaite-jurnalistite
+https://bnr.bg/horizont/post/101475005/komentar-na-petar-volgin-politkorektniat-plach-za-protasevich
+https://bnr.bg/horizont/post/101478702/komentar-na-petar-volgin-balgaria-e-perfektnata-kolonia
+https://bnr.bg/horizont/post/101500320/komentar-na-petar-volgin-slavi-trifonov-chast-ot-promanata-ili-chast-ot-statukvoto
+https://bnr.bg/horizont/post/101503422/komentar-na-petar-volgin-kapanite-pred-ima-takav-narod
+https://bnr.bg/horizont/post/101506572/komentar-na-petar-volgin-elektoralni-djudjeta-s-pretencii
+https://bnr.bg/horizont/post/101512870/komentar-na-petar-volgin-obeshtai-mu-i-go-izlaji-osnoven-zakon-na-bg-politikata
+https://bnr.bg/horizont/post/101515950/komentar-na-petar-volgin-iznosat-na-demokracia-pak-se-provali
+https://bnr.bg/horizont/post/101516202/komentar-na-petar-volgin-zashto-liberalite-nenavijdat-itn
+https://bnr.bg/horizont/post/101519077
+https://bnr.bg/horizont/post/101522591/koi-nadnicha-zad-kiril-makron-petkov
+https://bnr.bg/horizont/post/101525347
+https://bnr.bg/horizont/post/101531714/komentar-na-petar-volgin-promanata-prodaljava-ili-izkustvoto-da-opakovash
+https://bnr.bg/horizont/post/101535195/komentar-na-petar-volgin-podmazvachite-mogat-da-provalat-radev
+https://bnr.bg/horizont/post/101538727/komentar-na-petar-volgin-mislat-li-balgarskite-politici-za-balgaria
+https://bnr.bg/horizont/post/101564020/komentar-na-petar-volgin-biznes-proektat-prodaljavame-promanata
+https://bnr.bg/horizont/post/101567455/komentar-na-petar-volgin-parhame-s-migli-i-prodaljavame-promanata
+https://bnr.bg/horizont/post/101570961/kak-bivat-iznudvani-neposlushnite-darjavi
+https://bnr.bg/horizont/post/101574459
+https://bnr.bg/horizont/post/101580284/komentar-na-petar-volgin-balgaria-na-golamata-shahmatna-daska
+https://bnr.bg/horizont/post/101583065/komentar-na-petar-volgin-premierat-kiril-petkov-da-ne-se-darji-kato-prosto-kiro
+https://bnr.bg/horizont/post/101586460/komentar-na-petar-volgin-balgarskite-pomoshtnici-na-skopie
+https://bnr.bg/horizont/post/101589974/komentar-na-petar-volgin-koi-trabva-da-oglavi-bsp
+https://bnr.bg/horizont/post/101593429/komentar-na-petar-volgin-smeshno-e-da-plashat-rusia-sas-sankcii
+https://bnr.bg/horizont/post/101596939/komentar-na-petar-volgin-razrivat-mejdu-radev-i-petkov-e-neizbejen
+https://bnr.bg/horizont/post/101600230/komentar-na-petar-volgin-banalniat-vodevil-sadebna-reforma
+https://bnr.bg/horizont/post/101603745/komentar-na-petar-volgin-kakva-e-golamata-cel-na-putin
+https://bnr.bg/horizont/post/101611136/komentar-na-petar-volgin-svobodni-li-sme
+https://bnr.bg/horizont/post/101614750/komentar-na-petar-volgin-djouzef-makkarti-i-balgarskite-mu-fenove
+https://bnr.bg/horizont/post/101618443/komentar-na-petar-volgin-balgaria-ne-biva-da-stava-chast-ot-voinata-v-ukraina
+https://bnr.bg/horizont/post/101626085
+https://bnr.bg/horizont/post/101629771/komentar-na-petar-volgin-politici-bez-istoricheska-pamet-i-pogled-v-badeshteto
+https://bnr.bg/horizont/post/101633195/komentar-na-petar-volgin-edna-edinstvena-gledna-tochka-ima-samo-pri-diktatura
+https://bnr.bg/horizont/post/101640011/komentar-na-petar-volgin-rumen-radev-kato-taras-bulba
+https://bnr.bg/horizont/post/101643035/komentar-na-petar-volgin-nomerat-s-ukraina-e-neprilojim-po-otnoshenie-na-vetoto-varhu-rsm
+https://bnr.bg/horizont/post/101646669
+https://bnr.bg/horizont/post/101650390/komentar-na-petar-volgin-partiini-vazhodi-i-padenia
+https://bnr.bg/horizont/post/101653703/komentar-na-petar-volgin-kisindjar-sreshtu-soros-ili-razumat-sreshtu-fanatizma
+https://bnr.bg/horizont/post/101657253/komentar-na-petar-volgin-patat-kam-ada-e-postlan-s-dobri-zakoni
+https://bnr.bg/horizont/post/101660799/komentar-na-petar-volgin-predsrochnite-izbori-sa-nai-dobriat-variant
+https://bnr.bg/horizont/post/101664145/komentar-na-petar-volgin-vkopchvaneto-vav-vlastta-e-pat-kam-nishtoto
+https://bnr.bg/horizont/post/101667445/komentar-na-petar-volgin-politici-s-mantalitet-na-vasali
+https://bnr.bg/horizont/post/101674257
+https://bnr.bg/horizont/post/101680726/komentar-na-petar-volgin-posredstvenost-oblechena-vav-vlast
+https://bnr.bg/horizont/post/101683993/komentar-na-petar-volgin-telefonni-izmamnici-v-politikata
+https://bnr.bg/horizont/post/101687183/komentar-na-petar-volgin-glupcite-da-ne-se-vrashtat-vav-vlastta
+https://bnr.bg/horizont/post/101687478/komentar-na-petar-volgin-za-kabineta-i-negovite-zlopoluchni-kritici
+https://bnr.bg/horizont/post/101690396/komentar-na-petar-volgin-v-balgaria-imame-ne-grajdansko-a-grantovo-obshtestvo
+https://bnr.bg/horizont/post/101693461
+https://bnr.bg/horizont/post/101696600/komentar-na-petar-volgin-normalni-hora-i-grantovi-ideolozi
+https://bnr.bg/horizont/post/101717673/koi-iska-da-ni-vkara-vav-voinata
+https://bnr.bg/horizont/post/101721179/komentar-na-petar-volgin-evroatlantici-na-vseki-kilometar
+https://bnr.bg/horizont/post/101724611/komentar-na-petar-volgin-partiite-kato-priuti-na-nekadarnici
+https://bnr.bg/horizont/post/101728229/komentar-na-petar-volgin-ot-evroto-i-orajiata-pechelat-samo-elitite
+https://bnr.bg/horizont/post/101731856/komentar-na-petar-volgin-te-prosto-izpalnavat-narejdania
+https://bnr.bg/horizont/post/101735286
+https://bnr.bg/horizont/post/101738828
+https://bnr.bg/horizont/post/101742346
+https://bnr.bg/horizont/post/101745845/komentar-na-petar-volgin-koi-se-strahuva-ot-referendumi
+https://bnr.bg/horizont/post/101749264
+https://bnr.bg/horizont/post/101752497/komentar-na-petar-volgin-kraat-na-falshivia-svetoven-red
+https://bnr.bg/horizont/post/101760762/komentar-na-petar-volgin-balgarskiat-liberalen-elit-ne-haresva-balgaria
+https://bnr.bg/horizont/post/101764193/komentar-na-petar-volgin
+https://bnr.bg/horizont/post/101767693/komentar-na-petar-volgin
+https://bnr.bg/horizont/post/101771229
+https://bnr.bg/horizont/post/101774620/komentar-na-petar-volgin-politikata-ni-kam-skopie-e-bezgrabnachna
+https://bnr.bg/horizont/post/101778166";
+}

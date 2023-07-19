@@ -1,0 +1,29 @@
+﻿@page "/loader"
+
+<h3>TelerikLoader</h3>
+
+<style>
+    .cancel-request {
+    }
+
+</style>
+
+<TelerikLoaderContainer>
+    <Template>
+        <TelerikLoader Size="@ThemeConstants.Loader.Size.Large" />
+        <TelerikButton ButtonType="ButtonType.Button"
+                       Class="cancel-request"
+                       OnClick="@CancelRequest">Cancel Request...</TelerikButton>
+    </Template>
+</TelerikLoaderContainer>
+
+
+
+@code {
+
+    void CancelRequest()
+    {
+        // ...
+    }
+
+}

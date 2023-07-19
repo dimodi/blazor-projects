@@ -1,0 +1,46 @@
+﻿@page "/multiselect"
+
+<TelerikMultiSelect Data="@MultiSelectData"
+                    @bind-Value="@MultiSelectValues"
+                    TextField="@nameof(MultiSelectModel.Text)"
+                    ValueField="@nameof(MultiSelectModel.Id)"
+                    GroupField="@nameof(MultiSelectModel.Category)"/>
+
+@if (MultiSelectValues?.Count > 0)
+{
+    <ul>
+        @foreach (int item in MultiSelectValues)
+        {
+            <li>Id: @item</li>
+        }
+    </ul>
+}
+
+@code{
+    List<int> MultiSelectValues { get; set; }
+    List<MultiSelectModel> MultiSelectData { get; set; }
+
+    protected override void OnInitialized()
+    {
+        MultiSelectData = new List<MultiSelectModel>();
+
+        for (int i = 1; i <= 17; i++)
+        {
+            MultiSelectData.Add(new MultiSelectModel()
+            {
+                Id = i,
+                Text = "Item " + i,
+                Category = "Category " + (i % 3 + 1)
+            });
+        }
+
+        base.OnInitialized();
+    }
+
+    public class MultiSelectModel
+    {
+        public int Id { get; set; }
+        public string Text { get; set; }
+        public string Category { get; set; }
+    }
+}

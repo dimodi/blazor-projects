@@ -1,0 +1,119 @@
+﻿@page "/treeview-select"
+
+<p>
+    <label>Item Id: <TelerikNumericTextBox @bind-Value="@ItemToSelect" Width="80px" /></label>
+    <TelerikButton OnClick="@SelectItem">Select Item @ItemToSelect</TelerikButton>
+    <TelerikButton OnClick="@AddToSelection">Add Item @ItemToSelect to Selection</TelerikButton>
+</p>
+<p>
+    <TelerikButton OnClick="@SelectRoot">Select Root Items</TelerikButton>
+    <TelerikButton OnClick="@SelectAll">Select Leaves</TelerikButton>
+    <TelerikButton OnClick="@SelectNone">Select None</TelerikButton>
+</p>
+
+<TelerikTreeView Data="@FlatData"
+                 @bind-ExpandedItems="@ExpandedItems"
+                 @bind-SelectedItems="@SelectedItems"
+                 SelectionMode="@TreeViewSelectionMode.Multiple" />
+
+@code {
+    public IEnumerable<TreeItem> FlatData { get; set; }
+    public IEnumerable<object> ExpandedItems { get; set; } = new List<TreeItem>();
+    public IEnumerable<object> SelectedItems { get; set; } = new List<TreeItem>();
+
+    int ItemToSelect { get; set; }
+    Random rnd { get; set; } = new Random();
+
+    void SelectItem()
+    {
+        var leafItem = FlatData.Where(x => x.Id == ItemToSelect).FirstOrDefault();
+
+        if (leafItem != null)
+        {
+            SelectedItems = new List<TreeItem>() { leafItem };
+        }
+
+        ItemToSelect = rnd.Next(1, FlatData.Count() + 1);
+    }
+
+    void AddToSelection()
+    {
+        var leafItem = FlatData.Where(x => x.Id == ItemToSelect).FirstOrDefault();
+
+        if (leafItem != null)
+        {
+            SelectedItems = SelectedItems.Append(leafItem);
+        }
+
+        ItemToSelect = rnd.Next(1, FlatData.Count() + 1);
+    }
+
+    void SelectRoot()
+    {
+        SelectedItems = FlatData.Where(x => x.ParentId == null);
+    }
+
+    void SelectAll()
+    {
+        SelectedItems = FlatData.Where(x => !x.HasChildren);
+    }
+
+    void SelectNone()
+    {
+        SelectedItems = new List<TreeItem>();
+    }
+
+    protected override void OnInitialized()
+    {
+        FlatData = LoadFlat();
+
+        ExpandedItems = FlatData.Where(x => x.HasChildren == true);
+
+        ItemToSelect = rnd.Next(1, FlatData.Count() + 1);
+    }
+
+    #region TreeView data generation
+
+    int TreeLevels { get; set; } = 3;
+    int ItemsPerLevel { get; set; } = 2;
+    int IdCounter { get; set; } = 1;
+
+    List<TreeItem> LoadFlat()
+    {
+        List<TreeItem> items = new List<TreeItem>();
+
+        PopulateTreeItems(items, null, 1);
+
+        return items;
+    }
+
+    void PopulateTreeItems(List<TreeItem> items, int? parentId, int level)
+    {
+        for (int i = 1; i <= ItemsPerLevel; i++)
+        {
+            var itemId = IdCounter++;
+            items.Add(new TreeItem()
+            {
+                Id = itemId,
+                Text = $"Level {level} Item {i} Id {itemId}",
+                ParentId = parentId,
+                HasChildren = level < TreeLevels
+            });
+
+            if (level < TreeLevels)
+            {
+                PopulateTreeItems(items, itemId, level + 1);
+            }
+        }
+    }
+
+    #endregion
+
+    public class TreeItem
+    {
+        public int Id { get; set; }
+        public string Text { get; set; }
+        public int? ParentId { get; set; }
+        public bool HasChildren { get; set; }
+    }
+}
