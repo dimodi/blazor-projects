@@ -1,0 +1,74 @@
+﻿@page "/js"
+
+@inject IJSRuntime js
+
+@implements IDisposable
+
+<TelerikButton OnClick="@OnButtonClick1">Update Editor Value 1</TelerikButton>
+
+<button id="button2">Update Editor Value 2</button>
+
+@StringValue
+
+<script suppress-error="BL9992">//
+    var dotNet;
+
+    function saveDotNetRef(dotNetRef) {
+        dotNet = dotNetRef;
+        var button = document.getElementById("button2");
+        if (button) {
+            button.addEventListener("click", updateStringValue2);
+        }
+    }
+
+    function updateStringValue1() {
+        // use this approach if the whole algorithm is triggered by C# code
+        return "111 updated value 111";
+    }
+
+    function updateStringValue2() {
+        // use this approach if the whole algorithm is triggered by client-side code
+        dotNet.invokeMethodAsync("UpdateStringValue2", "222 updated value 222");
+    }
+//</script>
+
+@code {
+    // replace "Index" with the actual .razor file name
+    private DotNetObjectReference<JavaScript>? DotNetRef;
+
+    private string StringValue { get; set; } = "initial string value";
+
+    private async Task OnButtonClick1()
+    {
+        var newEditorValue = await js.InvokeAsync<string>("updateStringValue1");
+        StringValue = newEditorValue;
+    }
+
+    [JSInvokable("UpdateStringValue2")]
+    public async Task UpdateStringValue2(string newValue)
+    {
+        StringValue = newValue;
+        StateHasChanged();
+    }
+
+    protected override void OnInitialized()
+    {
+        DotNetRef = DotNetObjectReference.Create(this);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Task.Delay(1); // ensure HTML is ready
+            await js.InvokeVoidAsync("saveDotNetRef", DotNetRef);
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    public void Dispose()
+    {
+        DotNetRef?.Dispose();
+    }
+}

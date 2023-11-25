@@ -1,9 +1,5 @@
 ﻿@page "/chart"
 
-@using System.Timers
-
-@implements IDisposable
-
 <TelerikChart>
     <ChartSeriesItems>
         <ChartSeries Type="ChartSeriesType.Line"
@@ -31,7 +27,10 @@
     </ChartCategoryAxes>
 
     <ChartValueAxes>
-        <ChartValueAxis Max="1200"></ChartValueAxis>
+        <ChartValueAxis Max="1200">
+            <ChartValueAxisLabels Format="c2" />
+            @*Template="foo #= value #"*@
+        </ChartValueAxis>
     </ChartValueAxes>
 
     <ChartTitle Text="Revenue per Product"></ChartTitle>
@@ -45,32 +44,11 @@
     List<SalesData> Series2Data { get; set; }
     List<SalesData> Series3Data { get; set; }
 
-    Timer Timer { get; set; } = new Timer();
-
     protected override async Task OnInitializedAsync()
     {
         await GenerateData();
 
         await base.OnInitializedAsync();
-    }
-
-    protected override void OnAfterRender(bool firstRender)
-    {
-        if (Timer.Enabled == false)
-        {
-            Timer.Interval = 1000;
-            Timer.Elapsed -= OnTimerElapsed;
-            Timer.Elapsed += OnTimerElapsed;
-            Timer.Start();
-        }
-    }
-
-    private void OnTimerElapsed(Object source, ElapsedEventArgs e)
-    {
-        InvokeAsync(GenerateData);
-
-        // call StateHasChanged only if necessary
-        InvokeAsync(StateHasChanged);
     }
 
     async Task GenerateData()
@@ -113,12 +91,6 @@
         }
     }
 
-    public void Dispose()
-    {
-        Timer?.Stop();
-        Timer?.Close();
-    }
-
     public class SalesData
     {
         public int Id { get; set; }
@@ -127,3 +99,132 @@
         public decimal Revenue { get; set; }
     }
 }
+
+
+@*@using System.Timers
+
+    @implements IDisposable
+
+    <TelerikChart>
+        <ChartSeriesItems>
+            <ChartSeries Type="ChartSeriesType.Line"
+                         Data="@Series1Data"
+                         Field="@nameof(SalesData.Revenue)"
+                         CategoryField="@nameof(SalesData.TimePeriod)"
+                         Name="Product 1">
+            </ChartSeries>
+            <ChartSeries Type="ChartSeriesType.Column"
+                         Data="@Series2Data"
+                         Field="@nameof(SalesData.Revenue)"
+                         CategoryField="@nameof(SalesData.TimePeriod)"
+                         Name="Product 2">
+            </ChartSeries>
+            <ChartSeries Type="ChartSeriesType.Area"
+                         Data="@Series3Data"
+                         Field="@nameof(SalesData.Revenue)"
+                         CategoryField="@nameof(SalesData.TimePeriod)"
+                         Name="Product 3">
+            </ChartSeries>
+        </ChartSeriesItems>
+
+        <ChartCategoryAxes>
+            <ChartCategoryAxis Type="@ChartCategoryAxisType.Date"></ChartCategoryAxis>
+        </ChartCategoryAxes>
+
+        <ChartValueAxes>
+            <ChartValueAxis Max="1200"></ChartValueAxis>
+        </ChartValueAxes>
+
+        <ChartTitle Text="Revenue per Product"></ChartTitle>
+
+        <ChartLegend Position="ChartLegendPosition.Right">
+        </ChartLegend>
+    </TelerikChart>
+
+    @code {
+        List<SalesData> Series1Data { get; set; }
+        List<SalesData> Series2Data { get; set; }
+        List<SalesData> Series3Data { get; set; }
+
+        Timer Timer { get; set; } = new Timer();
+
+        protected override async Task OnInitializedAsync()
+        {
+            await GenerateData();
+
+            await base.OnInitializedAsync();
+        }
+
+        protected override void OnAfterRender(bool firstRender)
+        {
+            if (Timer.Enabled == false)
+            {
+                Timer.Interval = 1000;
+                Timer.Elapsed -= OnTimerElapsed;
+                Timer.Elapsed += OnTimerElapsed;
+                Timer.Start();
+            }
+        }
+
+        private void OnTimerElapsed(Object source, ElapsedEventArgs e)
+        {
+            InvokeAsync(GenerateData);
+
+            // call StateHasChanged only if necessary
+            InvokeAsync(StateHasChanged);
+        }
+
+        async Task GenerateData()
+        {
+            Series1Data = new List<SalesData>();
+            Series2Data = new List<SalesData>();
+            Series3Data = new List<SalesData>();
+
+            var rnd = new Random();
+            var now = DateTime.Today;
+            var monthsBack = 12;
+
+            for (int i = 1; i <= monthsBack; i++)
+            {
+                var dateTimeValue = now.AddMonths(-monthsBack + i);
+
+                Series1Data.Add(new SalesData()
+                {
+                    Id = i,
+                    Product = "Product 1",
+                    Revenue = rnd.Next(1, 1000),
+                    TimePeriod = dateTimeValue
+                });
+
+                Series2Data.Add(new SalesData()
+                {
+                    Id = i,
+                    Product = "Product 2",
+                    Revenue = rnd.Next(1, 1000),
+                    TimePeriod = dateTimeValue
+                });
+
+                Series3Data.Add(new SalesData()
+                {
+                    Id = i,
+                    Product = "Product 3",
+                    Revenue = rnd.Next(1, 1000),
+                    TimePeriod = dateTimeValue
+                });
+            }
+        }
+
+        public void Dispose()
+        {
+            Timer?.Stop();
+            Timer?.Close();
+        }
+
+        public class SalesData
+        {
+            public int Id { get; set; }
+            public string Product { get; set; }
+            public DateTime TimePeriod { get; set; }
+            public decimal Revenue { get; set; }
+        }
+    }*@

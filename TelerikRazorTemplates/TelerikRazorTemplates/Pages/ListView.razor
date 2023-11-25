@@ -1,43 +1,40 @@
-﻿@page "/grid"
+﻿@page "/listview"
 
 @using Telerik.DataSource
 @using Telerik.DataSource.Extensions
 
-<TelerikGrid Data="@GridData"
-             TItem="@Product"
-             Pageable="true"
-             Sortable="true"
-             FilterMode="GridFilterMode.FilterRow">
-    <GridColumns>
-        <GridColumn Field="@nameof(Product.Name)" Title="Product Name" />
-        <GridColumn Field="@nameof(Product.Price)" />
-        <GridColumn Field="@nameof(Product.Stock)" />
-        <GridColumn Field="@nameof(Product.ReleaseDate)" Title="Release Date" />
-        <GridColumn Field="@nameof(Product.InProduction)" />
-    </GridColumns>
-</TelerikGrid>
+<TelerikListView Data="@ListViewData"
+                 TItem="@Product"
+                 Pageable="true">
+    <HeaderTemplate>
+        header
+    </HeaderTemplate>
+    <Template>
+        template <br />
+    </Template>
+</TelerikListView>
 
 @code {
-    private List<Product> GridData { get; set; } = new List<Product>();
+    List<Product> ListViewData { get; set; } = new List<Product>();
 
-    private async Task OnGridRead(GridReadEventArgs args)
+    async Task OnListViewRead(ListViewReadEventArgs args)
     {
         await Task.Delay(200);
 
-        DataSourceResult result = GridData.ToDataSourceResult(args.Request);
+        DataSourceResult result = ListViewData.ToDataSourceResult(args.Request);
 
         args.Data = result.Data;
         args.Total = result.Total;
-        args.AggregateResults = result.AggregateResults;
     }
 
     protected override void OnInitialized()
     {
+        ListViewData = new List<Product>();
         var rnd = new Random();
 
         for (int i = 1; i <= 7; i++)
         {
-            GridData.Add(new Product()
+            ListViewData.Add(new Product()
             {
                 Id = i,
                 Name = $"Product {i}",

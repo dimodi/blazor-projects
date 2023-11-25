@@ -1,55 +1,85 @@
 ﻿@page "/upload"
 
-<h2>Any file, preview file name for download</h2>
+<h2>Any file, provide a download link</h2>
 <TelerikUpload SaveUrl="api/upload/save"
                RemoveUrl="api/upload/remove"
-               MaxFileSize="@MaxFileSize"
-               OnSuccess="@OnImageSuccess">
+               MaxFileSize="@( 10 * 1024 * 1024 )"
+               OnSuccess="@OnUploadSuccessForDownLoad">
 </TelerikUpload>
 
 @if (!String.IsNullOrEmpty(FileNameForDownload))
 {
     <p> <a href="@( FileNameForDownload )"> Download @FileNameForDownload </a> </p>
+
+    @if (ImageFiles.Where(x => FileNameForDownload.Contains(x)).Any())
+    {
+        <p><img src="@FileNameForDownload" /></p>
+    }
 }
 
-<h2>TXT only, see file content</h2>
-<TelerikUpload SaveUrl="api/upload/processtext"
-               OnSuccess="@OnSuccess"
-               AllowedExtensions="@( new List<string> { ".txt" } )"
-               MaxFileSize="@( 100 * 1024 * 1024 )">
-</TelerikUpload>
-
-<h2>Up to 1KB, see file content</h2>
+<h2>Up to 1 KB, see file content</h2>
 <TelerikUpload SaveUrl="api/upload/processcontent"
-               OnSuccess="@OnSuccess"
-               MaxFileSize="@( 100 * 1024 )">
+               OnSuccess="@OnUploadSuccessForShow"
+               MaxFileSize="@( 1 * 1024 )">
 </TelerikUpload>
 
-<TelerikTextArea @bind-Value="@Response" Class="txta" Width="300px" />
-
-<style>
-    .txta {
-        height: 100px;
-    }
-</style>
+<TelerikTextArea @bind-Value="@Response" Width="300px" Rows="5" />
 
 @code {
-    List<string> AllowedFileTypes = new List<string>() { ".jpg", ".jpeg", ".png", ".gif" };
-    int MaxFileSize = int.MaxValue; // 10 * 1024 * 1024; // 10 MB
-    string Response { get; set; }
-    string FileNameForDownload { get; set; }
+    private readonly string[] ImageFiles = { ".jpg", ".jpeg", ".gif", ".png", ".bmp" };
 
-    async Task OnImageSuccess(UploadSuccessEventArgs args)
+    private string Response { get; set; } = string.Empty;
+
+    private string FileNameForDownload { get; set; } = string.Empty;
+
+    private void OnUploadSuccessForDownLoad(UploadSuccessEventArgs args)
     {
-        var file = args.Files.FirstOrDefault();
-        FileNameForDownload = file.Name;
+        if (args.Operation == UploadOperationType.Upload)
+        {
+            FileNameForDownload = args.Files.First().Name;
+        }
+        else
+        {
+            FileNameForDownload = string.Empty;
+        }
     }
 
-    async Task OnSuccess(UploadSuccessEventArgs args)
+    private void OnUploadSuccessForShow(UploadSuccessEventArgs args)
     {
-        Response += args.Request.ResponseText;
+        if (args.Operation == UploadOperationType.Upload)
+        {
+            Response += args.Request.ResponseText;
+        }
     }
 }
+
+@*@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+    @using Microsoft.AspNetCore.Http
+    @inject IHttpContextAccessor httpContextAccessor
+
+    <TelerikUpload SaveUrl="api/upload/save"
+                   RemoveUrl="api/upload/remove"
+                   OnUpload="@AddAntiForgeryHeader"
+                   OnRemove="@AddAntiForgeryHeader">
+    </TelerikUpload>
+
+    @code {
+        private string AntiForgeryToken { get; set; } = string.Empty;
+
+        private async Task AddAntiForgeryHeader(UploadEventArgs args)
+        {
+            args.RequestHeaders.Add("X-CSRF-TOKEN-HEADERNAME", AntiForgeryToken);
+        }
+
+        protected override void OnInitialized()
+        {
+            AntiForgeryToken = Antiforgery.GetAndStoreTokens(httpContextAccessor.HttpContext!).RequestToken!;
+
+            base.OnInitialized();
+        }
+    }*@
+
+
 
 @*@inject NavigationManager NavigationManager
 

@@ -9,6 +9,17 @@
                      ValueField="@nameof(ListItem.Id)"
                      Width="300px" />
 
+<TelerikMultiColumnComboBox Data="@ListItems"
+                     @bind-Value="@SelectedValue"
+                     TextField="@nameof(ListItem.Text)"
+                     ValueField="@nameof(ListItem.Id)"
+                     Width="300px">
+    <MultiColumnComboBoxColumns>
+        <MultiColumnComboBoxColumn Field="@nameof(ListItem.Id)" />
+        <MultiColumnComboBoxColumn Field="@nameof(ListItem.Text)" />
+    </MultiColumnComboBoxColumns>
+</TelerikMultiColumnComboBox>
+
 @code {
     List<ListItem> ListItems { get; set; } = new();
 

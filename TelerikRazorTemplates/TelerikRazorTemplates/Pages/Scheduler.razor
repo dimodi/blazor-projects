@@ -1,14 +1,14 @@
 ﻿@page "/scheduler"
 
-<TelerikScheduler @bind-Date="@SelectedDate"
-                    Data="@Data"
-                    OnCreate="@AddAppointment"
-                    OnUpdate="@UpdateAppointment"
-                    OnDelete="@DeleteAppointment"
-                    AllowDelete="true"
-                    AllowUpdate="true"
-                    AllowCreate="true"
-                    Height="600px">
+<TelerikScheduler Data="@SchedulerData"
+                  @bind-Date="@SelectedDate"
+                  AllowCreate="true"
+                  AllowUpdate="true"
+                  AllowDelete="true"
+                  OnCreate="@OnSchedulerCreate"
+                  OnUpdate="@OnSchedulerUpdate"
+                  OnDelete="@OnSchedulerDelete"
+                  Height="600px">
     <SchedulerSettings>
         <SchedulerGroupSettings Resources="@GroupingResources" Orientation="@SchedulerGroupOrientation.Horizontal" />
     </SchedulerSettings>
@@ -24,32 +24,24 @@
     </SchedulerResources>
 </TelerikScheduler>
 
-@code
-{
-    AppointmentService appointmentService = new();
-    ResourceService resourceService = new();
+@code {
+    private AppointmentService appointmentService = new();
+    private ResourceService resourceService = new();
 
-    DateTime SelectedDate { get; set; } = DateTime.Now.Date;
-    DateTime StartTime { get; set; } = DateTime.Now.Date.AddHours(7);
+    private DateTime SelectedDate { get; set; } = DateTime.Now.Date;
+    private DateTime StartTime { get; set; } = DateTime.Now.Date.AddHours(7);
 
-    List<Appointment> Data = new List<Appointment>();
-    List<Resource> SchedulerResources = new List<Resource>();
+    private List<Appointment> SchedulerData = new List<Appointment>();
+    private List<Resource> SchedulerResources = new List<Resource>();
     List<Resource> SchedulerManagers = new List<Resource>();
 
-    List<string> GroupingResources = new List<string> { "Room", "Manager" };
+    private List<string> GroupingResources = new List<string> { "Room", "Manager" };
 
-    protected override async Task OnInitializedAsync()
-    {
-        SchedulerResources = await resourceService.GetResourcesAsync();
-        SchedulerManagers = await resourceService.GetManagersAsync();
-        Data = await appointmentService.GetAppointmentsAsync();
-    }
-
-    void UpdateAppointment(SchedulerUpdateEventArgs args)
+    private void OnSchedulerUpdate(SchedulerUpdateEventArgs args)
     {
         Appointment item = (Appointment)args.Item;
 
-        var matchingItem = Data.FirstOrDefault(a => a.Id == item.Id);
+        var matchingItem = SchedulerData.FirstOrDefault(a => a.Id == item.Id);
 
         if (matchingItem != null)
         {
@@ -63,22 +55,26 @@
         }
     }
 
-    void AddAppointment(SchedulerCreateEventArgs args)
+    private void OnSchedulerCreate(SchedulerCreateEventArgs args)
     {
         Appointment item = args.Item as Appointment;
 
-        Data.Add(item);
+        SchedulerData.Add(item);
     }
 
-    void DeleteAppointment(SchedulerDeleteEventArgs args)
+    private void OnSchedulerDelete(SchedulerDeleteEventArgs args)
     {
         Appointment item = (Appointment)args.Item;
 
-        Data.Remove(item);
+        SchedulerData.Remove(item);
     }
-}
 
-@code {
+    protected override async Task OnInitializedAsync()
+    {
+        SchedulerResources = await resourceService.GetResourcesAsync();
+        SchedulerManagers = await resourceService.GetManagersAsync();
+        SchedulerData = await appointmentService.GetAppointmentsAsync();
+    }
 
     public class AppointmentService
     {
@@ -355,11 +351,11 @@
             List<Resource> result = new List<Resource>();
 
             @*result.Add(new Resource()
-            {
-                Text = "None",
-                Value = "",
-                Color = ""
-            });*@
+                {
+                    Text = "None",
+                    Value = "",
+                    Color = ""
+                });*@
             result.Add(new Resource()
             {
                 Text = "Small meeting room",
@@ -400,11 +396,11 @@
                 Color = "#369"
             });
             @*result.Add(new Resource()
-            {
-                Text = "Charlie",
-                Value = "3",
-                Color = "#336600"
-            });*@
+                {
+                    Text = "Charlie",
+                    Value = "3",
+                    Color = "#336600"
+                });*@
 
             return result;
         }
