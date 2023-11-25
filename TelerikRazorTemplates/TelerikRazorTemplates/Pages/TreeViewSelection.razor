@@ -17,14 +17,14 @@
                  SelectionMode="@TreeViewSelectionMode.Multiple" />
 
 @code {
-    public IEnumerable<TreeItem> FlatData { get; set; }
-    public IEnumerable<object> ExpandedItems { get; set; } = new List<TreeItem>();
-    public IEnumerable<object> SelectedItems { get; set; } = new List<TreeItem>();
+    private IEnumerable<TreeItem> FlatData { get; set; } = new List<TreeItem>();
+    private IEnumerable<object> ExpandedItems { get; set; } = new List<TreeItem>();
+    private IEnumerable<object> SelectedItems { get; set; } = new List<TreeItem>();
 
-    int ItemToSelect { get; set; }
-    Random rnd { get; set; } = new Random();
+    private int ItemToSelect { get; set; }
+    private Random rnd { get; set; } = new Random();
 
-    void SelectItem()
+    private void SelectItem()
     {
         var leafItem = FlatData.Where(x => x.Id == ItemToSelect).FirstOrDefault();
 
@@ -36,7 +36,7 @@
         ItemToSelect = rnd.Next(1, FlatData.Count() + 1);
     }
 
-    void AddToSelection()
+    private void AddToSelection()
     {
         var leafItem = FlatData.Where(x => x.Id == ItemToSelect).FirstOrDefault();
 
@@ -48,17 +48,17 @@
         ItemToSelect = rnd.Next(1, FlatData.Count() + 1);
     }
 
-    void SelectRoot()
+    private void SelectRoot()
     {
         SelectedItems = FlatData.Where(x => x.ParentId == null);
     }
 
-    void SelectAll()
+    private void SelectAll()
     {
         SelectedItems = FlatData.Where(x => !x.HasChildren);
     }
 
-    void SelectNone()
+    private void SelectNone()
     {
         SelectedItems = new List<TreeItem>();
     }
@@ -74,11 +74,11 @@
 
     #region TreeView data generation
 
-    int TreeLevels { get; set; } = 3;
-    int ItemsPerLevel { get; set; } = 2;
-    int IdCounter { get; set; } = 1;
+    private int TreeLevels { get; set; } = 3;
+    private int ItemsPerLevel { get; set; } = 2;
+    private int IdCounter { get; set; } = 1;
 
-    List<TreeItem> LoadFlat()
+    private List<TreeItem> LoadFlat()
     {
         List<TreeItem> items = new List<TreeItem>();
 
@@ -87,7 +87,7 @@
         return items;
     }
 
-    void PopulateTreeItems(List<TreeItem> items, int? parentId, int level)
+    private void PopulateTreeItems(List<TreeItem> items, int? parentId, int level)
     {
         for (int i = 1; i <= ItemsPerLevel; i++)
         {
@@ -112,7 +112,7 @@
     public class TreeItem
     {
         public int Id { get; set; }
-        public string Text { get; set; }
+        public string Text { get; set; } = string.Empty;
         public int? ParentId { get; set; }
         public bool HasChildren { get; set; }
     }

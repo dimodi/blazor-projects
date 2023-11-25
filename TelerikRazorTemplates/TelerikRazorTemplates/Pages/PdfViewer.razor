@@ -11,15 +11,14 @@
 </TelerikPdfViewer>
 
 @code {
-    private byte[] PdfSource { get; set; }
+    private byte[] PdfSource { get; set; } = null!;
 
     private async Task OnButtonClick()
     {
-        var pdfLocation = Path.Combine(HostingEnvironment.WebRootPath, "ordre_14239.pdf");
+        var pdfLocation = Path.Combine(HostingEnvironment.WebRootPath, "pdf-minimal.pdf");
 
         PdfSource = await System.IO.File.ReadAllBytesAsync(pdfLocation);
     }
-
 
     protected override async Task OnInitializedAsync()
     {

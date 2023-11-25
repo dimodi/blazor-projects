@@ -10,24 +10,34 @@
                      Width="300px" />
 
 <TelerikMultiColumnComboBox Data="@ListItems"
-                     @bind-Value="@SelectedValue"
-                     TextField="@nameof(ListItem.Text)"
-                     ValueField="@nameof(ListItem.Id)"
-                     Width="300px">
+                            @bind-Value="@SelectedValue"
+                            TextField="@nameof(ListItem.Text)"
+                            ValueField="@nameof(ListItem.Id)"
+                            Width="300px">
     <MultiColumnComboBoxColumns>
         <MultiColumnComboBoxColumn Field="@nameof(ListItem.Id)" />
         <MultiColumnComboBoxColumn Field="@nameof(ListItem.Text)" />
     </MultiColumnComboBoxColumns>
 </TelerikMultiColumnComboBox>
 
+<TelerikMultiSelect Data="@ListItems"
+                    @bind-Value="@MultiSelectValues"
+                    TextField="@nameof(ListItem.Text)"
+                    ValueField="@nameof(ListItem.Id)"
+                    GroupField="@nameof(ListItem.Category)"
+                    Width="600px" />
+
 @code {
-    List<ListItem> ListItems { get; set; } = new();
+    private List<ListItem> ListItems { get; set; } = new();
 
-    int SelectedValue { get; set; } = 3;
+    private int SelectedValue { get; set; } = 3;
 
-    async Task OnSelectRead(ReadEventArgs args)
+    private List<int> MultiSelectValues { get; set; } = new();
+
+    private async Task OnSelectRead(ReadEventArgs args)
     {
         await Task.Delay(1);
+
         DataSourceResult result = ListItems.ToDataSourceResult(args.Request);
 
         args.Data = result.Data;

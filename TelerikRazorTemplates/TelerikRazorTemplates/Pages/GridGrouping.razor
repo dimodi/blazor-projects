@@ -17,7 +17,7 @@
 </TelerikGrid>
 
 @code {
-    private List<Employee> GridData { get; set; }
+    private List<Employee> GridData { get; set; } = new List<Employee>();
 
     private void OnGridStateInit(GridStateEventArgs<Employee> args)
     {
@@ -55,8 +55,8 @@
     public class Employee
     {
         public int Id { get; set; }
-        public string Name { get; set; }
-        public string Team { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Team { get; set; } = string.Empty;
         public decimal Salary { get; set; }
         public bool OnVacation { get; set; }
     }

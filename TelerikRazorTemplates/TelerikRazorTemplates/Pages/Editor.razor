@@ -1,90 +1,41 @@
-﻿@page "/editor-custom"
+﻿@page "/editor"
 
 @using Telerik.Blazor.Components.Editor
 
-<TelerikTextArea @bind-Value="@EditorValue" Class="height200" />
+<TelerikTextArea @bind-Value="@EditorValue"
+                 Rows="5" />
 
 <TelerikEditor @ref="EditorRef"
                Tools="@EditorTools"
-               Height="300px"
-               @bind-Value="@EditorValue">
+               @bind-Value="@EditorValue"
+               Height="300px">
     <EditorCustomTools>
-        <EditorCustomTool Name="CleanFormattingTool">
-            <TelerikButton OnClick="@ExecuteCleanFormatting"
-                           Icon="@FontIcon.ClearCss"
-                           Title="Clean Formatting"></TelerikButton>
-        </EditorCustomTool>
-        <EditorCustomTool Name="InsertHtmlTools">
-            <TelerikButtonGroup>
-                <ButtonGroupButton OnClick="@ExecuteInsertHr"
-                                   Icon="@FontIcon.InsertBottom"
-                                   Title="Insert hr"></ButtonGroupButton>
-            </TelerikButtonGroup>
+        <EditorCustomTool Name="InsertHtmlTool">
+            <TelerikButton OnClick="@ExecuteInsert"
+                           Icon="@SvgIcon.InsertBottom"
+                           Title="Insert HTML"></TelerikButton>
         </EditorCustomTool>
     </EditorCustomTools>
 </TelerikEditor>
 
-<style>
-    .height200 {
-        height: 200px;
-    }
-
-    .back-color {
-        color: #00ff00 !important;
-    }
-
-    .fore-color {
-        color: #ff0000 !important;
-    }
-
-    .icon-size img {
-        width: 1em;
-        height: 1em;
-    }
-</style>
-
 @code {
-    private TelerikEditor EditorRef { get; set; }
+    private TelerikEditor EditorRef { get; set; } = null!;
 
     private string EditorValue { get; set; } = @"<p>foo</p><p>bar</p>";
 
-    private List<IEditorTool> EditorTools { get; set; } = new List<IEditorTool>() {
-        new CustomTool("ColorTools"),
-        new CustomTool("CleanFormattingTool"),
-        new CustomTool("InsertVideo"),
-        new CustomTool("InsertHtmlTools")
-    };
+    private List<IEditorTool> EditorTools { get; set; } = new();
 
-    private async Task ExecuteCleanFormatting()
+    protected override void OnInitialized()
     {
-        await EditorRef.ExecuteAsync(new ToolCommandArgs("cleanFormatting"));
+        EditorTools = new List<IEditorTool>(EditorToolSets.Default);
+
+        EditorTools.Add(new CustomTool("InsertHtmlTool"));
+
+        base.OnInitialized();
     }
 
-    private async Task ExecuteInsertHr()
+    private async Task ExecuteInsert()
     {
         await EditorRef.ExecuteAsync(new HtmlCommandArgs("insertHtml", "<hr />"));
     }
 }
-
-
-<p>Programmatic pasting in the Editor is possible to implement, if you take into account one major caveat - browser permissions. You may have three separate problems and control over only one of them:</p>
-<ul>
-    <li>Some users may prohibit programmatic clipboard access.</li>
-    <li>Browsers may prompt users to approve programmatic pasting every time.</li>
-    <li>Browsers prohibit programmatic clipboard access <span style="text-decoration:underline;">unless</span> the access occurs in a <span style="text-decoration:underline;">user event</span>. This means you can't use JSInterop calls from the server to the browser, because the resulting JavaScript execution doesn't occur as a result of user events.</li>
-</ul>
-<p>Here is what I mean. Normally, the algorithm would be:</p>
-<ol>
-    <li>Use a <a href="https://docs.telerik.com/blazor-ui/components/editor/custom-tools">custom Editor tool</a>.</li>
-    <li>On tool click, <a href="https://learn.microsoft.com/en-us/aspnet/core/blazor/javascript-interoperability/call-javascript-from-dotnet?view=aspnetcore-7.0">call a .NET handler to call a JavaScript function</a>&nbsp;to obtain the <a href="https://developer.mozilla.org/en-US/docs/Web/API/Clipboard_API">clipboard content</a>.</li>
-    <li>Pass the clipboard content to the .NET runtime with a <strong>return</strong> statement in the JavaScript function.</li>
-    <li>Use the <strong><a href="https://docs.telerik.com/blazor-ui/components/editor/built-in-tools#commands-without-built-in-tools">insertHtml</a></strong> Editor command. There is an <a href="https://docs.telerik.com/blazor-ui/components/editor/built-in-tools#programmatic-execution">example here</a>.</li>
-</ol>
-<p>The problem is in the <span style="text-decoration:underline;">second</span> step - browsers will not allow you to execute it. So the algorithm should change to:</p>
-<ol>
-    <li>Use a&nbsp;<a href="https://docs.telerik.com/blazor-ui/components/editor/custom-tools">custom Editor tool</a>&nbsp;that relies on plain HTML and&nbsp;<span style="text-decoration:underline;">completely client-side</span> event handling. Use no <strong>@@onclick</strong> directives or any Blazor stuff.</li>
-    <li>On tool click (pure&nbsp;<span style="text-decoration:underline;">JavaScript</span> event),&nbsp;obtain the&nbsp;<a href="https://developer.mozilla.org/en-US/docs/Web/API/Clipboard_API">clipboard content</a>.</li>
-    <li><a href="https://learn.microsoft.com/en-us/aspnet/core/blazor/javascript-interoperability/call-dotnet-from-javascript">Pass the clipboard content to the .NET runtime</a>&nbsp;from inside the <strong><a href="https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/readText">readText</a></strong>() method promise.</li>
-    <li>Use the&nbsp;<strong><a href="https://docs.telerik.com/blazor-ui/components/editor/built-in-tools#commands-without-built-in-tools">insertHtml</a></strong>&nbsp;Editor command. There is an&nbsp;<a href="https://docs.telerik.com/blazor-ui/components/editor/built-in-tools#programmatic-execution">example here</a>. You may need to analyze the clipboard content and decide if you will be pasting block content or inline content. This depends on the last argument of the Editor command and <strong>true</strong> implies <span style="text-decoration:underline;">inline</span> content:</li>
-</ol>
-<div><pre class="hljs" spellcheck="false" style="display:block;overflow-x:auto;padding:0.5em;background-color:white;color:black;border:1px solid rgb(127, 157, 185);"><span class="hljs-keyword" style="color:#0000ff;">await</span> EditorRef.ExecuteAsync(<span class="hljs-keyword" style="color:#0000ff;">new</span> HtmlCommandArgs(<span class="hljs-string" style="color:#a31515;">"insertHtml"</span>, clipboardContentString, <span class="hljs-literal" style="color:#a31515;background-color:#fff200;"><strong>true</strong></span>));</pre></div>

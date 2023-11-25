@@ -18,7 +18,7 @@
 </TelerikGrid>
 
 @code {
-    private List<Product> GridData { get; set; } = new List<Product>();
+    private List<Product> GridData { get; set; } = new();
 
     private async Task OnGridRead(GridReadEventArgs args)
     {

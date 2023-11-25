@@ -3,13 +3,14 @@
 <TelerikTreeView Data="@FlatData" @bind-ExpandedItems="@ExpandedItems" />
 
 @code {
-    public IEnumerable<TreeItem> FlatData { get; set; }
-    public IEnumerable<object> ExpandedItems { get; set; } = new List<TreeItem>();
+    private IEnumerable<TreeItem> FlatData { get; set; } = new List<TreeItem>();
 
-    int TreeLevels { get; set; } = 3;
-    int RootItems { get; set; } = 2;
-    int ItemsPerLevel { get; set; } = 2;
-    int IdCounter { get; set; } = 1;
+    private IEnumerable<object> ExpandedItems { get; set; } = new List<TreeItem>();
+
+    private int TreeLevels { get; set; } = 3;
+    private int RootItems { get; set; } = 2;
+    private int ItemsPerLevel { get; set; } = 2;
+    private int IdCounter { get; set; } = 1;
 
     protected override void OnInitialized()
     {
@@ -18,7 +19,7 @@
         ExpandedItems = FlatData.Where(x => x.HasChildren == true); // && x.ParentId == null
     }
 
-    List<TreeItem> LoadFlat()
+    private List<TreeItem> LoadFlat()
     {
         List<TreeItem> items = new List<TreeItem>();
 
@@ -27,7 +28,7 @@
         return items;
     }
 
-    void PopulateChildren(List<TreeItem> items, int? parentId, int level)
+    private void PopulateChildren(List<TreeItem> items, int? parentId, int level)
     {
         var itemCount = level == 1 ? RootItems : ItemsPerLevel;
         for (int i = 1; i <= itemCount; i++)
@@ -51,7 +52,7 @@
     public class TreeItem
     {
         public int Id { get; set; }
-        public string Text { get; set; }
+        public string Text { get; set; } = string.Empty;
         public int? ParentId { get; set; }
         public bool HasChildren { get; set; }
     }

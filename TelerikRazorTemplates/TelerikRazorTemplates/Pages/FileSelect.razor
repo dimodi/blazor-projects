@@ -39,7 +39,7 @@
 
             await Task.Delay(1);
 
-            var path = Path.Combine(HostingEnvironment?.WebRootPath, file.Name);
+            var path = Path.Combine(HostingEnvironment.WebRootPath, file.Name);
 
             // Remove the file from the file system
             System.IO.File.Delete(path);
@@ -49,7 +49,7 @@
     private async Task ReadFile(FileSelectFileInfo file)
     {
         Tokens.Add(file.Id, new CancellationTokenSource());
-        var path = Path.Combine(HostingEnvironment?.WebRootPath, file.Name);
+        var path = Path.Combine(HostingEnvironment.WebRootPath, file.Name);
         var byteArray = new byte[file.Size];
         await using MemoryStream ms = new MemoryStream(byteArray);
         await file.Stream.CopyToAsync(ms, Tokens[file.Id].Token);
@@ -60,7 +60,7 @@
     private async Task UploadFile(FileSelectFileInfo file)
     {
         Tokens.Add(file.Id, new CancellationTokenSource());
-        var path = Path.Combine(HostingEnvironment?.WebRootPath, file.Name);
+        var path = Path.Combine(HostingEnvironment.WebRootPath, file.Name);
         await using FileStream fs = new FileStream(path, FileMode.Create);
         await file.Stream.CopyToAsync(fs, Tokens[file.Id].Token);
     }

@@ -45,7 +45,7 @@
     }
 
     [JSInvokable("UpdateStringValue2")]
-    public async Task UpdateStringValue2(string newValue)
+    public void UpdateStringValue2(string newValue)
     {
         StringValue = newValue;
         StateHasChanged();

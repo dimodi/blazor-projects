@@ -24,9 +24,9 @@
 </TelerikGrid>
 
 @code {
-    List<PivotModel> PivotData { get; set; } = new List<PivotModel>();
+    private List<PivotModel> PivotData { get; set; } = new List<PivotModel>();
 
-    void OnGridStateInit(GridStateEventArgs<PivotModel> args)
+    private void OnGridStateInit(GridStateEventArgs<PivotModel> args)
     {
         args.GridState.GroupDescriptors.Add(new GroupDescriptor()
         {

@@ -29,7 +29,7 @@
 </TelerikGrid>
 
 @code {
-    List<Product> GridData { get; set; }
+    List<Product> GridData { get; set; } = new List<Product>();
 
     private void OnGridEdit(GridCommandEventArgs args)
     {
@@ -43,7 +43,7 @@
 
     private void OnGridUpdate(GridCommandEventArgs args)
     {
-        var argsItem = args.Item as Product;
+        var argsItem = (Product)args.Item;
         var index = GridData.FindIndex(i => i.Id == argsItem.Id);
         if (index != -1)
         {
@@ -53,7 +53,7 @@
 
     private void OnGridCreate(GridCommandEventArgs args)
     {
-        var argsItem = args.Item as Product;
+        var argsItem = (Product)args.Item;
 
         argsItem.Id = GridData.Count + 1;
 
@@ -62,7 +62,7 @@
 
     private void OnGridDelete(GridCommandEventArgs args)
     {
-        var argsItem = args.Item as Product;
+        var argsItem = (Product)args.Item;
 
         GridData.Remove(argsItem);
     }
@@ -90,7 +90,7 @@
     public class Product
     {
         public int Id { get; set; }
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
         public decimal? Price { get; set; }
         public short? Stock { get; set; }
         public DateTime? ReleaseDate { get; set; }

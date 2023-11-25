@@ -23,10 +23,10 @@
 </style>
 
 @code {
-    string Output { get; set; }
+    string Output { get; set; } = string.Empty;
     int CurrentUrl { get; set; }
     int TotalUrls { get; set; }
-    string Success { get; set; }
+    string Success { get; set; } = string.Empty;
 
     const string OutputFileName = "volgin-all.txt";
 
@@ -79,7 +79,7 @@
         Success = "Article content saved.";
     }
 
-    string AllUrlsTest = @"https://bnr.bg/horizont/post/101752497/komentar-na-petar-volgin-kraat-na-falshivia-svetoven-red";
+    //string AllUrlsTest = @"https://bnr.bg/horizont/post/101752497/komentar-na-petar-volgin-kraat-na-falshivia-svetoven-red";
 
     string AllUrls = @"https://bnr.bg/horizont/post/101350674/kakvo-predstavlava-razbuntuvaniat-chovek
 https://bnr.bg/horizont/post/101354446/bruksel-se-interesuva-edinstveno-ot-sebe-si

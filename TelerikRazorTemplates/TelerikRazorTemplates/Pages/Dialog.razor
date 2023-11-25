@@ -16,21 +16,24 @@
         <p>Text</p>
     </DialogContent>
     <DialogButtons>
-        <TelerikButton OnClick="@( () => HandleButtonClick(true) )" ThemeColor="@ThemeConstants.Button.ThemeColor.Success">Yes</TelerikButton>
-        <TelerikButton OnClick="@( () => HandleButtonClick(false) )" ThemeColor="@ThemeConstants.Button.ThemeColor.Error">No</TelerikButton>
+        <TelerikButton OnClick="@( () => HandleButtonClick(true) )"
+                       ThemeColor="@ThemeConstants.Button.ThemeColor.Success">Yes</TelerikButton>
+        <TelerikButton OnClick="@( () => HandleButtonClick(false) )"
+                       ThemeColor="@ThemeConstants.Button.ThemeColor.Error">No</TelerikButton>
     </DialogButtons>
 </TelerikDialog>
 
 @code {
-    bool DialogVisible { get; set; }
-    TelerikDialog DialogRef { get; set; }
+    private bool DialogVisible { get; set; }
 
-    async Task HandleButtonClick(bool result)
+    private TelerikDialog DialogRef { get; set; } = null!;
+
+    private void HandleButtonClick(bool result)
     {
         DialogVisible = false;
     }
 
-    async Task VisibleChanged(bool newVisible)
+    private void VisibleChanged(bool newVisible)
     {
         DialogVisible = newVisible;
     }

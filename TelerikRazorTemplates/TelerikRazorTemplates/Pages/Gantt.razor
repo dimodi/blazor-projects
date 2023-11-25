@@ -45,26 +45,26 @@
 </TelerikGantt>
 
 @code {
-    List<FlatModel> GanttData { get; set; }
-    List<FlatModel> Data { get; set; }
+    private List<FlatModel> GanttData { get; set; } = new List<FlatModel>();
+    private List<FlatModel> Data { get; set; } = new List<FlatModel>();
 
-    GanttView CurrentView { get; set; } = GanttView.Week;
+    private GanttView CurrentView { get; set; } = GanttView.Week;
 
-    public int LastId { get; set; } = 1;
+    private int LastId { get; set; } = 1;
 
-    private async Task ShowData()
+    private void ShowData()
     {
         GanttData = new List<FlatModel>(Data);
     }
 
-    private async Task RemoveData()
+    private void RemoveData()
     {
         GanttData = new List<FlatModel>();
     }
 
     private void OnGanttUpdate(GanttUpdateEventArgs args)
     {
-        var item = args.Item as FlatModel;
+        var item = (FlatModel)args.Item;
 
         var foundItem = GanttData.FirstOrDefault(i => i.Id.Equals(item.Id));
 
@@ -79,7 +79,7 @@
 
     private void OnGanttDelete(GanttDeleteEventArgs args)
     {
-        var item = GanttData.FirstOrDefault(i => i.Id.Equals((args.Item as FlatModel).Id));
+        var item = GanttData.First(i => i.Id.Equals(((FlatModel)args.Item).Id));
 
         RemoveChildRecursive(item);
     }
@@ -140,7 +140,7 @@
     {
         public int Id { get; set; }
         public int? ParentId { get; set; }
-        public string Title { get; set; }
+        public string Title { get; set; } = string.Empty;
         public double PercentComplete { get; set; }
         public DateTime Start { get; set; }
         public DateTime End { get; set; }

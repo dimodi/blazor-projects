@@ -24,9 +24,9 @@
     bool WindowModal { get; set; }
 
     [CascadingParameter]
-    DialogFactory DF { get; set; }
+    DialogFactory DF { get; set; } = null!;
 
-    async Task OnButtonClick()
+    private async Task OnButtonClick()
     {
         await DF.AlertAsync("message", "title");
     }
