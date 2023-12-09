@@ -10,20 +10,23 @@
                  @bind-SelectedItems="@SelectedItems" />
 
 @code {
-    private IEnumerable<TreeItem> HierarchicalData { get; set; } = new List<TreeItem>();
+    private List<TreeItem> HierarchicalData { get; set; } = new();
     private IEnumerable<object> ExpandedItems { get; set; } = new List<TreeItem>();
     private IEnumerable<object> CheckedItems { get; set; } = new List<TreeItem>();
     private IEnumerable<object> SelectedItems { get; set; } = new List<TreeItem>();
 
-    private int TreeLevels { get; set; } = 3;
-    private int ItemsPerLevel { get; set; } = 3;
-    private int IdCounter { get; set; } = 1;
+    private int TreeLevels { get; set; } = 4;
+    private int RootItems { get; set; } = 3;
+    private int ItemsPerLevel { get; set; } = 2;
+    private int IdCounter { get; set; }
 
     protected override void OnInitialized()
     {
         HierarchicalData = LoadHierarchical();
 
+        // Select, check and expand the root items.
         ExpandedItems = new List<TreeItem>(HierarchicalData);
+        // CheckChildren and CheckParents don't affect programmatic checking.
         CheckedItems = new List<TreeItem>(HierarchicalData);
         SelectedItems = new List<TreeItem>(HierarchicalData);
     }
@@ -31,16 +34,22 @@
     private List<TreeItem> LoadHierarchical()
     {
         List<TreeItem> items = new List<TreeItem>();
-        var level = 1;
 
-        for (int i = 1; i <= ItemsPerLevel; i++)
+        PopulateItems(items, 1);
+
+        return items;
+    }
+
+    private void PopulateItems(List<TreeItem> items, int level)
+    {
+        for (int i = 1; i <= (level == 1 ? RootItems : ItemsPerLevel); i++)
         {
-            var itemId = IdCounter++;
+            var itemId = ++IdCounter;
 
             var newItem = new TreeItem()
             {
                 Id = itemId,
-                Text = $"Level {level} Item {i}"
+                Text = $"Level {level} Item {i} Id {itemId}"
             };
 
             items.Add(newItem);
@@ -50,8 +59,6 @@
                 PopulateChildren(items, level + 1);
             }
         }
-
-        return items;
     }
 
     private void PopulateChildren(List<TreeItem> items, int level)
@@ -60,23 +67,7 @@
         {
             item.Items = new List<TreeItem>();
 
-            for (int i = 1; i <= ItemsPerLevel; i++)
-            {
-                var itemId = IdCounter++;
-
-                var newItem = new TreeItem()
-                {
-                    Id = itemId,
-                    Text = $"Level {level} Item {i}"
-                };
-
-                item.Items.Add(newItem);
-
-                if (level < TreeLevels)
-                {
-                    PopulateChildren(item.Items, level + 1);
-                }
-            }
+            PopulateItems(item.Items, level);
         }
     }
 
