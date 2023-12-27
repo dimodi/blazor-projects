@@ -2,99 +2,90 @@
 
 @using System.ComponentModel.DataAnnotations
 
+<PageTitle>GridEdiPopup</PageTitle>
+
 <TelerikGrid Data="@GridData"
-             EditMode="@GridEditMode.Popup"
-             Navigable="true"
-             OnEdit="@OnGridEdit"
+             EditMode="@GridEditMode.Inline"
              OnUpdate="@OnGridUpdate"
              OnCreate="@OnGridCreate"
-             OnDelete="@OnGridDelete"
-             OnCancel="@OnGridCancel">
+             OnDelete="@OnGridDelete">
     <GridToolBarTemplate>
-        <GridCommandButton Command="Add" Icon="@FontIcon.Plus">Add Item</GridCommandButton>
+        <GridCommandButton Command="Add">Add Item</GridCommandButton>
     </GridToolBarTemplate>
     <GridColumns>
-        <GridColumn Field="@nameof(Product.Name)" Title="Product Name" />
-        <GridColumn Field="@nameof(Product.Price)" Title="Unit Price" />
-        <GridColumn Field="@nameof(Product.Stock)" Title="Units In Stock" />
-        <GridColumn Field="@nameof(Product.ReleaseDate)" Title="Release Date" />
-        <GridColumn Field="@nameof(Product.Discontinued)" Title="Discontinued" />
+        <GridColumn Field="@nameof(SampleModel.Name)" />
+        <GridColumn Field="@nameof(SampleModel.Quantity)" />
+        <GridColumn Field="@nameof(SampleModel.StartDate)" />
+        <GridColumn Field="@nameof(SampleModel.IsActive)" />
         <GridCommandColumn>
             <GridCommandButton Command="Edit">Edit</GridCommandButton>
             <GridCommandButton Command="Delete">Delete</GridCommandButton>
-            <GridCommandButton Command="Save" Icon="@FontIcon.Save" ShowInEdit="true">Update</GridCommandButton>
-            <GridCommandButton Command="Cancel" Icon="@FontIcon.Cancel" ShowInEdit="true">Cancel</GridCommandButton>
         </GridCommandColumn>
     </GridColumns>
 </TelerikGrid>
 
 @code {
-    List<Product> GridData { get; set; } = new List<Product>();
+    private List<SampleModel> GridData { get; set; } = new();
 
-    private void OnGridEdit(GridCommandEventArgs args)
-    {
-
-    }
-
-    private void OnGridCancel(GridCommandEventArgs args)
-    {
-
-    }
+    private int LastId { get; set; }
 
     private void OnGridUpdate(GridCommandEventArgs args)
     {
-        var argsItem = (Product)args.Item;
-        var index = GridData.FindIndex(i => i.Id == argsItem.Id);
-        if (index != -1)
+        var updatedItem = (SampleModel)args.Item;
+        var originalItemIndex = GridData.FindIndex(i => i.Id == updatedItem.Id);
+
+        if (originalItemIndex != -1)
         {
-            GridData[index] = argsItem;
+            GridData[originalItemIndex] = updatedItem;
         }
     }
 
     private void OnGridCreate(GridCommandEventArgs args)
     {
-        var argsItem = (Product)args.Item;
+        var createdItem = (SampleModel)args.Item;
 
-        argsItem.Id = GridData.Count + 1;
+        createdItem.Id = ++LastId;
 
-        GridData.Insert(0, argsItem);
+        GridData.Insert(0, createdItem);
     }
 
     private void OnGridDelete(GridCommandEventArgs args)
     {
-        var argsItem = (Product)args.Item;
+        var deletedItem = (SampleModel)args.Item;
 
-        GridData.Remove(argsItem);
+        GridData.Remove(deletedItem);
     }
 
     protected override void OnInitialized()
     {
-        GridData = new List<Product>();
-
         var rnd = new Random();
 
         for (int i = 1; i <= 5; i++)
         {
-            GridData.Add(new Product()
+            GridData.Add(new SampleModel()
             {
-                Id = i,
-                Name = $"Product {i}",
-                Price = (decimal)(rnd.Next(1, 100) * 3.14),
-                Stock = (short)rnd.Next(0, 1000),
-                ReleaseDate = DateTime.Now.AddMonths(-rnd.Next(0, 120)).AddDays(rnd.Next(1, 30)),
-                Discontinued = Convert.ToBoolean(rnd.Next(0, 2))
+                Id = ++LastId,
+                Name = $"Name {LastId}",
+                GroupName = $"Group {LastId % 3 + 1}",
+                Price = rnd.Next(1, 100) * 1.23m,
+                Quantity = rnd.Next(0, 1000),
+                StartDate = DateTime.Now.AddDays(-rnd.Next(60, 1000)),
+                IsActive = LastId % 4 > 0
             });
         }
     }
 
-    public class Product
+    public class SampleModel
     {
         public int Id { get; set; }
+        public int? ParentId { get; set; }
+        [Required]
         public string Name { get; set; } = string.Empty;
-        public decimal? Price { get; set; }
-        public short? Stock { get; set; }
-        public DateTime? ReleaseDate { get; set; }
-        public bool Discontinued { get; set; }
+        public string GroupName { get; set; } = string.Empty;
+        public decimal Price { get; set; }
+        public int Quantity { get; set; }
+        public DateTime StartDate { get; set; }
+        public bool IsActive { get; set; }
     }
 }
 

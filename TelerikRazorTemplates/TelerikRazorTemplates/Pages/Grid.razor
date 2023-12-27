@@ -4,21 +4,22 @@
 @using Telerik.DataSource.Extensions
 
 <TelerikGrid Data="@GridData"
-             TItem="@Product"
+             TItem="@SampleModel"
              Pageable="true"
              Sortable="true"
              FilterMode="GridFilterMode.FilterRow">
     <GridColumns>
-        <GridColumn Field="@nameof(Product.Name)" Title="Product Name" />
-        <GridColumn Field="@nameof(Product.Price)" />
-        <GridColumn Field="@nameof(Product.Stock)" />
-        <GridColumn Field="@nameof(Product.ReleaseDate)" Title="Release Date" />
-        <GridColumn Field="@nameof(Product.InProduction)" />
+        <GridColumn Field="@nameof(SampleModel.Name)" />
+        <GridColumn Field="@nameof(SampleModel.GroupName)" />
+        <GridColumn Field="@nameof(SampleModel.Price)" />
+        <GridColumn Field="@nameof(SampleModel.Quantity)" />
+        <GridColumn Field="@nameof(SampleModel.StartDate)" />
+        <GridColumn Field="@nameof(SampleModel.IsActive)" />
     </GridColumns>
 </TelerikGrid>
 
 @code {
-    private List<Product> GridData { get; set; } = new();
+    private List<SampleModel> GridData { get; set; } = new();
 
     private async Task OnGridRead(GridReadEventArgs args)
     {
@@ -37,25 +38,28 @@
 
         for (int i = 1; i <= 7; i++)
         {
-            GridData.Add(new Product()
+            GridData.Add(new SampleModel()
             {
                 Id = i,
-                Name = $"Product {i}",
-                Price = (decimal)rnd.Next(1, 100),
-                Stock = rnd.Next(0, 50),
-                ReleaseDate = DateTime.Now.AddDays(-rnd.Next(60, 1000)),
-                InProduction = i % 3 == 0
+                Name = $"Name {i}",
+                GroupName = $"Group {i % 3 + 1}",
+                Price = rnd.Next(1, 100) * 1.23m,
+                Quantity = rnd.Next(0, 1000),
+                StartDate = DateTime.Now.AddDays(-rnd.Next(60, 1000)),
+                IsActive = i % 4 > 0
             });
         }
     }
 
-    public class Product
+    public class SampleModel
     {
         public int Id { get; set; }
+        public int? ParentId { get; set; }
         public string Name { get; set; } = string.Empty;
+        public string GroupName { get; set; } = string.Empty;
         public decimal Price { get; set; }
-        public int Stock { get; set; }
-        public DateTime ReleaseDate { get; set; }
-        public bool InProduction { get; set; }
+        public int Quantity { get; set; }
+        public DateTime StartDate { get; set; }
+        public bool IsActive { get; set; }
     }
 }
