@@ -59,7 +59,9 @@
         public string GroupName { get; set; } = string.Empty;
         public decimal Price { get; set; }
         public int Quantity { get; set; }
+        public object Icon { get; set; } = SvgIcon.File;
         public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
         public bool IsActive { get; set; }
     }
 }
