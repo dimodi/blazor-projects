@@ -1,8 +1,8 @@
 ﻿@page "/grid-editing"
 
-@using System.ComponentModel.DataAnnotations
+<PageTitle>Grid Edit</PageTitle>
 
-<PageTitle>GridEdiPopup</PageTitle>
+@using System.ComponentModel.DataAnnotations
 
 <TelerikGrid Data="@GridData"
              EditMode="@GridEditMode.Inline"
@@ -19,6 +19,8 @@
         <GridColumn Field="@nameof(SampleModel.IsActive)" />
         <GridCommandColumn>
             <GridCommandButton Command="Edit">Edit</GridCommandButton>
+            <GridCommandButton Command="Save" ShowInEdit="true">Save</GridCommandButton>
+            <GridCommandButton Command="Cancel" ShowInEdit="true">Cancel</GridCommandButton>
             <GridCommandButton Command="Delete">Delete</GridCommandButton>
         </GridCommandColumn>
     </GridColumns>
