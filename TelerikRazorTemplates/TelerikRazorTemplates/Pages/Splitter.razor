@@ -1,12 +1,6 @@
 ﻿@page "/splitter"
 
-<style>
-    .outer-splitter .foo {
-        flex-shrink: 1;
-    }
-</style>
-
-<TelerikSplitter Height="100vh" Class="outer-splitter"
+<TelerikSplitter Height="50vh"
                  Orientation="@SplitterOrientation.Vertical">
     <SplitterPanes>
         <SplitterPane Collapsible="false"
@@ -14,9 +8,7 @@
                       Size="100px">
             Top pane content
         </SplitterPane>
-        <SplitterPane Collapsible="false"
-                      Resizable="false"
-                      Class="foo">
+        <SplitterPane>
 
             <TelerikSplitter Height="100%"
                              Orientation="@SplitterOrientation.Horizontal">

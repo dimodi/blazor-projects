@@ -15,13 +15,13 @@
     private bool Expanded { get; set; }
 
     private IEnumerable<DrawerItem> Data { get; set; } = new List<DrawerItem> {
-        new DrawerItem { Text = "Inbox", Icon = "inbox" },
+        new DrawerItem { Text = "Inbox", Icon = SvgIcon.Inbox },
         new DrawerItem { Separator = true},
-        new DrawerItem { Text = "Notifications", Icon = "notification" },
-        new DrawerItem { Text = "Calendar", Icon = "calendar" },
+        new DrawerItem { Text = "Notifications", Icon = SvgIcon.Bell },
+        new DrawerItem { Text = "Calendar", Icon = SvgIcon.Calendar },
         new DrawerItem { Separator = true},
-        new DrawerItem { Text = "Attachments", Icon = "hyperlink-email" },
-        new DrawerItem { Text = "Favourites", Icon = "star-outline" }
+        new DrawerItem { Text = "Attachments", Icon = SvgIcon.EnvelopeLink },
+        new DrawerItem { Text = "Favourites", Icon = SvgIcon.StarOutline }
     };
 
     private async Task ToggleDrawer() => await MyDrawer.ToggleAsync();
@@ -30,7 +30,7 @@
     {
         public string Text { get; set; } = string.Empty;
 
-        public string Icon { get; set; } = string.Empty;
+        public object? Icon { get; set; }
 
         public bool Separator { get; set; }
     }
