@@ -13,10 +13,25 @@
         <GridCommandButton Command="Add">Add Item</GridCommandButton>
     </GridToolBarTemplate>
     <GridColumns>
-        <GridColumn Field="@nameof(SampleModel.Name)" />
-        <GridColumn Field="@nameof(SampleModel.Quantity)" />
-        <GridColumn Field="@nameof(SampleModel.StartDate)" />
-        <GridColumn Field="@nameof(SampleModel.IsActive)" />
+        <GridColumn Field="@nameof(Product.Name)" />
+        <GridColumn Field="@nameof(Product.CategoryId)" Title="Category">
+            <Template>
+                @{ var dataItem = (Product)context; }
+                @Categories.Find(x => x.Id == dataItem.CategoryId)?.Name
+            </Template>
+            <EditorTemplate>
+                @{ var dataItem = (Product)context; }
+                <TelerikDropDownList Data="@Categories"
+                                     @bind-Value="@dataItem.CategoryId"
+                                     ValueField="@nameof(Category.Id)"
+                                     TextField="@nameof(Category.Name)"
+                                     DefaultText="Select Category" />
+                <TelerikValidationMessage For="@( () => dataItem.CategoryId )" />
+            </EditorTemplate>
+        </GridColumn>
+        <GridColumn Field="@nameof(Product.Quantity)" />
+        <GridColumn Field="@nameof(Product.StartDate)" />
+        <GridColumn Field="@nameof(Product.IsActive)" />
         <GridCommandColumn>
             <GridCommandButton Command="Edit">Edit</GridCommandButton>
             <GridCommandButton Command="Save" ShowInEdit="true">Save</GridCommandButton>
@@ -27,13 +42,15 @@
 </TelerikGrid>
 
 @code {
-    private List<SampleModel> GridData { get; set; } = new();
+    private List<Product> GridData { get; set; } = new();
+
+    private List<Category> Categories { get; set; } = new();
 
     private int LastId { get; set; }
 
     private void OnGridUpdate(GridCommandEventArgs args)
     {
-        var updatedItem = (SampleModel)args.Item;
+        var updatedItem = (Product)args.Item;
         var originalItemIndex = GridData.FindIndex(i => i.Id == updatedItem.Id);
 
         if (originalItemIndex != -1)
@@ -44,7 +61,7 @@
 
     private void OnGridCreate(GridCommandEventArgs args)
     {
-        var createdItem = (SampleModel)args.Item;
+        var createdItem = (Product)args.Item;
 
         createdItem.Id = ++LastId;
 
@@ -53,152 +70,51 @@
 
     private void OnGridDelete(GridCommandEventArgs args)
     {
-        var deletedItem = (SampleModel)args.Item;
+        var deletedItem = (Product)args.Item;
 
         GridData.Remove(deletedItem);
     }
 
     protected override void OnInitialized()
     {
+        var categoryCount = 3;
+
+        for (int i = 1; i <= categoryCount; i++)
+        {
+            Categories.Add(new Category() { Id = i, Name = $"Category {i}" });
+        }
+
         var rnd = new Random();
 
         for (int i = 1; i <= 5; i++)
         {
-            GridData.Add(new SampleModel()
+            GridData.Add(new Product()
             {
                 Id = ++LastId,
-                Name = $"Name {LastId}",
-                GroupName = $"Group {LastId % 3 + 1}",
-                Price = rnd.Next(1, 100) * 1.23m,
-                Quantity = rnd.Next(0, 1000),
+                Name = $"Product {LastId}",
+                CategoryId = rnd.Next(1, categoryCount + 1),
+                Quantity = (short)rnd.Next(0, 1000),
                 StartDate = DateTime.Now.AddDays(-rnd.Next(60, 1000)),
                 IsActive = LastId % 4 > 0
             });
         }
     }
 
-    public class SampleModel
+    public class Product
     {
         public int Id { get; set; }
-        public int? ParentId { get; set; }
+        public int CategoryId { get; set; }
         [Required]
         public string Name { get; set; } = string.Empty;
-        public string GroupName { get; set; } = string.Empty;
         public decimal Price { get; set; }
         public int Quantity { get; set; }
         public DateTime StartDate { get; set; }
         public bool IsActive { get; set; }
     }
-}
 
-@*@using System.ComponentModel.DataAnnotations
-
-    <TelerikGrid Data="@GridData"
-                 EditMode="@GridEditMode.Popup"
-                 OnUpdate="@OnGridUpdate"
-                 OnCreate="@OnGridCreate">
-        <GridToolBarTemplate>
-            <GridCommandButton Command="Add" Icon="@FontIcon.Plus">Add Item</GridCommandButton>
-        </GridToolBarTemplate>
-        <GridColumns>
-            <GridColumn Field="@nameof(Product.Name)" Title="Product" />
-            <GridColumn Field="@nameof(Product.CategoryId)" Title="Category">
-                <Template>
-                    @{ var dataItem = (Product)context; }
-                    @Categories.Find(x => x.Id == dataItem.CategoryId)?.Name
-                </Template>
-                <EditorTemplate>
-                    @{ var dataItem = (Product)context; }
-                    <TelerikDropDownList Data="@Categories"
-                                         @bind-Value="@dataItem.CategoryId"
-                                         ValueField="@nameof(Category.Id)"
-                                         TextField="@nameof(Category.Name)"
-                                         DefaultText="Select Category" />
-                    <TelerikValidationMessage For="@( () => dataItem.CategoryId )" />
-                </EditorTemplate>
-            </GridColumn>
-            <GridColumn Field="@nameof(Product.Stock)" />
-            <GridCommandColumn>
-                <GridCommandButton Command="Edit" Icon="@FontIcon.Pencil">Edit</GridCommandButton>
-                <GridCommandButton Command="Save" Icon="@FontIcon.Save" ShowInEdit="true">Update</GridCommandButton>
-                <GridCommandButton Command="Cancel" Icon="@FontIcon.Cancel" ShowInEdit="true">Cancel</GridCommandButton>
-            </GridCommandColumn>
-        </GridColumns>
-    </TelerikGrid>
-
-    <style>
-        .k-invalid .k-input-value-text {
-            color: red;
-        }
-    </style>
-
-    @code {
-        List<Product> GridData { get; set; } = null!;
-        List<Category> Categories { get; set; } = null!;
-
-        private void OnGridUpdate(GridCommandEventArgs args)
-        {
-            var argsItem = (Product)args.Item;
-            var index = GridData.FindIndex(i => i.Id == argsItem.Id);
-            if (index != -1)
-            {
-                GridData[index] = argsItem;
-            }
-        }
-
-        private void OnGridCreate(GridCommandEventArgs args)
-        {
-            var argsItem = (Product)args.Item;
-
-            argsItem.Id = GridData.Count + 1;
-
-            GridData.Insert(0, argsItem);
-        }
-
-        protected override void OnInitialized()
-        {
-            Categories = new List<Category>();
-
-            var categoryCount = 3;
-
-            for (int i = 1; i <= categoryCount; i++)
-            {
-                Categories.Add(new Category() { Id = i, Name = $"Category {i}" });
-            }
-
-            GridData = new List<Product>();
-
-            var rnd = new Random();
-
-            for (int i = 1; i <= 5; i++)
-            {
-                GridData.Add(new Product()
-                {
-                    Id = i,
-                    Name = $"Product {i}",
-                    CategoryId = rnd.Next(1, categoryCount + 1),
-                    Stock = (short)rnd.Next(0, 1000)
-                });
-            }
-        }
-
-        public class Product
-        {
-            public int Id { get; set; }
-
-            [Required]
-            public int? CategoryId { get; set; }
-
-            [Required]
-            public string Name { get; set; } = string.Empty;
-
-            public short Stock { get; set; }
-        }
-
-        public class Category
-        {
-            public int Id { get; set; }
-            public string Name { get; set; } = string.Empty;
-        }
+    public class Category
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
     }
-*@
+}

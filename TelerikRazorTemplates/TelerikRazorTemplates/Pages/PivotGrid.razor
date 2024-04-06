@@ -24,7 +24,7 @@
 </TelerikGrid>
 
 @code {
-    private List<PivotModel> PivotData { get; set; } = new List<PivotModel>();
+    private List<PivotModel> PivotData { get; set; } = new();
 
     private void OnGridStateInit(GridStateEventArgs<PivotModel> args)
     {

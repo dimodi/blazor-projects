@@ -17,26 +17,21 @@
 </TelerikGrid>
 
 @code {
-    private List<Employee> GridData { get; set; } = new List<Employee>();
+    private List<Employee> GridData { get; set; } = new();
 
     private void OnGridStateInit(GridStateEventArgs<Employee> args)
     {
-        var gridState = new GridState<Employee>();
+        args.GridState.GroupDescriptors = new List<GroupDescriptor>();
 
-        gridState.GroupDescriptors = new List<GroupDescriptor>();
-
-        gridState.GroupDescriptors.Add(new GroupDescriptor()
+        args.GridState.GroupDescriptors.Add(new GroupDescriptor()
         {
             Member = nameof(Employee.Team),
             MemberType = typeof(string)
         });
-
-        args.GridState = gridState;
     }
 
     protected override void OnInitialized()
     {
-        GridData = new List<Employee>();
         var rnd = new Random();
 
         for (int i = 1; i <= 20; i++)

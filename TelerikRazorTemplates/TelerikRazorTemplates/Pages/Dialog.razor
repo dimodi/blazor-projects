@@ -1,10 +1,9 @@
 ﻿@page "/dialog"
 
-<TelerikButton OnClick="@( _ => DialogVisible = true )">Show Dialog</TelerikButton>
+<TelerikButton OnClick="@( () => DialogVisible = true )">Show Dialog</TelerikButton>
 
 <TelerikDialog Visible="@DialogVisible"
                VisibleChanged="@VisibleChanged"
-               @ref="@DialogRef"
                Width="600px"
                ShowCloseButton="true"
                CloseOnOverlayClick="true"
@@ -25,8 +24,6 @@
 
 @code {
     private bool DialogVisible { get; set; }
-
-    private TelerikDialog DialogRef { get; set; } = null!;
 
     private void HandleButtonClick(bool result)
     {

@@ -2,9 +2,6 @@
 
 @using Telerik.Blazor.Components.Editor
 
-<TelerikTextArea @bind-Value="@EditorValue"
-                 Rows="5" />
-
 <TelerikEditor @ref="EditorRef"
                Tools="@EditorTools"
                @bind-Value="@EditorValue"
@@ -18,8 +15,11 @@
     </EditorCustomTools>
 </TelerikEditor>
 
+<TelerikTextArea @bind-Value="@EditorValue"
+                 Rows="5" />
+
 @code {
-    private TelerikEditor EditorRef { get; set; } = null!;
+    private TelerikEditor? EditorRef { get; set; }
 
     private string EditorValue { get; set; } = @"<p>foo</p><p>bar</p>";
 
@@ -36,6 +36,9 @@
 
     private async Task ExecuteInsert()
     {
-        await EditorRef.ExecuteAsync(new HtmlCommandArgs("insertHtml", "<hr />"));
+        if (EditorRef != null)
+        {
+            await EditorRef.ExecuteAsync(new HtmlCommandArgs("insertHtml", "<hr />"));
+        }
     }
 }

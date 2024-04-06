@@ -1,6 +1,8 @@
 ﻿@page "/wizard"
  
-<TelerikWizard Width="600px" Height="300px" @bind-Value="@WizardStep">
+<TelerikWizard @bind-Value="@WizardStep"
+               Width="600px"
+               Height="300px">
     <WizardSteps>
         <WizardStep Text="1" Label="Label 1">
             <Content>
@@ -21,5 +23,5 @@
 </TelerikWizard>
 
 @code {
-    int WizardStep = 0;
+    private int WizardStep { get; set; }
 }

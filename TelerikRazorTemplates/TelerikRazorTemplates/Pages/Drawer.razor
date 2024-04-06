@@ -2,19 +2,23 @@
 
 <TelerikButton OnClick="@ToggleDrawer" Icon="@SvgIcon.Menu"></TelerikButton>
 
-<TelerikDrawer @ref="@MyDrawer" Data="@Data" MiniMode="true" Mode="@DrawerMode.Push" @bind-Expanded="@Expanded">
+<TelerikDrawer @ref="@DrawerRef"
+               Data="@DrawerData"
+               Mode="@DrawerMode.Push"
+               MiniMode="true"
+               @bind-Expanded="@Expanded">
     <DrawerContent>
-        Current drawer state:
+        Current Drawer state:
         <strong>@(Expanded ? "Expanded" : "Mini")</strong>
     </DrawerContent>
 </TelerikDrawer>
 
 @code {
-    private TelerikDrawer<DrawerItem> MyDrawer { get; set; } = null!;
+    private TelerikDrawer<DrawerItem>? DrawerRef { get; set; }
 
     private bool Expanded { get; set; }
 
-    private IEnumerable<DrawerItem> Data { get; set; } = new List<DrawerItem> {
+    private IEnumerable<DrawerItem> DrawerData { get; set; } = new List<DrawerItem> {
         new DrawerItem { Text = "Inbox", Icon = SvgIcon.Inbox },
         new DrawerItem { Separator = true},
         new DrawerItem { Text = "Notifications", Icon = SvgIcon.Bell },
@@ -24,7 +28,13 @@
         new DrawerItem { Text = "Favourites", Icon = SvgIcon.StarOutline }
     };
 
-    private async Task ToggleDrawer() => await MyDrawer.ToggleAsync();
+    private async Task ToggleDrawer()
+    {
+        if (DrawerRef != null)
+        {
+            await DrawerRef.ToggleAsync();
+        }
+    }
 
     public class DrawerItem
     {

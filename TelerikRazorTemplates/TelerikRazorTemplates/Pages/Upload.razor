@@ -1,8 +1,10 @@
 ﻿@page "/upload"
 
+@inject NavigationManager NavigationManager
+
 <h2>Any file, provide a download link</h2>
-<TelerikUpload SaveUrl="api/upload/save"
-               RemoveUrl="api/upload/remove"
+<TelerikUpload SaveUrl="@ToAbsoluteUrl("save")"
+               RemoveUrl="@ToAbsoluteUrl("remove")"
                MaxFileSize="@( 10 * 1024 * 1024 )"
                OnSuccess="@OnUploadSuccessForDownLoad">
 </TelerikUpload>
@@ -18,7 +20,7 @@
 }
 
 <h2>Up to 1 KB, see file content</h2>
-<TelerikUpload SaveUrl="api/upload/processcontent"
+<TelerikUpload SaveUrl="@ToAbsoluteUrl("processcontent")"
                OnSuccess="@OnUploadSuccessForShow"
                MaxFileSize="@( 1 * 1024 )">
 </TelerikUpload>
@@ -51,202 +53,9 @@
             Response += args.Request.ResponseText;
         }
     }
+
+    private string ToAbsoluteUrl(string url)
+    {
+        return $"{NavigationManager.BaseUri}{url}";
+    }
 }
-
-@*@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
-    @using Microsoft.AspNetCore.Http
-    @inject IHttpContextAccessor httpContextAccessor
-
-    <TelerikUpload SaveUrl="api/upload/save"
-                   RemoveUrl="api/upload/remove"
-                   OnUpload="@AddAntiForgeryHeader"
-                   OnRemove="@AddAntiForgeryHeader">
-    </TelerikUpload>
-
-    @code {
-        private string AntiForgeryToken { get; set; } = string.Empty;
-
-        private async Task AddAntiForgeryHeader(UploadEventArgs args)
-        {
-            args.RequestHeaders.Add("X-CSRF-TOKEN-HEADERNAME", AntiForgeryToken);
-        }
-
-        protected override void OnInitialized()
-        {
-            AntiForgeryToken = Antiforgery.GetAndStoreTokens(httpContextAccessor.HttpContext!).RequestToken!;
-
-            base.OnInitialized();
-        }
-    }*@
-
-
-
-@*@inject NavigationManager NavigationManager
-
-    <TelerikUpload SaveUrl="@SaveUrl" RemoveUrl="@RemoveUrl"
-                   SaveField="file" RemoveField="fileToRemove"
-                   AllowedExtensions="@( new List<string>() { ".jpg", ".png", ".gif" } )"
-                   MaxFileSize="@( 10 * 1024 * 1024 )">
-    </TelerikUpload>
-
-    @code {
-        // One way to define relative paths is to put the desired URL here.
-        // This can be a full URL such as https://mydomain/myendpoint/save
-        //public string SaveUrl => ToAbsoluteUrl("api/upload/save");
-        public string SaveUrl = "/api/upload/save";
-        public string RemoveUrl => ToAbsoluteUrl("api/upload/remove");
-
-        public string ToAbsoluteUrl(string url)
-        {
-            return $"{NavigationManager.BaseUri}{url}";
-        }
-    }
-*@
-
-@*<label>
-        <TelerikCheckBox @bind-Value="@ShouldCancelUpload" />
-        Cancel Uploading
-    </label>
-
-    <label>
-        <TelerikCheckBox @bind-Value="@ShouldCancelCancel" />
-        Cancel Cancelling
-    </label>
-
-    <TelerikUpload SaveUrl="api/upload/save"
-                   RemoveUrl="api/upload/remove"
-                   MaxFileSize="@( 16 * 1024 * 1024 )"
-                   MinFileSize="@( 1 * 1024 )"
-                   AutoUpload="true"
-                   OnCancel="@OnUploadCancel"
-                   OnClear="@OnUploadClear"
-                   OnError="@OnUploadError"
-                   OnProgress="@OnUploadProgress"
-                   OnRemove="@OnUploadRemove"
-                   OnSelect="@OnUploadSelect"
-                   OnSuccess="@OnUploadSuccess"
-                   OnUpload="@OnUploadUpload">
-    </TelerikUpload>
-
-    @code {
-        private bool ShouldCancelUpload { get; set; }
-
-        private bool ShouldCancelCancel { get; set; }
-
-        private async Task OnUploadCancel(UploadCancelEventArgs args)
-        {
-            var file = args.Files.FirstOrDefault();
-
-            if (file.Size < 2 * 1024 * 1024 && file.Progress > 50)
-            {
-                args.IsCancelled = true;
-                Console.WriteLine($"OnCancel event cancelled conditionally.");
-            }
-            else
-            {
-                Console.WriteLine($"OnCancel event for {file.Name}");
-            }
-        }
-
-        private async Task OnUploadClear(UploadClearEventArgs args)
-        {
-            if (args.Files.Count > 3)
-            {
-                args.IsCancelled = true;
-                Console.WriteLine("OnClear event cancelled conditionally.");
-            }
-            else
-            {
-                Console.WriteLine("OnClear event fired for:");
-
-                foreach (var file in args.Files)
-                {
-                    Console.WriteLine($"  Name: {file.Name}, Size: {file.Size}");
-                }
-            }
-        }
-
-        private async Task OnUploadError(UploadErrorEventArgs args)
-        {
-            Console.WriteLine($"OnError event for:");
-            Console.WriteLine($"  File: {args.Files.FirstOrDefault().Name}");
-            Console.WriteLine($"  Operation: {args.Operation}");
-            Console.WriteLine($"  Response Status Code: {args.Request.Status}");
-            Console.WriteLine($"  Response Message: {args.Request.StatusText}");
-        }
-
-        private async Task OnUploadProgress(UploadProgressEventArgs args)
-        {
-            Console.WriteLine($"OnProgress event for {args.Files.FirstOrDefault().Name}");
-            Console.WriteLine($"  File: {args.Files.FirstOrDefault().Name}");
-            Console.WriteLine($"  Progress: {args.Progress}");
-        }
-
-        private async Task OnUploadRemove(UploadEventArgs args)
-        {
-            var file = args.Files.FirstOrDefault();
-
-            if (file.Extension == ".pdf")
-            {
-                args.IsCancelled = true;
-                Console.WriteLine($"OnRemove event cancelled for {file.Name}");
-            }
-            else
-            {
-                Console.WriteLine($"OnRemove event for {file.Name}");
-
-                args.RequestData.Add("dataKey", "dataValue");
-                args.RequestHeaders.Add("headerKey", "headerValue");
-
-                // Get these in the controller:
-                //string headerValue = Request.Headers["headerKey"];
-                //string formData = Request.Form["dataKey"];
-            }
-        }
-
-        private async Task OnUploadSelect(UploadSelectEventArgs args)
-        {
-            Console.WriteLine("OnSelect event for:");
-
-            foreach (var file in args.Files)
-            {
-                Console.WriteLine($"  Name: {file.Name}, Size: {file.Size}");
-                file.Name = $"New client-side name for {file.Name}";
-            }
-
-            if (args.Files.Count > 5)
-            {
-                args.IsCancelled = true;
-                Console.WriteLine("OnSelect event cancelled conditionally.");
-            }
-        }
-
-        private async Task OnUploadSuccess(UploadSuccessEventArgs args)
-        {
-            Console.WriteLine($"OnSuccess event for:");
-            Console.WriteLine($"  File: {args.Files.FirstOrDefault().Name}");
-            Console.WriteLine($"  Operation: {args.Operation}");
-            Console.WriteLine($"  Response Status Code: {args.Request.Status}");
-        }
-
-        private async Task OnUploadUpload(UploadEventArgs args)
-        {
-            if (ShouldCancelUpload)
-            {
-                args.IsCancelled = true;
-                Console.WriteLine("OnUpload event cancelled conditionally.");
-            }
-            else if (args.Files.Any())
-            {
-                Console.WriteLine($"OnUpload event for {args.Files.FirstOrDefault().Name}.");
-
-                args.RequestData.Add("dataKey", "dataValue");
-                args.RequestHeaders.Add("headerKey", "headerValue");
-
-                // Get these in the controller:
-                //string headerValue = Request.Headers["headerKey"];
-                //string formData = Request.Form["dataKey"];
-            }
-        }
-    }
-*@
