@@ -3,8 +3,8 @@
 @inject NavigationManager NavigationManager
 
 <h2>Any file, provide a download link</h2>
-<TelerikUpload SaveUrl="@ToAbsoluteUrl("save")"
-               RemoveUrl="@ToAbsoluteUrl("remove")"
+<TelerikUpload SaveUrl="@ToAbsoluteUrl("api/upload/save")"
+               RemoveUrl="@ToAbsoluteUrl("api/upload/remove")"
                MaxFileSize="@( 10 * 1024 * 1024 )"
                OnSuccess="@OnUploadSuccessForDownLoad">
 </TelerikUpload>
@@ -20,7 +20,7 @@
 }
 
 <h2>Up to 1 KB, see file content</h2>
-<TelerikUpload SaveUrl="@ToAbsoluteUrl("processcontent")"
+<TelerikUpload SaveUrl="@ToAbsoluteUrl("api/upload/processcontent")"
                OnSuccess="@OnUploadSuccessForShow"
                MaxFileSize="@( 1 * 1024 )">
 </TelerikUpload>

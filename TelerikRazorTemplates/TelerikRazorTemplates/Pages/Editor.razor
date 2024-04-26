@@ -42,3 +42,49 @@
         }
     }
 }
+
+@*@using Telerik.Windows.Documents.Flow.FormatProviders.Docx
+    @using Telerik.Windows.Documents.Flow.FormatProviders.Html
+    @using Telerik.Windows.Documents.Flow.Model
+
+    <PageTitle>Index</PageTitle>
+
+    <TelerikFileSelect OnSelect="@OnFileSelectSelect"
+                       Accept=".docx"
+                       AllowedExtensions="@( new List<string> { ".docx" } )" />
+
+    <h2>Editor</h2>
+
+    <TelerikEditor @bind-Value="@EditorValue"
+                   Height="400px" />
+
+    <h2>Editor Value</h2>
+
+    <TelerikTextArea @bind-Value="@EditorValue" Class="height400" />
+
+    <style>
+        .height400 {
+            height: 400px;
+        }
+    </style>
+
+    @code {
+        private string EditorValue { get; set; } = string.Empty;
+
+        private async Task OnFileSelectSelect(FileSelectEventArgs args)
+        {
+            var file = args.Files.First();
+            var byteArray = new byte[file.Size];
+            await using MemoryStream ms = new MemoryStream(byteArray);
+            await file.Stream.CopyToAsync(ms);
+
+            DocxFormatProvider docxFormatProvider = new DocxFormatProvider();
+
+            RadFlowDocument doc = docxFormatProvider.Import(ms);
+
+            HtmlFormatProvider htmlFormatProvider = new HtmlFormatProvider();
+
+            EditorValue = htmlFormatProvider.Export(doc);
+        }
+    }
+*@
