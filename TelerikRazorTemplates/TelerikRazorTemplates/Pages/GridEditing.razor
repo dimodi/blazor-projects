@@ -84,17 +84,15 @@
             Categories.Add(new Category() { Id = i, Name = $"Category {i}" });
         }
 
-        var rnd = new Random();
-
         for (int i = 1; i <= 5; i++)
         {
             GridData.Add(new Product()
             {
                 Id = ++LastId,
                 Name = $"Product {LastId}",
-                CategoryId = rnd.Next(1, categoryCount + 1),
-                Quantity = (short)rnd.Next(0, 1000),
-                StartDate = DateTime.Now.AddDays(-rnd.Next(60, 1000)),
+                CategoryId = Random.Shared.Next(1, categoryCount + 1),
+                Quantity = (short)Random.Shared.Next(0, 1000),
+                StartDate = DateTime.Now.AddDays(-Random.Shared.Next(60, 1000)),
                 IsActive = LastId % 4 > 0
             });
         }

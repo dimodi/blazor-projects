@@ -46,7 +46,7 @@
 
         ExpandedItems = allItemsToExpand;
 
-        ItemToExpand = rnd.Next(1, FlatData.Count() + 1);
+        ItemToExpand = Random.Shared.Next(1, FlatData.Count() + 1);
     }
 
     private void ExpandRoot()
@@ -72,7 +72,7 @@
     {
         FlatData = LoadFlat();
 
-        ItemToExpand = rnd.Next(1, FlatData.Count() + 1);
+        ItemToExpand = Random.Shared.Next(1, FlatData.Count() + 1);
     }
 
     #region TreeView data generation
@@ -182,7 +182,7 @@
         //ExpandedItems = ExpandedItems.Union(allItemsToExpand);
         ExpandedItems = allItemsToExpand;
 
-        ItemToExpand = rnd.Next(1, FlatData.Count() + 1);
+        ItemToExpand = Random.Shared.Next(1, FlatData.Count() + 1);
     }
 
     private void ExpandAll()
@@ -219,7 +219,7 @@
     {
         FlatData = LoadFlat();
 
-        ItemToExpand = rnd.Next(1, FlatData.Count() + 1);
+        ItemToExpand = Random.Shared.Next(1, FlatData.Count() + 1);
 
         TreeViewTimer = new Timer(2000);
         TreeViewTimer.Elapsed += AutoExpandItem;

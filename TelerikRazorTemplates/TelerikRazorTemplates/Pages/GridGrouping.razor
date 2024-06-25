@@ -32,8 +32,6 @@
 
     protected override void OnInitialized()
     {
-        var rnd = new Random();
-
         for (int i = 1; i <= 20; i++)
         {
             GridData.Add(new Employee()
@@ -41,7 +39,7 @@
                 Id = i,
                 Name = "Name " + i,
                 Team = "Team " + (i % 4 + 1),
-                Salary = (decimal)rnd.Next(1000, 3000),
+                Salary = (decimal)Random.Shared.Next(1000, 3000),
                 OnVacation = i % 3 == 0
             });
         }

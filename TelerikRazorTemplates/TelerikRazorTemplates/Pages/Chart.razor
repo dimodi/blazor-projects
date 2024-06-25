@@ -52,7 +52,6 @@
 
     private void GenerateData()
     {
-        var rnd = new Random();
         var now = DateTime.Today;
         var monthsBack = 12;
 
@@ -64,7 +63,7 @@
             {
                 Id = i,
                 Product = "Product 1",
-                Revenue = rnd.Next(1, 1000),
+                Revenue = Random.Shared.Next(1, 1000),
                 TimePeriod = dateTimeValue
             });
 
@@ -72,7 +71,7 @@
             {
                 Id = i,
                 Product = "Product 2",
-                Revenue = rnd.Next(1, 1000),
+                Revenue = Random.Shared.Next(1, 1000),
                 TimePeriod = dateTimeValue
             });
 
@@ -80,7 +79,7 @@
             {
                 Id = i,
                 Product = "Product 3",
-                Revenue = rnd.Next(1, 1000),
+                Revenue = Random.Shared.Next(1, 1000),
                 TimePeriod = dateTimeValue
             });
         }
@@ -175,7 +174,6 @@
         Series2Data = new List<SalesData>();
         Series3Data = new List<SalesData>();
 
-        var rnd = new Random();
         var now = DateTime.Today;
         var monthsBack = 12;
 
@@ -187,7 +185,7 @@
             {
                 Id = i,
                 Product = "Product 1",
-                Revenue = rnd.Next(1, 1000),
+                Revenue = Random.Shared.Next(1, 1000),
                 TimePeriod = dateTimeValue
             });
 
@@ -195,7 +193,7 @@
             {
                 Id = i,
                 Product = "Product 2",
-                Revenue = rnd.Next(1, 1000),
+                Revenue = Random.Shared.Next(1, 1000),
                 TimePeriod = dateTimeValue
             });
 
@@ -203,7 +201,7 @@
             {
                 Id = i,
                 Product = "Product 3",
-                Revenue = rnd.Next(1, 1000),
+                Revenue = Random.Shared.Next(1, 1000),
                 TimePeriod = dateTimeValue
             });
         }
@@ -298,7 +296,6 @@
 
     private void GenerateData()
     {
-        var rnd = new Random();
         var now = DateTime.Today;
         var monthsBack = 12;
 
@@ -310,7 +307,7 @@
             {
                 Id = i,
                 Product = "Product 1",
-                Revenue = rnd.Next(1, 1000),
+                Revenue = Random.Shared.Next(1, 1000),
                 TimePeriod = dateTimeValue
             });
 
@@ -318,7 +315,7 @@
             {
                 Id = i,
                 Product = "Product 2",
-                Revenue = rnd.Next(1, 1000),
+                Revenue = Random.Shared.Next(1, 1000),
                 TimePeriod = dateTimeValue
             });
 
@@ -326,7 +323,7 @@
             {
                 Id = i,
                 Product = "Product 3",
-                Revenue = rnd.Next(1, 1000),
+                Revenue = Random.Shared.Next(1, 1000),
                 TimePeriod = dateTimeValue
             });
         }

@@ -7,8 +7,6 @@
 
     protected override void OnInitialized()
     {
-        var rnd = new Random();
-
         for (int i = 1; i <= 96; i++)
         {
             Employees.Add(new Employee()
@@ -27,8 +25,7 @@
     private string Word(int minLenth = 3, int maxLength = 7)
     {
         var result = "";
-        var rnd = new Random();
-        var wordLength = rnd.Next(minLenth, maxLength);
+        var wordLength = Random.Shared.Next(minLenth, maxLength);
 
         result += Letter(true);
 
@@ -42,17 +39,15 @@
 
     private string Vowel()
     {
-        var rnd = new Random();
-        return Vowels.ElementAt(rnd.Next(0, Vowels.Count));
+        return Vowels.ElementAt(Random.Shared.Next(0, Vowels.Count));
     }
 
     private string Letter(bool upperCase = false)
     {
-        var rnd = new Random();
         var minAsciiCode = upperCase ? 65 : 97;
         var maxAsciiCode = upperCase ? 91 : 122;
 
-        return ((char)rnd.Next(minAsciiCode, maxAsciiCode)).ToString();
+        return ((char)Random.Shared.Next(minAsciiCode, maxAsciiCode)).ToString();
     }
 
     public class Employee

@@ -46,16 +46,15 @@
         var dataItemCount = 100;
         var productCount = 5 + 1;
         var cityCount = 5 + 1;
-        var rnd = new Random();
 
         for (int i = 1; i <= dataItemCount; i++)
         {
             PivotData.Add(new PivotModel()
             {
-                Product = $"Product {rnd.Next(1, productCount)}",
-                City = $"City {rnd.Next(1, cityCount)}",
-                ContractDate = DateTime.Now.AddDays(-rnd.Next(1, 31)).AddMonths(-rnd.Next(1, 12)).AddYears(-rnd.Next(0, 5)),
-                ContractValue = rnd.Next(123, 987)
+                Product = $"Product {Random.Shared.Next(1, productCount)}",
+                City = $"City {Random.Shared.Next(1, cityCount)}",
+                ContractDate = DateTime.Now.AddDays(-Random.Shared.Next(1, 31)).AddMonths(-Random.Shared.Next(1, 12)).AddYears(-Random.Shared.Next(0, 5)),
+                ContractValue = Random.Shared.Next(123, 987)
             });
         }
 
