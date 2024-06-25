@@ -223,3 +223,120 @@
         public decimal Revenue { get; set; }
     }
 }*@
+
+@*@inject IJSRuntime js
+
+<script nonce="BL9992" suppress-error="BL9992">//
+    function getChartImage() {
+        var c = document.querySelector(".exportable-chart canvas");
+        return c.toDataURL("image/png");
+    }
+//</script>
+
+<PageTitle>Index</PageTitle>
+
+<TelerikButton OnClick="@OnButtonClick">Test</TelerikButton>
+
+<img src="@ImageDataUrl" width="300" />
+
+<TelerikChart RenderAs="@RenderingMode.Canvas" Class="exportable-chart">
+    <ChartSeriesItems>
+        <ChartSeries Type="ChartSeriesType.Line"
+                     Data="@Series1Data"
+                     Field="@nameof(SalesData.Revenue)"
+                     CategoryField="@nameof(SalesData.TimePeriod)"
+                     Name="Product 1">
+        </ChartSeries>
+        <ChartSeries Type="ChartSeriesType.Column"
+                     Data="@Series2Data"
+                     Field="@nameof(SalesData.Revenue)"
+                     CategoryField="@nameof(SalesData.TimePeriod)"
+                     Name="Product 2">
+        </ChartSeries>
+        <ChartSeries Type="ChartSeriesType.Area"
+                     Data="@Series3Data"
+                     Field="@nameof(SalesData.Revenue)"
+                     CategoryField="@nameof(SalesData.TimePeriod)"
+                     Name="Product 3">
+        </ChartSeries>
+    </ChartSeriesItems>
+
+    <ChartCategoryAxes>
+        <ChartCategoryAxis Type="@ChartCategoryAxisType.Date"></ChartCategoryAxis>
+    </ChartCategoryAxes>
+
+    <ChartValueAxes>
+        <ChartValueAxis Max="1200">
+            <ChartValueAxisLabels Format="c2" />
+        </ChartValueAxis>
+    </ChartValueAxes>
+
+    <ChartTitle Text="Revenue per Product"></ChartTitle>
+
+    <ChartLegend Position="ChartLegendPosition.Right">
+    </ChartLegend>
+</TelerikChart>
+
+@code {
+    private List<SalesData> Series1Data { get; set; } = new();
+    private List<SalesData> Series2Data { get; set; } = new();
+    private List<SalesData> Series3Data { get; set; } = new();
+
+    private string ImageDataUrl { get; set; } = string.Empty;
+
+    private async Task OnButtonClick()
+    {
+        ImageDataUrl = await js.InvokeAsync<string>("getChartImage");
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        GenerateData();
+
+        await base.OnInitializedAsync();
+    }
+
+    private void GenerateData()
+    {
+        var rnd = new Random();
+        var now = DateTime.Today;
+        var monthsBack = 12;
+
+        for (int i = 1; i <= monthsBack; i++)
+        {
+            var dateTimeValue = now.AddMonths(-monthsBack + i);
+
+            Series1Data.Add(new SalesData()
+            {
+                Id = i,
+                Product = "Product 1",
+                Revenue = rnd.Next(1, 1000),
+                TimePeriod = dateTimeValue
+            });
+
+            Series2Data.Add(new SalesData()
+            {
+                Id = i,
+                Product = "Product 2",
+                Revenue = rnd.Next(1, 1000),
+                TimePeriod = dateTimeValue
+            });
+
+            Series3Data.Add(new SalesData()
+            {
+                Id = i,
+                Product = "Product 3",
+                Revenue = rnd.Next(1, 1000),
+                TimePeriod = dateTimeValue
+            });
+        }
+    }
+
+    public class SalesData
+    {
+        public int Id { get; set; }
+        public string Product { get; set; } = string.Empty;
+        public DateTime TimePeriod { get; set; }
+        public decimal Revenue { get; set; }
+    }
+}*@
