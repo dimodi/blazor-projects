@@ -1,4 +1,6 @@
-﻿
+﻿@page "/names"
+
+<TelerikGrid Data="@Employees" AutoGenerateColumns="true" />
 
 @code {
     private List<int> SelectedIds { get; set; } = new();
@@ -7,47 +9,86 @@
 
     protected override void OnInitialized()
     {
-        for (int i = 1; i <= 96; i++)
+        for (int i = 1; i <= 10; i++)
         {
             Employees.Add(new Employee()
             {
                 Id = i,
-                FirstName = $"{Letter(true)}{Vowel()}{Letter()}{Letter()}{Vowel()}{Letter()} {i}",
-                LastName = $"{Letter(true)}{Vowel()}{Letter()}{Letter()}{Vowel()}{Letter()} {i}"
+                FirstName = $"{Word(minLength: 3, maxLength: 9)}",
+                LastName = $"{Word()}",
+                Code = $"{Word(alternateVowels: false, minLength: 5, maxLength: 5).ToUpperInvariant()}"
             });
         }
 
         base.OnInitialized();
     }
 
-    private List<string> Vowels => new List<string>() { "a", "e", "i", "o", "u", "y" };
+    private readonly List<string> Vowels = new List<string>() { "a", "e", "i", "o", "u", "y" };
+    private readonly List<string> Consonants = new List<string>() { "b", "c", "d", "f", "g", "h", "j", "k", "l", "m", "n", "p", "q", "r", "s", "t", "v", "w", "x", "z" };
 
-    private string Word(int minLenth = 3, int maxLength = 7)
+    private const int AsciiCode_A = 65;
+    private const int AsciiCode_Z = 90;
+    private const int AsciiCode_a = 97;
+    private const int AsciiCode_z = 122;
+
+    private string Word(bool alternateVowels = true, bool capitalize = true, int minLength = 3, int maxLength = 7)
     {
-        var result = "";
-        var wordLength = Random.Shared.Next(minLenth, maxLength);
+        string result = "";
+        int wordLength = Random.Shared.Next(minLength, maxLength);
 
-        result += Letter(true);
-
-        for (int i = 1; i <= wordLength; i++)
+        if (alternateVowels)
         {
-            result += Letter();
+            bool firstLetterIsVowel = Random.Shared.Next(0, 2) % 2 == 0;
+
+            result += firstLetterIsVowel ? Vowel(upperCase: capitalize) : Consonant(upperCase: capitalize);
+
+            for (int i = 1; i < wordLength; i++)
+            {
+                result += i % 2 != Convert.ToInt32(firstLetterIsVowel) ? Vowel() : Consonant();
+            }
+        }
+        else
+        {
+            result += Letter(upperCase: capitalize);
+
+            for (int i = 1; i < wordLength; i++)
+            {
+                result += Letter();
+            }
         }
 
-        return "";
+        return result;
     }
 
-    private string Vowel()
+    private string Vowel(bool upperCase = false)
     {
-        return Vowels.ElementAt(Random.Shared.Next(0, Vowels.Count));
+        string result = Vowels.ElementAt(Random.Shared.Next(0, Vowels.Count));
+
+        return upperCase ? result.ToUpperInvariant() : result;
     }
 
-    private string Letter(bool upperCase = false)
+    private string Consonant(bool upperCase = false)
     {
-        var minAsciiCode = upperCase ? 65 : 97;
-        var maxAsciiCode = upperCase ? 91 : 122;
+        string result = Consonants.ElementAt(Random.Shared.Next(0, Consonants.Count));
 
-        return ((char)Random.Shared.Next(minAsciiCode, maxAsciiCode)).ToString();
+        return upperCase ? result.ToUpperInvariant() : result;
+    }
+
+    private string Letter(bool upperCase = false, bool? vowel = null)
+    {
+        string result = "";
+
+        if (vowel.HasValue)
+        {
+            result = vowel.Value ? Vowel() : Consonant();
+
+            return upperCase ? result.ToUpperInvariant() : result;
+        }
+
+        int minAsciiCode = upperCase ? AsciiCode_A : AsciiCode_a;
+        int maxAsciiCode = upperCase ? AsciiCode_Z : AsciiCode_z;
+
+        return ((char)Random.Shared.Next(minAsciiCode, maxAsciiCode + 1)).ToString();
     }
 
     public class Employee
@@ -55,5 +96,6 @@
         public int Id { get; set; }
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
+        public string Code { get; set; } = string.Empty;
     }
 }
