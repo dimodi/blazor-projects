@@ -4,17 +4,18 @@
 
 @implements IDisposable
 
-<TelerikButton OnClick="@OnButtonClick1">Update Editor Value 1</TelerikButton>
+<TelerikButton OnClick="@OnButtonClick1">Update Value 1</TelerikButton>
 
-<button id="button2">Update Editor Value 2</button>
+<button id="button2">Update Value 2</button>
 
-@StringValue
+<p><code>Value</code>: @StringValue</p>
 
 <script suppress-error="BL9992">//
     var dotNet;
 
     function saveDotNetRef(dotNetRef) {
         dotNet = dotNetRef;
+
         var button = document.getElementById("button2");
         if (button) {
             button.addEventListener("click", updateStringValue2);
@@ -22,18 +23,18 @@
     }
 
     function updateStringValue1() {
-        // use this approach if the whole algorithm is triggered by C# code
+        // Use this approach if the algorithm is triggered by C# code.
         return "111 updated value 111";
     }
 
     function updateStringValue2() {
-        // use this approach if the whole algorithm is triggered by client-side code
+        // Use this approach if the algorithm is triggered by JS code.
         dotNet.invokeMethodAsync("UpdateStringValue2", "222 updated value 222");
     }
 //</script>
 
 @code {
-    // replace "Index" with the actual .razor file name
+    // Replace <...> with the actual component name
     private DotNetObjectReference<JavaScript>? DotNetRef;
 
     private string StringValue { get; set; } = "initial string value";

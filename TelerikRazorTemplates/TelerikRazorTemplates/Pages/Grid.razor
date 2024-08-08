@@ -23,9 +23,7 @@
 
     private async Task OnGridRead(GridReadEventArgs args)
     {
-        await Task.Delay(200);
-
-        DataSourceResult result = GridData.ToDataSourceResult(args.Request);
+        DataSourceResult result = await GridData.ToDataSourceResultAsync(args.Request);
 
         args.Data = result.Data;
         args.Total = result.Total;

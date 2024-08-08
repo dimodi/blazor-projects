@@ -2,36 +2,30 @@
 
 <TelerikButton OnClick="@( () => DialogVisible = true )">Show Dialog</TelerikButton>
 
-<TelerikDialog Visible="@DialogVisible"
-               VisibleChanged="@VisibleChanged"
-               Width="600px"
+<TelerikDialog @bind-Visible="@DialogVisible"
+               Width="300px"
                ShowCloseButton="true"
                CloseOnOverlayClick="true"
                ButtonsLayout="@DialogButtonsLayout.End">
     <DialogTitle>
-        Title
+        Dialog Title
     </DialogTitle>
     <DialogContent>
-        <p>Text</p>
+        <p>Dialog Content</p>
     </DialogContent>
     <DialogButtons>
-        <TelerikButton OnClick="@( () => HandleButtonClick(true) )"
-                       ThemeColor="@ThemeConstants.Button.ThemeColor.Success">Yes</TelerikButton>
-        <TelerikButton OnClick="@( () => HandleButtonClick(false) )"
-                       ThemeColor="@ThemeConstants.Button.ThemeColor.Error">No</TelerikButton>
+        <TelerikButton OnClick="@( () => OnDialogButtonClick(true) )"
+                       ThemeColor="@ThemeConstants.Button.ThemeColor.Success">OK</TelerikButton>
+        <TelerikButton OnClick="@( () => OnDialogButtonClick(false) )"
+                       ThemeColor="@ThemeConstants.Button.ThemeColor.Error">Cancel</TelerikButton>
     </DialogButtons>
 </TelerikDialog>
 
 @code {
     private bool DialogVisible { get; set; }
 
-    private void HandleButtonClick(bool result)
+    private void OnDialogButtonClick(bool result)
     {
         DialogVisible = false;
-    }
-
-    private void VisibleChanged(bool newVisible)
-    {
-        DialogVisible = newVisible;
     }
 }

@@ -4,19 +4,21 @@
 
 <TelerikDrawer @ref="@DrawerRef"
                Data="@DrawerData"
+               @bind-Expanded="@DrawerExpanded"
                Mode="@DrawerMode.Push"
-               MiniMode="true"
-               @bind-Expanded="@Expanded">
+               MiniMode="true">
     <DrawerContent>
-        Current Drawer state:
-        <strong>@(Expanded ? "Expanded" : "Mini")</strong>
+        <p>
+            Current Drawer state:
+            <strong>@(DrawerExpanded ? "Expanded" : "Mini")</strong>
+        </p>
     </DrawerContent>
 </TelerikDrawer>
 
 @code {
     private TelerikDrawer<DrawerItem>? DrawerRef { get; set; }
 
-    private bool Expanded { get; set; }
+    private bool DrawerExpanded { get; set; } = true;
 
     private IEnumerable<DrawerItem> DrawerData { get; set; } = new List<DrawerItem> {
         new DrawerItem { Text = "Inbox", Icon = SvgIcon.Inbox },

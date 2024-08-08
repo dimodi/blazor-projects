@@ -12,21 +12,21 @@
         <FormItem Field="@nameof(Person.Id)" Enabled="false"></FormItem>
         <FormItem Field="@nameof(Person.FirstName)" LabelText="First Name"></FormItem>
         <FormItem Field="@nameof(Person.LastName)" LabelText="Last Name"></FormItem>
-        <FormItem Field="@nameof(Person.BirthDate)" LabelText="Date of Birth"></FormItem>
+        <FormItem Field="@nameof(Person.BirthDate)" LabelText="Birth Date"></FormItem>
     </FormItems>
 </TelerikForm>
 
 @code {
-    private Person Employee = new Person();
+    private Person? Employee { get; set; }
 
     protected override void OnInitialized()
     {
         Employee = new Person()
         {
             Id = 1,
-            FirstName = "John",
-            LastName = "Doe",
-            BirthDate = DateTime.Today.AddYears(-30)
+            //FirstName = "John",
+            //LastName = "Doe",
+            //BirthDate = DateTime.Today.AddYears(-30)
         };
 
         base.OnInitialized();
@@ -47,6 +47,6 @@
         public string LastName { get; set; } = string.Empty;
 
         [Required]
-        public DateTime BirthDate { get; set; } = DateTime.Today;
+        public DateTime? BirthDate { get; set; }
     }
 }

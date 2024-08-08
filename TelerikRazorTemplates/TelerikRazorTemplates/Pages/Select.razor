@@ -25,6 +25,7 @@
                     TextField="@nameof(ListItem.Text)"
                     ValueField="@nameof(ListItem.Id)"
                     GroupField="@nameof(ListItem.Category)"
+                    AutoClose="false"
                     Width="600px" />
 
 @code {
@@ -36,9 +37,7 @@
 
     private async Task OnSelectRead(ReadEventArgs args)
     {
-        await Task.Delay(1);
-
-        DataSourceResult result = ListItems.ToDataSourceResult(args.Request);
+        DataSourceResult result = await ListItems.ToDataSourceResultAsync(args.Request);
 
         args.Data = result.Data;
         args.Total = result.Total;

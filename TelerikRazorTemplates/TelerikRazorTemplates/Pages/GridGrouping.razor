@@ -11,7 +11,7 @@
     <GridColumns>
         <GridColumn Field="@nameof(Employee.Name)" />
         <GridColumn Field="@nameof(Employee.Team)" />
-        <GridColumn Field="@nameof(Employee.Salary)" />
+        <GridColumn Field="@nameof(Employee.Salary)" DisplayFormat="{0:C2}" />
         <GridColumn Field="@nameof(Employee.OnVacation)" />
     </GridColumns>
 </TelerikGrid>
@@ -39,7 +39,7 @@
                 Id = i,
                 Name = "Name " + i,
                 Team = "Team " + (i % 4 + 1),
-                Salary = (decimal)Random.Shared.Next(1000, 3000),
+                Salary = Random.Shared.Next(1000, 3000),
                 OnVacation = i % 3 == 0
             });
         }

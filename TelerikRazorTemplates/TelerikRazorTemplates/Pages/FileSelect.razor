@@ -6,10 +6,9 @@
 
 @inject IWebHostEnvironment HostingEnvironment
 
-<TelerikFileSelect OnSelect="@OnFileSelect"
+<TelerikFileSelect AllowedExtensions="@AllowedExtensions"
                    OnRemove="@OnFileRemove"
-                   AllowedExtensions="@AllowedExtensions">
-</TelerikFileSelect>
+                   OnSelect="@OnFileSelect" />
 
 @code {
     private List<string> AllowedExtensions { get; set; } = new List<string>() { ".jpg", ".jpeg", ".png", ".gif", ".txt" };
@@ -28,39 +27,41 @@
         }
     }
 
-    private async Task OnFileRemove(FileSelectEventArgs args)
+    private void OnFileRemove(FileSelectEventArgs args)
     {
         foreach (var file in args.Files)
         {
-            // If you're still uploading the file, cancel the process first.
             Tokens[file.Id].Cancel();
             Tokens.Remove(file.Id);
 
-            await Task.Delay(1);
-
             var path = Path.Combine(HostingEnvironment.WebRootPath, file.Name);
 
-            // Remove the file from the file system
-            System.IO.File.Delete(path);
+            if (System.IO.File.Exists(path))
+            {
+                System.IO.File.Delete(path);
+            }
         }
     }
 
     private async Task ReadFile(FileSelectFileInfo file)
     {
         Tokens.Add(file.Id, new CancellationTokenSource());
-        var path = Path.Combine(HostingEnvironment.WebRootPath, file.Name);
+
         var byteArray = new byte[file.Size];
         await using MemoryStream ms = new MemoryStream(byteArray);
         await file.Stream.CopyToAsync(ms, Tokens[file.Id].Token);
         //await file.Stream.CopyToAsync(ms);
+
         Console.WriteLine(file.Name + " - " + file.Size.ToString());
     }
 
     private async Task UploadFile(FileSelectFileInfo file)
     {
         Tokens.Add(file.Id, new CancellationTokenSource());
+
         var path = Path.Combine(HostingEnvironment.WebRootPath, file.Name);
         await using FileStream fs = new FileStream(path, FileMode.Create);
+
         await file.Stream.CopyToAsync(fs, Tokens[file.Id].Token);
     }
 }

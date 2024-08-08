@@ -26,7 +26,7 @@
                                      ValueField="@nameof(Category.Id)"
                                      TextField="@nameof(Category.Name)"
                                      DefaultText="Select Category" />
-                <TelerikValidationMessage For="@( () => dataItem.CategoryId )" />
+                <TelerikValidationTooltip For="@( () => dataItem.CategoryId )" />
             </EditorTemplate>
         </GridColumn>
         <GridColumn Field="@nameof(Product.Quantity)" />
@@ -48,6 +48,15 @@
 
     private int LastId { get; set; }
 
+    private void OnGridCreate(GridCommandEventArgs args)
+    {
+        var createdItem = (Product)args.Item;
+
+        createdItem.Id = ++LastId;
+
+        GridData.Insert(0, createdItem);
+    }
+
     private void OnGridUpdate(GridCommandEventArgs args)
     {
         var updatedItem = (Product)args.Item;
@@ -57,15 +66,6 @@
         {
             GridData[originalItemIndex] = updatedItem;
         }
-    }
-
-    private void OnGridCreate(GridCommandEventArgs args)
-    {
-        var createdItem = (Product)args.Item;
-
-        createdItem.Id = ++LastId;
-
-        GridData.Insert(0, createdItem);
     }
 
     private void OnGridDelete(GridCommandEventArgs args)
