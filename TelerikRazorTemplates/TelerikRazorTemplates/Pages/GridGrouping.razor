@@ -21,8 +21,6 @@
 
     private void OnGridStateInit(GridStateEventArgs<Employee> args)
     {
-        args.GridState.GroupDescriptors = new List<GroupDescriptor>();
-
         args.GridState.GroupDescriptors.Add(new GroupDescriptor()
         {
             Member = nameof(Employee.Team),
