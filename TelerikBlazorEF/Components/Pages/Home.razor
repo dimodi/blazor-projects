@@ -1,0 +1,205 @@
+﻿@page "/"
+
+@inject CategoryService CategoryService
+@inject ProductService ProductService
+
+<PageTitle>Home</PageTitle>
+
+<h1>Hello, world!</h1>
+
+<p>Welcome to your new Telerik Blazor EF app.</p>
+
+<TelerikButton OnClick="@PopulateData">Populate Data</TelerikButton>
+<TelerikButton OnClick="@ClearData">Clear Data</TelerikButton>
+
+<h2>Products</h2>
+
+<TelerikGrid Data="@ProductData"
+             Sortable="true"
+             Pageable="true"
+             FilterMode="@GridFilterMode.FilterRow"
+             Groupable="true"
+             EditMode="@GridEditMode.Inline"
+             OnUpdate="@OnProductUpdate"
+             OnCreate="@OnProductCreate"
+             OnDelete="OnProductDelete"
+             ConfirmDelete="true">
+    <GridToolBarTemplate>
+        @if (CategoryData.Any())
+        {
+            <GridCommandButton Command="Add" Icon="@SvgIcon.Plus">Add Product</GridCommandButton>
+        }
+        else
+        {
+            <text>Add categories to add products.</text>
+        }
+    </GridToolBarTemplate>
+    <GridColumns>
+        <GridColumn Field="@nameof(Product.Id)" Editable="false" Filterable="false" Width="80px" />
+        <GridColumn Field="@nameof(Product.Name)" />
+        <GridColumn Field="@nameof(Product.CategoryId)" Title="Category">
+            <Template>
+                @{ var gridItem = (Product)context; }
+                @CategoryData.Find(x => x.Id == gridItem.CategoryId)?.Name
+            </Template>
+            <EditorTemplate>
+                @{ var gridEditItem = (Product)context; }
+                <TelerikDropDownList Data="@CategoryData"
+                                     @bind-Value="@gridEditItem.CategoryId"
+                                     ValueField="@nameof(Category.Id)"
+                                     TextField="@nameof(Category.Name)"
+                                     DefaultText="Select Category..." />
+            </EditorTemplate>
+            <GroupHeaderTemplate>
+                Category: @CategoryData.First(x => x.Id == (int)context.Value).Name
+            </GroupHeaderTemplate>
+        </GridColumn>
+        <GridColumn Field="@nameof(Product.Price)" DisplayFormat="{0:c2}" />
+        <GridColumn Field="@nameof(Product.Quantity)" />
+        <GridColumn Field="@nameof(Product.ReleaseDate)" DisplayFormat="{0:d}" />
+        <GridColumn Field="@nameof(Product.Discontinued)" />
+        <GridCommandColumn Width="240px">
+            <GridCommandButton Command="Edit" Icon="@SvgIcon.Pencil">Edit</GridCommandButton>
+            <GridCommandButton Command="Delete" Icon="@SvgIcon.Trash">Delete</GridCommandButton>
+            <GridCommandButton Command="Save" Icon="@SvgIcon.Save" ShowInEdit="true">Save</GridCommandButton>
+            <GridCommandButton Command="Cancel" Icon="@SvgIcon.Cancel" ShowInEdit="true">Cancel</GridCommandButton>
+        </GridCommandColumn>
+    </GridColumns>
+</TelerikGrid>
+
+<h2>Categories</h2>
+
+<TelerikGrid Data="@CategoryData"
+             Sortable="true"
+             Pageable="true"
+             FilterMode="@GridFilterMode.FilterRow"
+             EditMode="@GridEditMode.Incell"
+             OnUpdate="@OnCategoryUpdate"
+             OnCreate="@OnCategoryCreate"
+             OnDelete="OnCategoryDelete"
+             ConfirmDelete="true">
+    <GridToolBarTemplate>
+        <GridCommandButton Command="Add" Icon="@SvgIcon.Plus">Add Category</GridCommandButton>
+    </GridToolBarTemplate>
+    <GridColumns>
+        <GridColumn Field="@nameof(Category.Id)" Editable="false" Filterable="false" Width="80px" />
+        <GridColumn Field="@nameof(Category.Name)" />
+        <GridCommandColumn Width="160px">
+            <GridCommandButton Command="Delete" Icon="@SvgIcon.Trash">Delete</GridCommandButton>
+        </GridCommandColumn>
+    </GridColumns>
+</TelerikGrid>
+
+@code {
+    private DateTime DateValue { get; set; } = DateTime.Now;
+
+    private List<Product> ProductData { get; set; } = new List<Product>();
+
+    private List<Category> CategoryData { get; set; } = new List<Category>();
+
+    private async Task OnProductGridRead(GridReadEventArgs args)
+    {
+        var result = await ProductService.GetProductsAsync(args.Request);
+
+        args.Data = result.Data;
+        args.Total = result.Total;
+        args.AggregateResults = result.AggregateResults;
+    }
+
+    private async Task OnCategoryUpdate(GridCommandEventArgs args)
+    {
+        var updatedCategory = (Category)args.Item;
+
+        var originalIndex = CategoryData.FindIndex(x => x.Id == updatedCategory.Id);
+
+        if (originalIndex >= 0)
+        {
+            CategoryData[originalIndex] = updatedCategory;
+
+            await CategoryService.UpdateCategoryAsync(updatedCategory);
+        }
+    }
+
+    private async Task OnCategoryCreate(GridCommandEventArgs args)
+    {
+        var createdCategory = (Category)args.Item;
+
+        var newId = await CategoryService.CreateCategoryAsync(createdCategory);
+
+        createdCategory.Id = newId;
+
+        CategoryData.Insert(0, createdCategory);
+    }
+
+    private async Task OnCategoryDelete(GridCommandEventArgs args)
+    {
+        var deletedCategory = (Category)args.Item;
+
+        CategoryData.Remove(deletedCategory);
+
+        await CategoryService.DeleteCategoryAsync(deletedCategory);
+    }
+
+    private async Task OnProductUpdate(GridCommandEventArgs args)
+    {
+        var updatedProduct = (Product)args.Item;
+
+        var originalIndex = ProductData.FindIndex(x => x.Id == updatedProduct.Id);
+
+        if (originalIndex >= 0)
+        {
+            ProductData[originalIndex] = updatedProduct;
+
+            await ProductService.UpdateProductAsync(updatedProduct);
+        }
+    }
+
+    private async Task OnProductCreate(GridCommandEventArgs args)
+    {
+        var createdProduct = (Product)args.Item;
+
+        var newId = await ProductService.CreateProductAsync(createdProduct);
+
+        createdProduct.Id = newId;
+
+        ProductData.Insert(0, createdProduct);
+    }
+
+    private async Task OnProductDelete(GridCommandEventArgs args)
+    {
+        var deletedProduct = (Product)args.Item;
+
+        ProductData.Remove(deletedProduct);
+
+        await ProductService.DeleteProductAsync(deletedProduct);
+    }
+
+    private async Task LoadData()
+    {
+        CategoryData = await CategoryService.GetCategoriesAsync();
+        ProductData = await ProductService.GetProductsAsync();
+    }
+
+    private async Task PopulateData()
+    {
+        await CategoryService.GenerateData();
+        await ProductService.GenerateData();
+
+        await LoadData();
+    }
+
+    private async Task ClearData()
+    {
+        await ProductService.ClearData();
+        await CategoryService.ClearData();
+
+        await LoadData();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+
+        await base.OnInitializedAsync();
+    }
+}
