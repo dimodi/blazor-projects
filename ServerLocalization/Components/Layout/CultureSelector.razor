@@ -1,0 +1,45 @@
+﻿@using System.Globalization
+
+@inject IJSRuntime JS
+@inject IConfiguration AppConfiguration
+@inject NavigationManager Navigation
+
+<label>
+    Select your locale:
+    <select @bind="@SelectedCulture" @bind:after="ApplySelectedCultureAsync">
+        @foreach (var culture in SupportedCultures)
+        {
+            <option value="@culture">@culture.DisplayName</option>
+        }
+    </select>
+</label>
+
+@code {
+    private CultureInfo[] SupportedCultures { get; set; } = new CultureInfo[0];
+
+    private CultureInfo? SelectedCulture { get; set; }
+
+    protected override void OnInitialized()
+    {
+        SupportedCultures = AppConfiguration.GetSection("Cultures")
+            .GetChildren().ToDictionary(x => x.Key, x => x.Value).Keys.ToArray()
+            .Select(x => new CultureInfo(x)).ToArray();
+
+        SelectedCulture = CultureInfo.CurrentCulture;
+    }
+
+    private void ApplySelectedCultureAsync()
+    {
+        if (CultureInfo.CurrentCulture != SelectedCulture && SelectedCulture != null)
+        {
+            var uri = new Uri(Navigation.Uri)
+                .GetComponents(UriComponents.PathAndQuery, UriFormat.Unescaped);
+            var cultureEscaped = Uri.EscapeDataString(SelectedCulture.Name);
+            var uriEscaped = Uri.EscapeDataString(uri);
+
+            Navigation.NavigateTo(
+                $"Culture/Set?culture={cultureEscaped}&redirectUri={uriEscaped}",
+                forceLoad: true);
+        }
+    }
+}

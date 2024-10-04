@@ -1,0 +1,43 @@
+﻿@page "/"
+
+<PageTitle>Home</PageTitle>
+
+@using System.Globalization
+
+@inject IStringLocalizer<Translations> TypedLocalizer
+@inject IStringLocalizer Localizer
+@inject ITelerikStringLocalizer TelerikLocalizer
+
+<ul>
+    <li><b>CurrentCulture</b>: @CultureInfo.CurrentCulture</li>
+    <li><b>CurrentUICulture</b>: @CultureInfo.CurrentUICulture</li>
+</ul>
+
+<h2>Localized Messages</h2>
+
+<p><code>Translations.Greeting</code>: @Translations.Greeting</p>
+
+<p><code>Localizer["Greeting"]</code>: @Localizer["Greeting"]</p>
+<p><code>TypedLocalizer["Greeting"]</code>: @TypedLocalizer["Greeting"]</p>
+
+<h2>Telerik Messages</h2>
+
+<p><code>TelerikLocalizer["Grid_Edit"]</code>: @TelerikLocalizer["Grid_Edit"]</p>
+
+<TelerikCalendar />
+
+<TelerikPager Total="100" />
+
+<h2>Rendered Values</h2>
+
+<ul>
+    <li><b>Date</b>: @DateTimeValue.ToShortDateString()</li>
+    <li><b>Number</b>: @NumericValue.ToString("N2")</li>
+    <li><b>Currency</b>: @NumericValue.ToString("C2")</li>
+</ul>
+
+@code {
+    private DateTime DateTimeValue { get; set; } = DateTime.Now;
+
+    private double NumericValue = 123.45;
+}

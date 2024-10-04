@@ -1,0 +1,65 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(RunConfiguration)' == 'https' " />
+  <PropertyGroup Condition=" '$(RunConfiguration)' == 'http' " />
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Localization" Version="8.0.8" />
+    <PackageReference Include="Telerik.UI.for.Blazor" Version="6.2.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Resources\" />
+    <None Remove="Services\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Resources\" />
+    <Folder Include="Services\" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Resources\App.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>App.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\App.bg.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>App.bg.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\App.es.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>App.es.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Condition=" '$(EnableDefaultEmbeddedResourceItems)' == 'true' " Update="Resources\Foo.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Foo.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Condition=" '$(EnableDefaultEmbeddedResourceItems)' == 'true' " Update="Resources\Translations.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Translations.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Condition=" '$(EnableDefaultEmbeddedResourceItems)' == 'true' " Update="Resources\Foo.Translations.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Foo.Translations.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Condition=" '$(EnableDefaultEmbeddedResourceItems)' == 'true' " Update="Resources\Resources.Translations.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Translations.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\TelerikMessages.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>TelerikMessages.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Resources\Translations.Designer.cs">
+      <DependentUpon>Translations.resx</DependentUpon>
+    </Compile>
+    <Compile Update="Resources\TelerikMessages.Designer.cs">
+      <DependentUpon>TelerikMessages.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+</Project>
