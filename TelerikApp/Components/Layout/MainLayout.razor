@@ -1,0 +1,135 @@
+﻿@inherits LayoutComponentBase
+
+@implements IDisposable
+
+@inject NavigationManager NavManager
+
+<TelerikRootComponent>
+
+    <TelerikAppBar ThemeColor="@ThemeConstants.AppBar.ThemeColor.Light">
+        <AppBarSection>
+            <TelerikButton Icon="@SvgIcon.Menu"
+                           FillMode="@ThemeConstants.Button.FillMode.Clear"
+                           OnClick="@( () => DrawerExpanded = !DrawerExpanded )" />
+        </AppBarSection>
+        <AppBarSection>
+            <h1 id="app-title">TelerikApp</h1>
+        </AppBarSection>
+        <AppBarSpacer />
+        <AppBarSection>
+            <TelerikMenu Data="@DrawerData" />
+        </AppBarSection>
+        <AppBarSpacer />
+        <AppBarSection>
+            <TelerikButton FillMode="@ThemeConstants.Button.FillMode.Link"
+                           OnClick="@( () => NavManager.NavigateTo("https://www.telerik.com/blazor-ui") )">
+                About Telerik UI for Blazor
+            </TelerikButton>
+        </AppBarSection>
+    </TelerikAppBar>
+
+    <TelerikDrawer Data="@DrawerData"
+                   Expanded="@DrawerExpanded"
+                   ExpandedChanged="@DrawerExpandedChanged"
+                   @bind-SelectedItem="@DrawerSelectedItem"
+                   Mode="@DrawerMode.Push"
+                   MiniMode="true"
+                   Class="mainlayout-drawer">
+        <DrawerContent>
+            <main>
+                @Body
+            </main>
+        </DrawerContent>
+    </TelerikDrawer>
+
+    <TelerikAppBar ThemeColor="@ThemeConstants.AppBar.ThemeColor.Light">
+        <AppBarSpacer />
+        <AppBarSection>
+            &copy; @DateTime.Today.Year
+        </AppBarSection>
+        <AppBarSpacer />
+    </TelerikAppBar>
+
+    <TelerikMediaQuery Media="(min-width: 641px)" OnChange="@OnMediaQueryChange" />
+
+</TelerikRootComponent>
+
+<div id="blazor-error-ui">
+    An unhandled error has occurred.
+    <a href="" class="reload">Reload</a>
+    <a class="dismiss">🗙</a>
+</div>
+
+@code {
+    private IEnumerable<NavItem> DrawerData { get; set; } = new List<NavItem>() {
+        new NavItem("Home", SvgIcon.Home, "/"),
+        new NavItem("Counter", SvgIcon.CustomFormat, "/counter"),
+        new NavItem("Weather", SvgIcon.Globe, "/weather")
+    };
+
+    private bool DrawerExpanded { get; set; } = true;
+
+    private NavItem? DrawerSelectedItem { get; set; }
+
+    private bool LargeScreen { get; set; } = true;
+
+    private void OnMediaQueryChange(bool mediaQueryMatched)
+    {
+        LargeScreen = DrawerExpanded = mediaQueryMatched;
+    }
+
+    private void DrawerExpandedChanged(bool newExpanded)
+    {
+        if (!LargeScreen && !newExpanded)
+        {
+            DrawerExpanded = newExpanded;
+        }
+    }
+
+    private void SelectDrawerItem()
+    {
+        var url = NavManager.Uri.Replace(NavManager.BaseUri, "/").ToLowerInvariant();
+
+        DrawerSelectedItem = DrawerData.FirstOrDefault(x => x.Url.ToLowerInvariant() == url);
+    }
+
+    private void NavManagerLocationChanged(object? sender, LocationChangedEventArgs args)
+    {
+        var url = args.Location.Replace(NavManager.BaseUri, "/").ToLowerInvariant();
+
+        DrawerSelectedItem = DrawerData.FirstOrDefault(x => x.Url.ToLowerInvariant() == url);
+
+        InvokeAsync(StateHasChanged);
+    }
+
+    protected override void OnInitialized()
+    {
+        SelectDrawerItem();
+
+        NavManager.LocationChanged += NavManagerLocationChanged;
+
+        base.OnInitialized();
+    }
+
+    public void Dispose()
+    {
+        if (NavManager != null)
+        {
+            NavManager.LocationChanged -= NavManagerLocationChanged;
+        }
+    }
+
+    public class NavItem
+    {
+        public string Text { get; set; } = string.Empty;
+        public object? Icon { get; set; }
+        public string Url { get; set; } = string.Empty;
+
+        public NavItem(string text, object? icon, string url)
+        {
+            Text = text;
+            Icon = icon;
+            Url = url;
+        }
+    }
+}
