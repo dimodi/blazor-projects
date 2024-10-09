@@ -12,9 +12,9 @@ namespace T1666359.Services
             return Task.FromResult(new AuthenticationState(_currentUser));
         }
 
-        public void SignIn(string userIdentifier)
+        public void SignIn(string userIdentifier, string role = "User")
         {
-            var claims = new Claim[] { new Claim(ClaimTypes.Name, userIdentifier) };
+            var claims = new Claim[] { new Claim(ClaimTypes.Name, userIdentifier), new Claim(ClaimTypes.Role, role) };
 
             var identity = new ClaimsIdentity(claims, "Custom Authentication");
 

@@ -1,10 +1,16 @@
 ﻿@page "/weather"
 
+@attribute [Authorize(Roles = "Admin")]
+
 <PageTitle>Weather</PageTitle>
 
 <h1>Weather</h1>
 
-<p>This component demonstrates showing data.</p>
+<AuthorizeView>
+    <Authorized>
+        <p style="color:red">Authorized as @context.User.Identity?.Name</p>
+    </Authorized>
+</AuthorizeView>
 
 @if (forecasts == null)
 {

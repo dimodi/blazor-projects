@@ -1,90 +1,123 @@
 ﻿@page "/"
 
+@using System.Security.Claims
+
 <PageTitle>Home</PageTitle>
 
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
-<TelerikButton OnClick="@SignIn">Sign In</TelerikButton>
+<TelerikButton OnClick="@SignInAsUser">Sign In As User</TelerikButton>
+<TelerikButton OnClick="@SignInAsAdmin">Sign In As Admin</TelerikButton>
+
 <TelerikButton OnClick="@SignOut">Sign Out</TelerikButton>
+
+<p>Outside <code>AuthorizeView</code>:</p>
+<ul>
+    <li>Is any user: <strong>@IsUserSignedIn</strong></li>
+    <li>Is power user: <strong>@IsPowerUserSignedIn</strong></li>
+</ul>
 
 <AuthorizeView>
     <Authorized>
-        <p style="color:green">Authorized as @context.User.Identity?.Name</p>
+        <p style="color:green"><code>AuthorizeView</code>: Authorized as @context.User.Identity?.Name</p>
     </Authorized>
     <NotAuthorized>
-        <p style="color:blue">Not authorized</p>
+        <p style="color:blue"><code>AuthorizeView</code>: Not authorized</p>
     </NotAuthorized>
 </AuthorizeView>
 
-<h3>AuthorizeView manages only the Price column</h3>
+<AuthorizeView Roles="Admin">
+    <Authorized>
+        <p style="color:red"><code>AuthorizeView</code>: Authorized as Admin</p>
+    </Authorized>
+    <NotAuthorized>
+        <p style="color:blue"><code>AuthorizeView</code>: Not authorized as Admin</p>
+    </NotAuthorized>
+</AuthorizeView>
+
+<h3>AuthorizeView manages all Grid columns</h3>
 
 <TelerikGrid Data="@GridData" ShowColumnMenu="true">
     <GridColumns>
-        <GridColumn Field="@nameof(SampleModel.Name)" />
-        <AuthorizeView>
-            <Authorized>
-                <GridColumn Field="@nameof(SampleModel.Price)">
-                    <HeaderTemplate>
-                        <strong style="color:red">Price</strong>
-                    </HeaderTemplate>
-                </GridColumn>
-            </Authorized>
-        </AuthorizeView>
-        <GridColumn Field="@nameof(SampleModel.Quantity)" />
-    </GridColumns>
-</TelerikGrid>
-
-<h3>AuthorizeView manages all columns</h3>
-
-<TelerikGrid Data="@GridData" ShowColumnMenu="true">
-    <GridColumns>
-        <AuthorizeView>
+        <AuthorizeView Roles="User,Admin" Context="parentAuthContext">
             <Authorized>
                 <GridColumn Field="@nameof(SampleModel.Name)" />
                 <GridColumn Field="@nameof(SampleModel.Price)">
                     <HeaderTemplate>
-                        <strong style="color:red">Price</strong>
+                        <strong style="color:green">Price</strong>
                     </HeaderTemplate>
                 </GridColumn>
-                <GridColumn Field="@nameof(SampleModel.Quantity)" />
+                <AuthorizeView Roles="Admin">
+                    <Authorized Context="childAuthContext">
+                        <GridColumn Field="@nameof(SampleModel.Quantity)">
+                            <HeaderTemplate>
+                                <strong style="color:red">Quantity</strong>
+                            </HeaderTemplate>
+                        </GridColumn>
+                    </Authorized>
+                </AuthorizeView>
             </Authorized>
             <NotAuthorized>
                 <GridColumn Field="@nameof(SampleModel.Name)" />
-                <GridColumn Field="@nameof(SampleModel.Quantity)" />
             </NotAuthorized>
         </AuthorizeView>
     </GridColumns>
 </TelerikGrid>
 
-<h3>Price Column depends on its Visible parameter</h3>
+<h3>AuthenticationStateProvider manages the columns' Visible parameter</h3>
 
 <TelerikGrid Data="@GridData" ShowColumnMenu="true">
     <GridColumns>
         <GridColumn Field="@nameof(SampleModel.Name)" />
         <GridColumn Field="@nameof(SampleModel.Price)" Visible="@IsUserSignedIn" VisibleInColumnChooser="@IsUserSignedIn">
             <HeaderTemplate>
-                <strong style="color:red">Price</strong>
+                <strong style="color:green">Price</strong>
             </HeaderTemplate>
         </GridColumn>
-        <GridColumn Field="@nameof(SampleModel.Quantity)" />
+        <GridColumn Field="@nameof(SampleModel.Quantity)" Visible="@IsPowerUserSignedIn" VisibleInColumnChooser="@IsPowerUserSignedIn">
+            <HeaderTemplate>
+                <strong style="color:red">Quantity</strong>
+            </HeaderTemplate>
+        </GridColumn>
     </GridColumns>
 </TelerikGrid>
 
 @code {
     private List<SampleModel> GridData { get; set; } = new();
 
-    private bool IsUserSignedIn => ((CustomAuthStateProvider)AuthenticationStateProvider).GetAuthenticationStateAsync().Result.User.Identity?.Name == "elevatedGridUser";
+    private bool IsUserSignedIn => UserHasAnyRole();
+    private bool IsPowerUserSignedIn => UserHasSpecificRole("Admin");
 
-    private void SignIn()
+    private void SignInAsUser()
     {
         ((CustomAuthStateProvider)AuthenticationStateProvider)
-            .SignIn("elevatedGridUser");
+            .SignIn("loserUsername");
+    }
+
+    private void SignInAsAdmin()
+    {
+        ((CustomAuthStateProvider)AuthenticationStateProvider)
+            .SignIn("powerUsername", "Admin");
     }
 
     private void SignOut()
     {
         ((CustomAuthStateProvider)AuthenticationStateProvider)
             .SignOut();
+    }
+
+    private bool UserHasAnyRole()
+    {
+        AuthenticationState authState = ((CustomAuthStateProvider)AuthenticationStateProvider).GetAuthenticationStateAsync().Result;
+
+        return authState.User.Claims.Any(x => x.Type == ClaimTypes.Role && !string.IsNullOrEmpty(x.Value));
+    }
+
+    private bool UserHasSpecificRole(string expectedRole)
+    {
+        AuthenticationState authState = ((CustomAuthStateProvider)AuthenticationStateProvider).GetAuthenticationStateAsync().Result;
+
+        return authState.User.Claims.Any(x => x.Type == ClaimTypes.Role && x.Value == expectedRole);
     }
 
     protected override void OnInitialized()
