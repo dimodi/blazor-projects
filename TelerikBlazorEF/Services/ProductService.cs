@@ -40,8 +40,6 @@ namespace TelerikBlazorEF.Services
         {
             using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
-                //var productToUpdate = dbContext.Products.FirstOrDefault(x => x.Id == updatedProduct.Id);
-
                 Product? originalProduct = await dbContext.FindAsync<Product>(updatedProduct.Id);
 
                 if (originalProduct != null)
@@ -52,18 +50,6 @@ namespace TelerikBlazorEF.Services
 
                     await dbContext.SaveChangesAsync();
                 }
-
-                //if (productToUpdate != null)
-                //{
-                //    productToUpdate.CategoryId = updatedProduct.CategoryId;
-                //    productToUpdate.Discontinued = updatedProduct.Discontinued;
-                //    productToUpdate.Name = updatedProduct.Name;
-                //    productToUpdate.Price = updatedProduct.Price;
-                //    productToUpdate.Quantity = updatedProduct.Quantity;
-                //    productToUpdate.ReleaseDate = updatedProduct.ReleaseDate;
-
-                //    await dbContext.SaveChangesAsync();
-                //}
             }
         }
 
@@ -119,7 +105,7 @@ namespace TelerikBlazorEF.Services
                             Name = $"{wordGenerator.Word(5, 9)} {i}",
                             Price = Random.Shared.Next(1, 100),
                             Quantity = Random.Shared.Next(0, 1000),
-                            ReleaseDate = DateTime.Today.AddYears(Random.Shared.Next(1, 10)).AddMonths(Random.Shared.Next(1, 12)).AddDays(Random.Shared.Next(1, 30))
+                            ReleaseDate = DateTime.Today.AddYears(-Random.Shared.Next(1, 10)).AddMonths(Random.Shared.Next(1, 12)).AddDays(Random.Shared.Next(1, 30))
                         });
                     }
 

@@ -124,9 +124,12 @@
     {
         var createdCategory = (Category)args.Item;
 
-        var newId = await CategoryService.CreateCategoryAsync(createdCategory);
+        if (string.IsNullOrEmpty(createdCategory.Name))
+        {
+            createdCategory.Name = $"New Category";
+        }
 
-        createdCategory.Id = newId;
+        createdCategory.Id = await CategoryService.CreateCategoryAsync(createdCategory);
 
         CategoryData.Insert(0, createdCategory);
     }
