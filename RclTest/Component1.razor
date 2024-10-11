@@ -1,0 +1,46 @@
+﻿@namespace RclTest.Components
+
+@inherits ComponentBase
+
+<div class="component1">
+    This component is defined in the <strong>RclTest</strong> library.
+
+    <br />
+
+    <input value="@Value" @oninput="@OnInput" />
+</div>
+
+
+@*
+
+Using this RclTest project:
+
+1. In Program.cs
+
+builder.Services.AddScoped<RclTest.ExampleJsInterop>();
+
+2. In App.razor
+
+<link href="_content/RclTest/RclStyles.css" rel="stylesheet" />
+(The JS file is registered automatically, so no script tag is necessary.)
+
+3. In .razor file
+
+@inject RclTest.ExampleJsInterop ExJs
+
+<p>Component1Value: @Component1Value</p>
+
+<RclTest.Components.Component1 @bind-Value="@Component1Value" />
+
+<button @onclick="@OnButtonClick">Click Me</button>
+
+@code {
+    private string Component1Value { get; set; } = string.Empty;
+
+    private async Task OnButtonClick()
+    {
+        await ExJs.Prompt(Component1Value);
+    }
+}
+
+*@

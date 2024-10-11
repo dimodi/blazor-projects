@@ -1,0 +1,10 @@
+﻿.component1 {
+    border: 2px dashed red;
+    padding: 1em;
+    margin: 1em 0;
+    background-image: url('background.png');
+}
+
+    .component1 input {
+        width: 200px;
+    }
