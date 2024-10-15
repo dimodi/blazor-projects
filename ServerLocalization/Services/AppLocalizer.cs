@@ -3,6 +3,7 @@ using ServerLocalization.Resources;
 
 namespace ServerLocalization.Services
 {
+    // This class is required only if there is a service registration in Program.cs
     public class AppLocalizer : IStringLocalizer
     {
         public LocalizedString this[string name, params object[] arguments] => throw new NotImplementedException();

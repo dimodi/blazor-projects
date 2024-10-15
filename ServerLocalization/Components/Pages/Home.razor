@@ -4,7 +4,9 @@
 
 @using System.Globalization
 
+@* This Localizer does not require a service registration in Program.cs *@
 @inject IStringLocalizer<Translations> TypedLocalizer
+@* This Localizer requires a service registration in Program.cs and a custom service class *@
 @inject IStringLocalizer Localizer
 @inject ITelerikStringLocalizer TelerikLocalizer
 

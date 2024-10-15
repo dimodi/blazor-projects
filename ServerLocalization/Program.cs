@@ -14,6 +14,8 @@ builder.Services.AddControllers();
 
 builder.Services.AddTelerikBlazor();
 builder.Services.AddSingleton(typeof(ITelerikStringLocalizer), typeof(TelerikLocalizer));
+// This service registration allows injecting IStringLocalizer Localizer,
+// but requires a custom service class implementation.
 builder.Services.AddSingleton(typeof(IStringLocalizer), typeof(AppLocalizer));
 
 var app = builder.Build();
