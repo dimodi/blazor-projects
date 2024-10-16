@@ -25,6 +25,7 @@ builder.Services.AddDbContextFactory<DbContextEF>(contextOptions =>
 
 builder.Services.AddSingleton<CategoryService>();
 builder.Services.AddSingleton<ProductService>();
+builder.Services.AddSingleton<EmployeeService>();
 
 //builder.Services.AddHttpClient();
 

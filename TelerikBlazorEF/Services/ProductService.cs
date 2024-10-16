@@ -9,74 +9,66 @@ namespace TelerikBlazorEF.Services
     {
         private readonly IDbContextFactory<DbContextEF> _contextFactory;
 
+        private DbContextEF? QueryableContext { get; set; }
+
         public async Task<List<Product>> GetProductsAsync()
         {
-            using (var dbContext = await _contextFactory.CreateDbContextAsync())
-            {
-                return dbContext.Products.ToList();
-            }
-        }
+            using var dbContext = await _contextFactory.CreateDbContextAsync();
 
-        private DbContextEF? queryableContext { get; set; }
-        
-        public async Task<IQueryable<Product>> GetProductsAsyncAsQueryable()
-        {
-            if (queryableContext == null)
-            {
-                queryableContext = await _contextFactory.CreateDbContextAsync();
-            }
-            return queryableContext.Products.AsQueryable();
+            return dbContext.Products.ToList();
         }
 
         public async Task<DataSourceResult> GetProductsAsync(DataSourceRequest request)
         {
-            using (var dbContext = await _contextFactory.CreateDbContextAsync())
-            {
-                return await dbContext.Products.ToDataSourceResultAsync(request);
-            }
+            using var dbContext = await _contextFactory.CreateDbContextAsync();
+
+            return await dbContext.Products.ToDataSourceResultAsync(request);
         }
 
-        public async Task UpdateProductAsync(Product updatedProduct)
+        public async Task<IQueryable<Product>> GetProductsAsyncAsQueryable()
         {
-            using (var dbContext = await _contextFactory.CreateDbContextAsync())
+            if (QueryableContext == null)
             {
-                Product? originalProduct = await dbContext.FindAsync<Product>(updatedProduct.Id);
-
-                if (originalProduct != null)
-                {
-                    dbContext.Entry(originalProduct).State = EntityState.Detached;
-
-                    dbContext.Update(updatedProduct);
-
-                    await dbContext.SaveChangesAsync();
-                }
+                QueryableContext = await _contextFactory.CreateDbContextAsync();
             }
+
+            return QueryableContext.Products.AsQueryable();
         }
 
         public async Task<int> CreateProductAsync(Product newProduct)
         {
-            using (var dbContext = await _contextFactory.CreateDbContextAsync())
+            using var dbContext = await _contextFactory.CreateDbContextAsync();
+
+            dbContext.Products.Add(newProduct);
+            await dbContext.SaveChangesAsync();
+
+            return newProduct.Id;
+        }
+
+        public async Task UpdateProductAsync(Product updatedProduct)
+        {
+            using var dbContext = await _contextFactory.CreateDbContextAsync();
+
+            Product? originalProduct = await dbContext.FindAsync<Product>(updatedProduct.Id);
+
+            if (originalProduct != null)
             {
-                dbContext.Products.Add(newProduct);
-
+                dbContext.Entry(originalProduct).State = EntityState.Detached;
+                dbContext.Update(updatedProduct);
                 await dbContext.SaveChangesAsync();
-
-                return newProduct.Id;
             }
         }
 
         public async Task DeleteProductAsync(Product product)
         {
-            using (var dbContext = await _contextFactory.CreateDbContextAsync())
+            using var dbContext = await _contextFactory.CreateDbContextAsync();
+
+            Product? productToDelete = dbContext.Products.FirstOrDefault(x => x.Id == product.Id);
+
+            if (productToDelete != null)
             {
-                var productToDelete = dbContext.Products.FirstOrDefault(x => x.Id == product.Id);
-
-                if (productToDelete != null)
-                {
-                    dbContext.Products.Remove(productToDelete);
-
-                    await dbContext.SaveChangesAsync();
-                }
+                dbContext.Products.Remove(productToDelete);
+                await dbContext.SaveChangesAsync();
             }
         }
 
@@ -88,40 +80,38 @@ namespace TelerikBlazorEF.Services
         public async Task GenerateData(int productCount = 123)
         {
             var wordGenerator = new NameGenerator();
-    
-            using (var dbContext = await _contextFactory.CreateDbContextAsync())
+
+            using var dbContext = await _contextFactory.CreateDbContextAsync();
+
+            if (!dbContext.Products.Any() && dbContext.Categories.Any())
             {
-                if (!dbContext.Products.Any() && dbContext.Categories.Any())
+                var categoryIds = dbContext.Categories.Select(x => x.Id).ToList();
+
+                for (int i = 1; i <= productCount; i++)
                 {
-                    var categoryIds = dbContext.Categories.Select(x => x.Id).ToList();
-
-                    for (int i = 1; i <= productCount; i++)
+                    dbContext.Products.Add(new Product()
                     {
-                        dbContext.Products.Add(new Product()
-                        {
-                            Id = i,
-                            CategoryId = categoryIds.ElementAt(Random.Shared.Next(0, categoryIds.Count)),
-                            Discontinued = i % 5 == 0,
-                            Name = $"{wordGenerator.Word(5, 9)} {i}",
-                            Price = Random.Shared.Next(1, 100),
-                            Quantity = Random.Shared.Next(0, 1000),
-                            ReleaseDate = DateTime.Today.AddYears(-Random.Shared.Next(1, 10)).AddMonths(Random.Shared.Next(1, 12)).AddDays(Random.Shared.Next(1, 30))
-                        });
-                    }
-
-                    await dbContext.SaveChangesAsync();
+                        Id = i,
+                        CategoryId = categoryIds.ElementAt(Random.Shared.Next(0, categoryIds.Count)),
+                        Discontinued = i % 5 == 0,
+                        Name = $"{wordGenerator.Word(5, 9)} {i}",
+                        Price = Random.Shared.Next(1, 100),
+                        Quantity = Random.Shared.Next(0, 1000),
+                        ReleaseDate = DateTime.Today.AddYears(-Random.Shared.Next(1, 10)).AddMonths(Random.Shared.Next(1, 12)).AddDays(Random.Shared.Next(1, 30))
+                    });
                 }
+
+                await dbContext.SaveChangesAsync();
             }
         }
 
         public async Task ClearData()
         {
-            using (var dbContext = await _contextFactory.CreateDbContextAsync())
-            {
-                dbContext.Products.RemoveRange(dbContext.Products);
+            using var dbContext = await _contextFactory.CreateDbContextAsync();
 
-                await dbContext.SaveChangesAsync();
-            }
+            dbContext.Products.RemoveRange(dbContext.Products);
+
+            await dbContext.SaveChangesAsync();
         }
     }
 }

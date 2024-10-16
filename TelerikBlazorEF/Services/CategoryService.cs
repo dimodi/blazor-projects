@@ -9,51 +9,45 @@ namespace TelerikBlazorEF.Services
 
         public async Task<List<Category>> GetCategoriesAsync()
         {
-            using (var dbContext = await _contextFactory.CreateDbContextAsync())
-            {
-                return dbContext.Categories.ToList();
-            }
-        }
+            using var dbContext = await _contextFactory.CreateDbContextAsync();
 
-        public async Task UpdateCategoryAsync(Category updatedCategory)
-        {
-            using (var dbContext = await _contextFactory.CreateDbContextAsync())
-            {
-                var CategoryToUpdate = dbContext.Categories.FirstOrDefault(x => x.Id == updatedCategory.Id);
-
-                if (CategoryToUpdate != null)
-                {
-                    CategoryToUpdate.Name = updatedCategory.Name;
-
-                    await dbContext.SaveChangesAsync();
-                }
-            }
+            return dbContext.Categories.ToList();
         }
 
         public async Task<int> CreateCategoryAsync(Category newCategory)
         {
-            using (var dbContext = await _contextFactory.CreateDbContextAsync())
+            using var dbContext = await _contextFactory.CreateDbContextAsync();
+
+            dbContext.Categories.Add(newCategory);
+            await dbContext.SaveChangesAsync();
+
+            return newCategory.Id;
+        }
+
+        public async Task UpdateCategoryAsync(Category updatedCategory)
+        {
+            using var dbContext = await _contextFactory.CreateDbContextAsync();
+
+            Category? originalCategory = await dbContext.FindAsync<Category>(updatedCategory.Id);
+
+            if (originalCategory != null)
             {
-                dbContext.Categories.Add(newCategory);
-
+                dbContext.Entry(originalCategory).State = EntityState.Detached;
+                dbContext.Update(updatedCategory);
                 await dbContext.SaveChangesAsync();
-
-                return newCategory.Id;
             }
         }
 
-        public async Task DeleteCategoryAsync(Category Category)
+        public async Task DeleteCategoryAsync(Category category)
         {
-            using (var dbContext = await _contextFactory.CreateDbContextAsync())
+            using var dbContext = await _contextFactory.CreateDbContextAsync();
+
+            Category? categoryToDelete = dbContext.Categories.FirstOrDefault(x => x.Id == category.Id);
+
+            if (categoryToDelete != null)
             {
-                var CategoryToDelete = dbContext.Categories.FirstOrDefault(x => x.Id == Category.Id);
-
-                if (CategoryToDelete != null)
-                {
-                    dbContext.Categories.Remove(CategoryToDelete);
-
-                    await dbContext.SaveChangesAsync();
-                }
+                dbContext.Categories.Remove(categoryToDelete);
+                await dbContext.SaveChangesAsync();
             }
         }
 
@@ -66,32 +60,30 @@ namespace TelerikBlazorEF.Services
         {
             var wordGenerator = new NameGenerator();
 
-            using (var dbContext = await _contextFactory.CreateDbContextAsync())
-            {
-                if (!dbContext.Categories.Any())
-                {
-                    for (int i = 1; i <= categoryCount; i++)
-                    {
-                        dbContext.Categories.Add(new Category()
-                        {
-                            Id = i,
-                            Name = $"{wordGenerator.Word(5)} {i}"
-                        });
-                    }
+            using var dbContext = await _contextFactory.CreateDbContextAsync();
 
-                    await dbContext.SaveChangesAsync();
+            if (!dbContext.Categories.Any())
+            {
+                for (int i = 1; i <= categoryCount; i++)
+                {
+                    dbContext.Categories.Add(new Category()
+                    {
+                        Id = i,
+                        Name = $"{wordGenerator.Word(5)} {i}"
+                    });
                 }
+
+                await dbContext.SaveChangesAsync();
             }
         }
 
         public async Task ClearData()
         {
-            using (var dbContext = await _contextFactory.CreateDbContextAsync())
-            {
-                dbContext.Categories.RemoveRange(dbContext.Categories);
+            using var dbContext = await _contextFactory.CreateDbContextAsync();
 
-                await dbContext.SaveChangesAsync();
-            }
+            dbContext.Categories.RemoveRange(dbContext.Categories);
+
+            await dbContext.SaveChangesAsync();
         }
     }
 }

@@ -1,0 +1,78 @@
+﻿@page "/trees"
+
+@inject EmployeeService EmployeeService
+
+<PageTitle>Tree Data</PageTitle>
+
+<h1>Tree Data</h1>
+
+<TelerikButton OnClick="@PopulateData">Populate Data</TelerikButton>
+<TelerikButton OnClick="@ClearData">Clear Data</TelerikButton>
+
+<h2>Employees</h2>
+
+<div style="display:flex;gap:2em">
+    <TelerikTreeList Data="@EmployeeData"
+                     IdField="@nameof(Employee.Id)"
+                     ParentIdField="@nameof(Employee.ManagerId)"
+                     HasChildrenField="@nameof(Employee.HasEmployess)"
+                     Pageable="true"
+                     Sortable="true"
+                     FilterMode="@TreeListFilterMode.FilterRow"
+                     Width="60vw">
+        <TreeListColumns>
+            <TreeListColumn Field="@nameof(Employee.Id)" Editable="false" Filterable="false" Width="80px" />
+            <TreeListColumn Field="@nameof(Employee.FirstName)" Expandable="true" Title="First Name" />
+            <TreeListColumn Field="@nameof(Employee.LastName)" Title="Last Name" />
+            <TreeListColumn Field="@nameof(Employee.BirthDate)" Title="Birth Date" DisplayFormat="{0:d}" />
+            <TreeListColumn Field="@nameof(Employee.Gender)" />
+            <TreeListColumn Field="@nameof(Employee.ManagerId)" Title="Manager" Editable="false" Sortable="false" Filterable="false" Visible="false">
+                <Template>
+                    @{ var dataItem = (Employee)context; }
+                    @{ var manager = EmployeeData.FirstOrDefault(x => x.Id == dataItem.ManagerId); }
+
+                    @manager?.FirstName @manager?.LastName
+                </Template>
+            </TreeListColumn>
+        </TreeListColumns>
+    </TelerikTreeList>
+
+    <TelerikTreeView Data="@EmployeeData">
+        <TreeViewBindings>
+            <TreeViewBinding IdField="@nameof(Employee.Id)"
+                             ParentIdField="@nameof(Employee.ManagerId)"
+                             HasChildrenField="@nameof(Employee.HasEmployess)"
+                             TextField="@nameof(Employee.FirstName)" />
+        </TreeViewBindings>
+    </TelerikTreeView>
+</div>
+
+@code {
+    private List<Employee> EmployeeData { get; set; } = new();
+
+    private async Task LoadData()
+    {
+        EmployeeData = await EmployeeService.GetEmployeesAsync();
+    }
+
+    private async Task PopulateData()
+    {
+        await EmployeeService.GenerateData();
+
+        await LoadData();
+    }
+
+    private async Task ClearData()
+    {
+        await EmployeeService.ClearData();
+
+        await LoadData();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+
+        await base.OnInitializedAsync();
+    }
+}

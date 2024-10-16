@@ -1,4 +1,5 @@
 ﻿@page "/"
+@page "/grids"
 
 @inject CategoryService CategoryService
 @inject ProductService ProductService
@@ -91,11 +92,9 @@
 </TelerikGrid>
 
 @code {
-    private DateTime DateValue { get; set; } = DateTime.Now;
+    private List<Product> ProductData { get; set; } = new();
 
-    private List<Product> ProductData { get; set; } = new List<Product>();
-
-    private List<Category> CategoryData { get; set; } = new List<Category>();
+    private List<Category> CategoryData { get; set; } = new();
 
     private async Task OnProductGridRead(GridReadEventArgs args)
     {
