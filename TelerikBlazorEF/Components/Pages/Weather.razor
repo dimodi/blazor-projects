@@ -1,63 +1,97 @@
-﻿@page "/weather"
+﻿@page "/no-data-service"
 
-<PageTitle>Weather</PageTitle>
+@using Microsoft.EntityFrameworkCore
 
-<h1>Weather</h1>
+@implements IDisposable
 
-<p>This component demonstrates showing data.</p>
+@inject IDbContextFactory<DbContextEF> DbContextFactory
 
-@if (forecasts == null)
-{
-    <p><em>Loading...</em></p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Temp. (C)</th>
-                <th>Temp. (F)</th>
-                <th>Summary</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var forecast in forecasts)
-            {
-                <tr>
-                    <td>@forecast.Date.ToShortDateString()</td>
-                    <td>@forecast.TemperatureC</td>
-                    <td>@forecast.TemperatureF</td>
-                    <td>@forecast.Summary</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
+<PageTitle>No Data Service</PageTitle>
+
+<h1>No Data Service</h1>
+
+<h2>Categories</h2>
+
+<TelerikGrid Data="@CategoryData"
+             Sortable="true"
+             Pageable="true"
+             FilterMode="@GridFilterMode.FilterRow"
+             EditMode="@GridEditMode.Incell"
+             OnUpdate="@OnCategoryUpdate"
+             OnCreate="@OnCategoryCreate"
+             OnDelete="OnCategoryDelete"
+             ConfirmDelete="true">
+    <GridToolBarTemplate>
+        <GridCommandButton Command="Add" Icon="@SvgIcon.Plus">Add Category</GridCommandButton>
+    </GridToolBarTemplate>
+    <GridColumns>
+        <GridColumn Field="@nameof(Category.Id)" Editable="false" Filterable="false" Width="80px" />
+        <GridColumn Field="@nameof(Category.Name)" />
+        <GridCommandColumn Width="160px">
+            <GridCommandButton Command="Delete" Icon="@SvgIcon.Trash">Delete</GridCommandButton>
+        </GridCommandColumn>
+    </GridColumns>
+</TelerikGrid>
 
 @code {
-    private WeatherForecast[]? forecasts;
+    private List<Category> CategoryData { get; set; } = new();
+
+    private async Task OnCategoryCreate(GridCommandEventArgs args)
+    {
+        var createdCategory = (Category)args.Item;
+
+        if (string.IsNullOrEmpty(createdCategory.Name))
+        {
+            createdCategory.Name = $"New Category";
+        }
+
+        DbContextEF!.Categories.Add(createdCategory);
+        await DbContextEF!.SaveChangesAsync();
+
+        CategoryData.Insert(0, createdCategory);
+    }
+
+    private async Task OnCategoryUpdate(GridCommandEventArgs args)
+    {
+        var updatedCategory = (Category)args.Item;
+
+        var originalCategory = await DbContextEF!.Categories.FirstOrDefaultAsync(x => x.Id == updatedCategory.Id);
+
+        if (originalCategory != null)
+        {
+            DbContextEF!.Categories.Entry(originalCategory).State = EntityState.Detached;
+            DbContextEF!.Categories.Update(updatedCategory);
+            await DbContextEF!.SaveChangesAsync();
+
+            await LoadData();
+        }
+    }
+
+    private async Task OnCategoryDelete(GridCommandEventArgs args)
+    {
+        var deletedCategory = (Category)args.Item;
+
+        DbContextEF!.Categories.Remove(deletedCategory);
+        await DbContextEF!.SaveChangesAsync();
+
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        CategoryData = await DbContextEF!.Categories.AsNoTracking().ToListAsync();
+    }
+
+    private DbContextEF? DbContextEF { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        // Simulate asynchronous loading to demonstrate a loading indicator
-        await Task.Delay(500);
+        DbContextEF = await DbContextFactory.CreateDbContextAsync();
 
-        var startDate = DateOnly.FromDateTime(DateTime.Now);
-        var summaries = new[] { "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching" };
-        forecasts = Enumerable.Range(1, 5).Select(index => new WeatherForecast
-        {
-            Date = startDate.AddDays(index),
-            TemperatureC = Random.Shared.Next(-20, 55),
-            Summary = summaries[Random.Shared.Next(summaries.Length)]
-        }).ToArray();
+        await LoadData();
+
+        await base.OnInitializedAsync();
     }
 
-    private class WeatherForecast
-    {
-        public DateOnly Date { get; set; }
-        public int TemperatureC { get; set; }
-        public string? Summary { get; set; }
-        public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-    }
+    public void Dispose() => DbContextEF?.Dispose();
 }
