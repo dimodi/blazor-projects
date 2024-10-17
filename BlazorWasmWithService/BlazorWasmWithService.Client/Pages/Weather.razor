@@ -1,0 +1,66 @@
+﻿@page "/weather"
+
+@inject LocalDataService LocalDataService
+@inject RemoteDataService RemoteDataService
+
+<PageTitle>Weather</PageTitle>
+
+<h1>Weather</h1>
+
+<p>This component demonstrates showing data.</p>
+
+@if (Forecasts1 == null)
+{
+    <TelerikLoaderContainer Visible="true" />
+}
+else
+{
+    <h2>Data Service Uses Local Data</h2>
+
+    <TelerikGrid Data="@Forecasts1"
+                 Sortable="true"
+                 FilterMode="@GridFilterMode.FilterRow"
+                 Pageable="true"
+                 Height="300px">
+        <GridColumns>
+            <GridColumn Field="@nameof(WeatherForecast.Date)" DisplayFormat="{0:d}" />
+            <GridColumn Field="@nameof(WeatherForecast.TemperatureC)" Title="Temp. (C)" />
+            <GridColumn Field="@nameof(WeatherForecast.TemperatureF)" Title="Temp. (F)" />
+            <GridColumn Field="@nameof(WeatherForecast.Summary)" />
+        </GridColumns>
+    </TelerikGrid>
+}
+
+@if (Forecasts2 == null)
+{
+    <TelerikLoaderContainer Visible="true" />
+}
+else
+{
+    <h2>Data Service Uses Remote Data</h2>
+
+    <TelerikGrid Data="@Forecasts2"
+                 Sortable="true"
+                 FilterMode="@GridFilterMode.FilterRow"
+                 Pageable="true"
+                 Height="300px">
+        <GridColumns>
+            <GridColumn Field="@nameof(WeatherForecast.Date)" DisplayFormat="{0:d}" />
+            <GridColumn Field="@nameof(WeatherForecast.TemperatureC)" Title="Temp. (C)" />
+            <GridColumn Field="@nameof(WeatherForecast.TemperatureF)" Title="Temp. (F)" />
+            <GridColumn Field="@nameof(WeatherForecast.Summary)" />
+        </GridColumns>
+    </TelerikGrid>
+}
+
+@code {
+    private WeatherForecast[]? Forecasts1 { get; set; }
+    private WeatherForecast[]? Forecasts2 { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Forecasts1 = await LocalDataService.GetData();
+
+        Forecasts2 = await RemoteDataService.GetData();
+    }
+}
