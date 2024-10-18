@@ -12,11 +12,11 @@
     <link rel="stylesheet" href="BlazorWasmWithService.styles.css" />
     <link rel="stylesheet" href="_content/Telerik.UI.for.Blazor/css/kendo-theme-default/all.css?@telerikUiForBlazorVersion" />
     <link rel="icon" type="image/png" href="favicon.png" />
-    <HeadOutlet @rendermode="@InteractiveWebAssembly" />
+    <HeadOutlet @rendermode="@( new InteractiveWebAssemblyRenderMode(prerender: false) )" />
 </head>
 
 <body>
-    <Routes @rendermode="@InteractiveWebAssembly" />
+    <Routes @rendermode="@( new InteractiveWebAssemblyRenderMode(prerender: false) )" />
     <script src="_framework/blazor.web.js" autostart="false"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
@@ -26,4 +26,3 @@
 </body>
 
 </html>
-

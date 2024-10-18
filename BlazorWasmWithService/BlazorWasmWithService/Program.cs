@@ -7,6 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
 
+// Duplicate service registrations here are required if prerendering in App.razor is enabled.
 builder.Services.AddScoped<LocalDataService>();
 builder.Services.AddScoped<RemoteDataService>();
 
