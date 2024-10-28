@@ -12,12 +12,13 @@ body {
 }
 
 body > .k-appbar {
-    flex: 0;
+    flex: 0 0 auto;
 }
 
 .mainlayout-drawer {
     flex: 1;
     align-items: stretch;
+    height: calc(100vh - 84px);
 }
 
 h1:focus {
