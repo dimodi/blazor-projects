@@ -8,10 +8,16 @@
 body {
     display: flex;
     flex-direction: column;
+    height: 100vh;
+}
+
+body > .k-appbar {
+    flex: 0;
 }
 
 .mainlayout-drawer {
-    flex: 1 1 auto;
+    flex: 1;
+    align-items: stretch;
 }
 
 h1:focus {
