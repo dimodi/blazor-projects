@@ -2,6 +2,9 @@
 
 @using Microsoft.EntityFrameworkCore
 
+@using Telerik.DataSource
+@using Telerik.DataSource.Extensions
+
 @implements IDisposable
 
 @inject IDbContextFactory<DbContextEF> DbContextFactory
@@ -12,7 +15,8 @@
 
 <h2>Categories</h2>
 
-<TelerikGrid Data="@CategoryData"
+<TelerikGrid OnRead="@OnGridRead"
+             TItem="Category"
              Sortable="true"
              Pageable="true"
              FilterMode="@GridFilterMode.FilterRow"
@@ -34,7 +38,16 @@
 </TelerikGrid>
 
 @code {
-    private List<Category> CategoryData { get; set; } = new();
+    private DbContextEF? DbContextEF { get; set; }
+
+    private async Task OnGridRead(GridReadEventArgs args)
+    {
+        DataSourceResult result = await DbContextEF!.Categories.ToDataSourceResultAsync(args.Request);
+
+        args.Data = result.Data;
+        args.Total = result.Total;
+        args.AggregateResults = result.AggregateResults;
+    }
 
     private async Task OnCategoryCreate(GridCommandEventArgs args)
     {
@@ -47,8 +60,6 @@
 
         DbContextEF!.Categories.Add(createdCategory);
         await DbContextEF!.SaveChangesAsync();
-
-        CategoryData.Insert(0, createdCategory);
     }
 
     private async Task OnCategoryUpdate(GridCommandEventArgs args)
@@ -62,8 +73,6 @@
             DbContextEF!.Categories.Entry(originalCategory).State = EntityState.Detached;
             DbContextEF!.Categories.Update(updatedCategory);
             await DbContextEF!.SaveChangesAsync();
-
-            await LoadData();
         }
     }
 
@@ -73,22 +82,11 @@
 
         DbContextEF!.Categories.Remove(deletedCategory);
         await DbContextEF!.SaveChangesAsync();
-
-        await LoadData();
     }
-
-    private async Task LoadData()
-    {
-        CategoryData = await DbContextEF!.Categories.AsNoTracking().ToListAsync();
-    }
-
-    private DbContextEF? DbContextEF { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         DbContextEF = await DbContextFactory.CreateDbContextAsync();
-
-        await LoadData();
 
         await base.OnInitializedAsync();
     }
