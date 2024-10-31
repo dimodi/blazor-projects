@@ -13,41 +13,9 @@
     <PackageReference Include="Telerik.UI.for.Blazor" Version="6.2.0" />
   </ItemGroup>
   <ItemGroup>
-    <None Remove="Resources\" />
-    <None Remove="Services\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Resources\" />
-    <Folder Include="Services\" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Update="Resources\App.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>App.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <EmbeddedResource Update="Resources\App.bg.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>App.bg.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <EmbeddedResource Update="Resources\App.es.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>App.es.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <EmbeddedResource Condition=" '$(EnableDefaultEmbeddedResourceItems)' == 'true' " Update="Resources\Foo.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>Foo.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <EmbeddedResource Condition=" '$(EnableDefaultEmbeddedResourceItems)' == 'true' " Update="Resources\Translations.resx">
+    <EmbeddedResource Update="Resources\Translations.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Translations.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <EmbeddedResource Condition=" '$(EnableDefaultEmbeddedResourceItems)' == 'true' " Update="Resources\Foo.Translations.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>Foo.Translations.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <EmbeddedResource Condition=" '$(EnableDefaultEmbeddedResourceItems)' == 'true' " Update="Resources\Resources.Translations.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Translations.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Update="Resources\TelerikMessages.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
