@@ -1,0 +1,50 @@
+﻿@page "/"
+
+@using WasmAppMinApi.Shared
+
+@inject HttpClient Http
+@inject IJSRuntime js
+
+<PageTitle>Upload</PageTitle>
+
+<h1>Upload to Minimal API with CORS and Antiforgery</h1>
+
+<TelerikUpload SaveUrl="@UPLOAD_SAVE_URL"
+               RemoveUrl="@UPLOAD_REMOVE_URL"
+               OnUpload="@OnUploadUpload"
+               OnRemove="@OnUploadRemove"
+               WithCredentials="true" />
+
+@code {
+    private const string UPLOAD_DOMAIN = "https://localhost:7181/";
+    private const string UPLOAD_TOKEN_URL = $"{UPLOAD_DOMAIN}api/upload/token";
+    private const string UPLOAD_SAVE_URL = $"{UPLOAD_DOMAIN}api/upload/save";
+    private const string UPLOAD_REMOVE_URL = $"{UPLOAD_DOMAIN}api/upload/remove";
+
+    private async Task OnUploadUpload(UploadEventArgs args)
+    {
+        await SetAntiforgery(args);
+    }
+
+    private async Task OnUploadRemove(UploadEventArgs args)
+    {
+        await SetAntiforgery(args);
+    }
+
+    private async Task SetAntiforgery(UploadEventArgs args)
+    {
+        AntiForgeryData? afData = await Http.GetFromJsonAsync<AntiForgeryData>(UPLOAD_TOKEN_URL);
+
+        if (afData != null)
+        {
+            await js.InvokeVoidAsync("setAntiforgeryCookie", afData.CookieName, afData.CookieToken);
+
+            args.RequestHeaders.Add(afData.HeaderName, afData.RequestToken);
+            args.RequestData.Add(afData.FormFieldName, afData.RequestToken);
+        }
+        else
+        {
+            args.IsCancelled = true;
+        }
+    }
+}

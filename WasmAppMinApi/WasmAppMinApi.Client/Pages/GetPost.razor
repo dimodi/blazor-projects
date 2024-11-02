@@ -1,0 +1,55 @@
+﻿@page "/getpost"
+
+@inject HttpClient Http
+
+<PageTitle>Minimal API 101</PageTitle>
+
+<h1>Minimal API 101</h1>
+
+<TelerikTextBox @bind-Value="@TextBoxValue"
+                Width="200px" />
+
+<TelerikButton OnClick="@DoGet">GET</TelerikButton>
+<TelerikButton OnClick="@DoGetArg">GET with Argument</TelerikButton>
+<TelerikButton OnClick="@DoPost">POST</TelerikButton>
+
+<p><code>RequestResult</code>: @RequestResult</p>
+
+@code {
+    private string TextBoxValue { get; set; } = "foo";
+
+    private string RequestResult { get; set; } = string.Empty;
+
+    private async Task DoGet()
+    {
+        var result = await Http.GetAsync("https://localhost:7181/get");
+
+        if (result.IsSuccessStatusCode)
+        {
+            RequestResult = await result.Content.ReadAsStringAsync();
+        }
+    }
+
+    private async Task DoGetArg()
+    {
+        var result = await Http.GetAsync($"https://localhost:7181/get/{TextBoxValue}");
+
+        if (result.IsSuccessStatusCode)
+        {
+            RequestResult = await result.Content.ReadAsStringAsync();
+        }
+    }
+
+    private async Task DoPost()
+    {
+        var multipartContent = new MultipartFormDataContent();
+        multipartContent.Add(new StringContent(TextBoxValue), "arg");
+
+        var result = await Http.PostAsync("https://localhost:7181/post", multipartContent);
+
+        if (result.IsSuccessStatusCode)
+        {
+            RequestResult = await result.Content.ReadAsStringAsync();
+        }
+    }
+}

@@ -10,3 +10,4 @@ Blazor projects and sample files for testing and support:
 * `TelerikApp` - an app that is similar to the standard Blazor project template, but uses only Telerik components (Drawer, Menu, Button, Grid).
 * `TelerikBlazorEF` - an app with an Entity Framework (SQLite) CRUD data service and Telerik databound components.
 * `TelerikRazorTemplates` - a collection of isolated `.razor` files to quickly start experimenting with Telerik Blazor components.
+* `WasmAppMinApi` - a WebAssembly app that uploads files to Minimal API with CORS and Antiforgery tokens. Make sure to set both `MinimalApi` and `WasmAppMinApi` as startup projects.
