@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
-
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using WasmAppMinApi.Shared;
 
 const string ALLOW_CORS_POLICY_NAME = "CORS_POLICY_UPLOAD";
@@ -10,6 +11,15 @@ const string ANTIFORGERY_COOKIE_NAME = "XSRF-TOKEN-UPLOAD";
 const string UPLOADS_FOLDER = "uploads";
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 128 * 1024 * 1024;
+});
+builder.Services.Configure<KestrelServerOptions>(options =>
+{
+    options.Limits.MaxRequestBodySize = 128 * 1024 * 1024;
+});
 
 builder.Services.AddCors(options =>
 {
@@ -47,12 +57,6 @@ app.MapGet("/api/upload/token", (HttpContext context, IAntiforgery antiforgery) 
         tokenSet.HeaderName ?? string.Empty,
         tokenSet.RequestToken ?? string.Empty
     );
-
-    // Cross-domain cookie won't be set.
-    // See JS code in Upload.razor.
-
-    //context.Response.Cookies.Append(ANTIFORGERY_COOKIE_NAME, tokenSet.CookieToken ?? string.Empty,
-    //    new CookieOptions { HttpOnly = false });
 
     return TypedResults.Ok(afData);
 });
