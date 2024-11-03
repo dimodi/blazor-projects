@@ -108,19 +108,19 @@ app.MapPost("/api/upload/remove", [EnableCors(ALLOW_CORS_POLICY_NAME)] ([FromFor
 
 #region Minimal API 101
 
-app.MapGet("/", [EnableCors(ALLOW_CORS_POLICY_NAME)] () => "Hello World!");
+app.MapGet("/", () => "Hello World!");
 
 app.MapGet("/get", () =>
 {
     return $"GET Response at {DateTime.Now.ToString("HH:mm:ss.fff")}.";
 });
 
-app.MapGet("/get/{arg}", [EnableCors(ALLOW_CORS_POLICY_NAME)] (string arg) =>
+app.MapGet("/get/{arg}", (string arg) =>
 {
     return $"GET response for {arg} at {DateTime.Now.ToString("HH:mm:ss.fff")}.";
 });
 
-app.MapPost("/post", [EnableCors(ALLOW_CORS_POLICY_NAME)] ([FromForm] string arg) =>
+app.MapPost("/post", ([FromForm] string arg) =>
 {
     return $"POST response for {arg} at {DateTime.Now.ToString("HH:mm:ss.fff")}";
 }).DisableAntiforgery();
