@@ -2,6 +2,22 @@
 
 @using Telerik.Blazor.Components.Editor
 
+<TelerikEditor @bind-Value="@EditorValue"
+               Tools="@EditorToolSets.All"
+               Height="400px">
+</TelerikEditor>
+
+<h2>Raw Editor Value</h2>
+
+<TelerikTextArea @bind-Value="@EditorValue"
+                 Rows="5" />
+
+@code {
+    private string EditorValue { get; set; } = @"<p>foo</p><p>bar</p>";
+}
+
+@*@using Telerik.Blazor.Components.Editor
+
 <TelerikEditor @ref="EditorRef"
                Tools="@EditorTools"
                @bind-Value="@EditorValue"
@@ -41,7 +57,7 @@
             await EditorRef.ExecuteAsync(new HtmlCommandArgs("insertHtml", "<hr />"));
         }
     }
-}
+}*@
 
 @*@using Telerik.Windows.Documents.Flow.FormatProviders.Docx
     @using Telerik.Windows.Documents.Flow.FormatProviders.Html
