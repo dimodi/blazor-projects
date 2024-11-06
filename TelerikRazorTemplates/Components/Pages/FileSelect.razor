@@ -1,13 +1,6 @@
 ﻿@page "/fileselect"
 
-@using System.IO
-@using Microsoft.AspNetCore.Hosting
-@using System.Threading
-
-@inject IWebHostEnvironment HostingEnvironment
-
 <TelerikFileSelect AllowedExtensions="@AllowedExtensions"
-                   OnRemove="@OnFileRemove"
                    OnSelect="@OnFileSelect" />
 
 @code {
@@ -21,47 +14,14 @@
         {
             if (!file.InvalidExtension)
             {
-                //await UploadFile(file);
-                await ReadFile(file);
+                Tokens.Add(file.Id, new CancellationTokenSource());
+
+                var byteArray = new byte[file.Size];
+                await using MemoryStream ms = new MemoryStream(byteArray);
+                await file.Stream.CopyToAsync(ms, Tokens[file.Id].Token);
+
+                Console.WriteLine(file.Name + " - " + file.Size.ToString());
             }
         }
-    }
-
-    private void OnFileRemove(FileSelectEventArgs args)
-    {
-        foreach (var file in args.Files)
-        {
-            Tokens[file.Id].Cancel();
-            Tokens.Remove(file.Id);
-
-            var path = Path.Combine(HostingEnvironment.WebRootPath, file.Name);
-
-            if (System.IO.File.Exists(path))
-            {
-                System.IO.File.Delete(path);
-            }
-        }
-    }
-
-    private async Task ReadFile(FileSelectFileInfo file)
-    {
-        Tokens.Add(file.Id, new CancellationTokenSource());
-
-        var byteArray = new byte[file.Size];
-        await using MemoryStream ms = new MemoryStream(byteArray);
-        await file.Stream.CopyToAsync(ms, Tokens[file.Id].Token);
-        //await file.Stream.CopyToAsync(ms);
-
-        Console.WriteLine(file.Name + " - " + file.Size.ToString());
-    }
-
-    private async Task UploadFile(FileSelectFileInfo file)
-    {
-        Tokens.Add(file.Id, new CancellationTokenSource());
-
-        var path = Path.Combine(HostingEnvironment.WebRootPath, file.Name);
-        await using FileStream fs = new FileStream(path, FileMode.Create);
-
-        await file.Stream.CopyToAsync(fs, Tokens[file.Id].Token);
     }
 }

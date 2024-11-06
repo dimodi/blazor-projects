@@ -2,10 +2,8 @@
 
 <TelerikButton OnClick="@( () => WindowVisible = !WindowVisible )">Toggle Window</TelerikButton>
 
-<label><TelerikCheckBox @bind-Value="@WindowModal" /> Use Modality</label>
-
 <TelerikWindow @bind-Visible="@WindowVisible"
-               Modal="@WindowModal">
+               Modal="false">
     <WindowActions>
         <WindowAction Name="Minimize" />
         <WindowAction Name="Close" />
@@ -20,6 +18,4 @@
 
 @code {
     private bool WindowVisible { get; set; }
-
-    private bool WindowModal { get; set; }
 }

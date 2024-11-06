@@ -1,6 +1,21 @@
-﻿@page "/chart"
+﻿@page "/chart-image"
 
-<TelerikChart>
+@inject IJSRuntime js
+
+<script nonce="BL9992" suppress-error="BL9992">//
+    function getChartImage() {
+        var c = document.querySelector(".exportable-chart canvas");
+        return c.toDataURL("image/png");
+    }
+//</script>
+
+<PageTitle>Index</PageTitle>
+
+<TelerikButton OnClick="@OnButtonClick">Test</TelerikButton>
+
+<img src="@ImageDataUrl" width="300" />
+
+<TelerikChart RenderAs="@RenderingMode.Canvas" Class="exportable-chart">
     <ChartSeriesItems>
         <ChartSeries Type="ChartSeriesType.Line"
                      Data="@Series1Data"
@@ -42,6 +57,13 @@
     private List<SalesData> Series1Data { get; set; } = new();
     private List<SalesData> Series2Data { get; set; } = new();
     private List<SalesData> Series3Data { get; set; } = new();
+
+    private string ImageDataUrl { get; set; } = string.Empty;
+
+    private async Task OnButtonClick()
+    {
+        ImageDataUrl = await js.InvokeAsync<string>("getChartImage");
+    }
 
     protected override async Task OnInitializedAsync()
     {

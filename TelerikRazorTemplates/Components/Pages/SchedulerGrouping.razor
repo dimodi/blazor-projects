@@ -1,4 +1,4 @@
-﻿@page "/scheduler"
+﻿@page "/scheduler-grouping"
 
 <TelerikScheduler Data="@SchedulerData"
                   @bind-Date="@SelectedDate"
@@ -9,20 +9,33 @@
                   OnUpdate="@OnSchedulerUpdate"
                   OnDelete="@OnSchedulerDelete"
                   Height="600px">
+    <SchedulerSettings>
+        <SchedulerGroupSettings Resources="@GroupingResources" Orientation="@SchedulerGroupOrientation.Horizontal" />
+    </SchedulerSettings>
     <SchedulerViews>
         <SchedulerDayView StartTime="@StartTime" />
         <SchedulerWeekView StartTime="@StartTime" />
+        <SchedulerMultiDayView StartTime="@StartTime" />
         <SchedulerMonthView />
     </SchedulerViews>
+    <SchedulerResources>
+        <SchedulerResource Field="Manager" Title="Manager" Data="@SchedulerManagers" />
+        <SchedulerResource Field="Room" Title="Edit Room" Data="@SchedulerResources" />
+    </SchedulerResources>
 </TelerikScheduler>
 
 @code {
-    private SchedulerDataService AppointmentService = new();
+    private AppointmentService appointmentService = new();
+    private ResourceService resourceService = new();
 
     private DateTime SelectedDate { get; set; } = DateTime.Today;
     private DateTime StartTime { get; set; } = DateTime.Today.AddHours(7);
 
-    private List<Appointment> SchedulerData { get; set; } = new();
+    private List<Appointment> SchedulerData = new List<Appointment>();
+    private List<Resource> SchedulerResources = new List<Resource>();
+    List<Resource> SchedulerManagers = new List<Resource>();
+
+    private List<string> GroupingResources = new List<string> { "Room", "Manager" };
 
     private void OnSchedulerUpdate(SchedulerUpdateEventArgs args)
     {
@@ -37,6 +50,8 @@
             matchingItem.Start = item.Start;
             matchingItem.End = item.End;
             matchingItem.IsAllDay = item.IsAllDay;
+            matchingItem.Room = item.Room;
+            matchingItem.Manager = item.Manager;
         }
     }
 
@@ -56,14 +71,16 @@
 
     protected override async Task OnInitializedAsync()
     {
-        SchedulerData = await AppointmentService.GetAppointmentsAsync();
+        SchedulerResources = await resourceService.GetResourcesAsync();
+        SchedulerManagers = await resourceService.GetManagersAsync();
+        SchedulerData = await appointmentService.GetAppointmentsAsync();
     }
 
-    public class SchedulerDataService
+    public class AppointmentService
     {
         public async Task<List<Appointment>> GetAppointmentsAsync()
         {
-            await Task.Delay(1);
+            await Task.Delay(0);
 
             return GetAppointments();
         }
@@ -150,6 +167,70 @@
         }
     }
 
+    public class ResourceService
+    {
+        public async Task<List<Resource>> GetResourcesAsync()
+        {
+            await Task.Delay(0);
+
+            return GetResources();
+        }
+
+        public List<Resource> GetResources()
+        {
+            List<Resource> result = new List<Resource>();
+
+            result.Add(new Resource()
+            {
+                Text = "Small meeting room",
+                Value = "1",
+                Color = "#66ccff"
+            });
+            result.Add(new Resource()
+            {
+                Text = "Big meeting room",
+                Value = "2",
+                Color = "#0066ff"
+            });
+
+            return result;
+        }
+
+        public async Task<List<Resource>> GetManagersAsync()
+        {
+            await Task.Delay(0);
+
+            return GetManagers();
+        }
+
+        public List<Resource> GetManagers()
+        {
+            List<Resource> result = new List<Resource>();
+
+            result.Add(new Resource()
+            {
+                Text = "Alex",
+                Value = "1",
+                Color = "#390"
+            });
+            result.Add(new Resource()
+            {
+                Text = "Bob",
+                Value = "2",
+                Color = "#369"
+            });
+
+            return result;
+        }
+    }
+
+    public class Resource
+    {
+        public string Text { get; set; } = string.Empty;
+        public string Value { get; set; } = string.Empty;
+        public string Color { get; set; } = string.Empty;
+    }
+
     public class Appointment
     {
         public Guid Id { get; set; }
@@ -158,11 +239,15 @@
         public DateTime End { get; set; }
         public bool IsAllDay { get; set; }
         public string Description { get; set; } = string.Empty;
+        public string Room { get; set; } = string.Empty;
+        public string Manager { get; set; } = string.Empty;
 
         public Appointment()
         {
             var rand = new Random();
             Id = Guid.NewGuid();
+            Room = rand.Next(1, 3).ToString();
+            Manager = rand.Next(1, 3).ToString();
         }
     }
 }

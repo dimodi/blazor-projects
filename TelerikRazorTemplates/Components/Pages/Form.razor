@@ -9,7 +9,6 @@
         <TelerikValidationSummary />
     </FormValidation>
     <FormItems>
-        <FormItem Field="@nameof(Person.Id)" Enabled="false"></FormItem>
         <FormItem Field="@nameof(Person.FirstName)" LabelText="First Name"></FormItem>
         <FormItem Field="@nameof(Person.LastName)" LabelText="Last Name"></FormItem>
         <FormItem Field="@nameof(Person.BirthDate)" LabelText="Birth Date"></FormItem>
@@ -17,25 +16,10 @@
 </TelerikForm>
 
 @code {
-    private Person? Employee { get; set; }
-
-    protected override void OnInitialized()
-    {
-        Employee = new Person()
-        {
-            Id = 1,
-            //FirstName = "John",
-            //LastName = "Doe",
-            //BirthDate = DateTime.Today.AddYears(-30)
-        };
-
-        base.OnInitialized();
-    }
+    private Person Employee { get; set; } = new();
 
     public class Person
     {
-        public int Id { get; set; }
-
         [Required]
         [MinLength(2)]
         [MaxLength(24)]

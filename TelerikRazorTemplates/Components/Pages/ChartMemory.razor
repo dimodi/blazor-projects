@@ -1,4 +1,11 @@
-﻿@page "/chart"
+﻿@page "/chart-memory"
+
+@using System.Timers
+
+@implements IDisposable
+
+<TelerikButton OnClick="@( () => Timer?.Start() )">Start Timer</TelerikButton>
+<TelerikButton OnClick="@( () => Timer?.Stop() )">Stop Timer</TelerikButton>
 
 <TelerikChart>
     <ChartSeriesItems>
@@ -27,9 +34,7 @@
     </ChartCategoryAxes>
 
     <ChartValueAxes>
-        <ChartValueAxis Max="1200">
-            <ChartValueAxisLabels Format="c2" />
-        </ChartValueAxis>
+        <ChartValueAxis Max="1200"></ChartValueAxis>
     </ChartValueAxes>
 
     <ChartTitle Text="Revenue per Product"></ChartTitle>
@@ -43,6 +48,8 @@
     private List<SalesData> Series2Data { get; set; } = new();
     private List<SalesData> Series3Data { get; set; } = new();
 
+    private Timer Timer { get; set; } = new Timer();
+
     protected override async Task OnInitializedAsync()
     {
         GenerateData();
@@ -50,8 +57,31 @@
         await base.OnInitializedAsync();
     }
 
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (Timer.Enabled == false)
+        {
+            Timer.Interval = 1000;
+            Timer.Elapsed -= OnTimerElapsed;
+            Timer.Elapsed += OnTimerElapsed;
+            //Timer.Start();
+        }
+    }
+
+    private void OnTimerElapsed(Object? source, ElapsedEventArgs e)
+    {
+        InvokeAsync(GenerateData);
+
+        // call StateHasChanged only if necessary
+        InvokeAsync(StateHasChanged);
+    }
+
     private void GenerateData()
     {
+        Series1Data = new List<SalesData>();
+        Series2Data = new List<SalesData>();
+        Series3Data = new List<SalesData>();
+
         var now = DateTime.Today;
         var monthsBack = 12;
 
@@ -83,6 +113,12 @@
                 TimePeriod = dateTimeValue
             });
         }
+    }
+
+    public void Dispose()
+    {
+        Timer?.Stop();
+        Timer?.Close();
     }
 
     public class SalesData

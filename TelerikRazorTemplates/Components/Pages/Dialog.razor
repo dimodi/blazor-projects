@@ -2,6 +2,8 @@
 
 <TelerikButton OnClick="@( () => DialogVisible = true )">Show Dialog</TelerikButton>
 
+<TelerikButton OnClick="@OnDialogFactoryButtonClick">Show DialogFactory Alert</TelerikButton>
+
 <TelerikDialog @bind-Visible="@DialogVisible"
                Width="300px"
                ShowCloseButton="true"
@@ -22,10 +24,21 @@
 </TelerikDialog>
 
 @code {
+    [CascadingParameter]
+    public DialogFactory? TelerikDialogs { get; set; }
+
     private bool DialogVisible { get; set; }
 
     private void OnDialogButtonClick(bool result)
     {
         DialogVisible = false;
+    }
+
+    private async Task OnDialogFactoryButtonClick()
+    {
+        if (TelerikDialogs != null)
+        {
+            await TelerikDialogs.AlertAsync("Telerik Alert", "DialogFactory Alert");
+        }
     }
 }

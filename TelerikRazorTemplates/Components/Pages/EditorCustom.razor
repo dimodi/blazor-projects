@@ -1,0 +1,42 @@
+﻿@page "/editor-custom"
+ 
+@using Telerik.Blazor.Components.Editor
+
+<TelerikEditor @ref="EditorRef"
+               Tools="@EditorTools"
+               @bind-Value="@EditorValue"
+               Height="300px">
+    <EditorCustomTools>
+        <EditorCustomTool Name="InsertHtmlTool">
+            <TelerikButton OnClick="@ExecuteInsert"
+                           Icon="@SvgIcon.InsertBottom"
+                           Title="Insert HTML"></TelerikButton>
+        </EditorCustomTool>
+    </EditorCustomTools>
+</TelerikEditor>
+
+<TelerikTextArea @bind-Value="@EditorValue"
+                 Rows="5" />
+
+@code {
+    private TelerikEditor? EditorRef { get; set; }
+
+    private string EditorValue { get; set; } = @"<p>foo</p><p>bar</p>";
+
+    private List<IEditorTool> EditorTools { get; set; } = EditorToolSets.All;
+
+    protected override void OnInitialized()
+    {
+        EditorTools.Add(new CustomTool("InsertHtmlTool"));
+
+        base.OnInitialized();
+    }
+
+    private async Task ExecuteInsert()
+    {
+        if (EditorRef != null)
+        {
+            await EditorRef.ExecuteAsync(new HtmlCommandArgs("insertHtml", "<hr />"));
+        }
+    }
+}

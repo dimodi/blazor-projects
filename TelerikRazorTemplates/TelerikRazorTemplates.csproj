@@ -10,5 +10,6 @@
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'http' " />
   <ItemGroup>
     <PackageReference Include="Telerik.UI.for.Blazor" Version="*" />
+    <PackageReference Include="Telerik.Documents.Flow" Version="2024.3.806" />
   </ItemGroup>
 </Project>
