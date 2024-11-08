@@ -18,7 +18,7 @@ body > .k-appbar {
 .mainlayout-drawer {
     flex: 1;
     align-items: stretch;
-    height: calc(100vh - 84px);
+    overflow: hidden;
 }
 
 h1:focus {
