@@ -2,9 +2,9 @@
 
 @using System.IO
 
-@inject IWebHostEnvironment HostingEnvironment
+@*@inject IWebHostEnvironment HostingEnvironment
 
-<TelerikButton OnClick="@OnButtonClick">Load Test PDF</TelerikButton>
+<TelerikButton OnClick="@OnButtonClick">Load Test PDF</TelerikButton>*@
 
 <TelerikPdfViewer Data="@PdfSource"
                   Height="600px">
@@ -13,12 +13,12 @@
 @code {
     private byte[]? PdfSource { get; set; }
 
-    private async Task OnButtonClick()
-    {
-        var pdfLocation = Path.Combine(HostingEnvironment.WebRootPath, "pdf-minimal.pdf");
+    //private async Task OnButtonClick()
+    //{
+    //    var pdfLocation = Path.Combine(HostingEnvironment.WebRootPath, "pdf-minimal.pdf");
 
-        PdfSource = await System.IO.File.ReadAllBytesAsync(pdfLocation);
-    }
+    //    PdfSource = await System.IO.File.ReadAllBytesAsync(pdfLocation);
+    //}
 
     protected override async Task OnInitializedAsync()
     {
