@@ -1,9 +1,6 @@
-﻿@*@page "/dpl"
-
-@using System.IO
+﻿@using System.IO
 
 @using Telerik.Windows.Documents.Flow.Model
-@using Telerik.Windows.Documents.Common.FormatProviders
 @using Telerik.Windows.Documents.Flow.FormatProviders.Txt
 @using Telerik.Windows.Documents.Flow.FormatProviders.Html
 @using Telerik.Windows.Documents.Flow.FormatProviders.Docx
@@ -19,6 +16,7 @@ Convert HTML to TXT:
 Convert DOCS to HTML:
 
 <TelerikFileSelect AllowedExtensions="@( new List<string> { ".docx" } )"
+                   Multiple="false"
                    OnSelect="@OnSelect" />
 
 <TelerikEditor @bind-Value="@EditorValue" />
@@ -33,7 +31,8 @@ Convert DOCS to HTML:
 <li>List item 2</li>
 </ul>
 ";
-    string PlainTxtValue { get; set; }
+    string PlainTxtValue { get; set; } = string.Empty;
+    string EditorValue { get; set; } = string.Empty;
 
     private void ConvertHtmlToTxt(MouseEventArgs e)
     {
@@ -43,11 +42,15 @@ Convert DOCS to HTML:
         PlainTxtValue = txtProvider.Export(document);
     }
 
-    string EditorValue { get; set; }
-
     async Task OnSelect(FileSelectEventArgs args)
     {
-        var file = args.Files.FirstOrDefault();
+        var file = args.Files.First();
+
+        if (file.InvalidExtension)
+        {
+            return;
+        }
+
         var byteArray = new byte[file.Size];
 
         var fileFormatProvider = new DocxFormatProvider();
@@ -63,4 +66,4 @@ Convert DOCS to HTML:
             EditorValue = System.Text.Encoding.UTF8.GetString(resultStream.ToArray());
         }
     }
-}*@
+}

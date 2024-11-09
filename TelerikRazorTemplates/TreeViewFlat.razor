@@ -1,6 +1,4 @@
-﻿@page "/treeview-flat"
-
-<TelerikTreeView Data="@FlatData" @bind-ExpandedItems="@ExpandedItems" />
+﻿<TelerikTreeView Data="@FlatData" @bind-ExpandedItems="@ExpandedItems" />
 
 @code {
     private IEnumerable<TreeItem> FlatData { get; set; } = new List<TreeItem>();
