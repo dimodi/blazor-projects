@@ -11,10 +11,9 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
-
-
   <ItemGroup>
-    <PackageReference Include="Telerik.UI.for.Blazor" Version="6.2.0" />
-    <PackageReference Include="Telerik.Documents.Flow" Version="2024.3.806" />
+    <PackageReference Include="Telerik.UI.for.Blazor" Version="*" />
+    <PackageReference Include="Telerik.Documents.SpreadsheetStreaming" Version="*" />
+    <PackageReference Include="Telerik.Documents.Flow" Version="*" />
   </ItemGroup>
 </Project>

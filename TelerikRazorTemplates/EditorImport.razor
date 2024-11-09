@@ -37,10 +37,10 @@
 
         DocxFormatProvider docxFormatProvider = new DocxFormatProvider();
 
-        RadFlowDocument doc = docxFormatProvider.Import(ms);
+        RadFlowDocument doc = docxFormatProvider.Import(ms, new TimeSpan(0, 0, 5));
 
         HtmlFormatProvider htmlFormatProvider = new HtmlFormatProvider();
 
-        EditorValue = htmlFormatProvider.Export(doc);
+        EditorValue = htmlFormatProvider.Export(doc, new TimeSpan(0, 0, 5));
     }
 }
