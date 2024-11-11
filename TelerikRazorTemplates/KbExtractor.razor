@@ -1,0 +1,233 @@
+﻿@using IO = System.IO
+@using Telerik.DataSource
+
+<TelerikGrid Data="@KBFiles"
+             TItem="@KbModel"
+             Class="kb-grid"
+             FilterMode="@GridFilterMode.FilterRow"
+             Groupable="true"
+             OnStateInit="@OnGridStateInit"
+             ShowColumnMenu="true"
+             Sortable="true"
+             Height="90vh">
+    <GridAggregates>
+        <GridAggregate Field="@nameof(KbModel.Component)" FieldType="@typeof(string)" Aggregate="@GridAggregateType.Count" />
+        <GridAggregate Field="@nameof(KbModel.Title)" FieldType="@typeof(string)" Aggregate="@GridAggregateType.Count" />
+    </GridAggregates>
+    <GridToolBarTemplate>
+        <label style="display: flex; align-items: center; gap: .4em;">
+            <code>blazor-docs</code> <span> path:</span>
+            <TelerikTextBox @bind-Value="@DocsPath"
+                            Placeholder="e.g. C:\Work\blazor-docs"
+                            Width="300px" />
+        </label>
+        <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary"
+                       OnClick="@OnButtonClick">Get KBs</TelerikButton>
+    </GridToolBarTemplate>
+    <GridColumns>
+        <GridColumn Field="@nameof(KbModel.FileName)" Width="300px" Visible="false" />
+        <GridColumn Field="@nameof(KbModel.Title)">
+            <Template>
+                @{ var dataItem = (KbModel)context; }
+                <a href="https://docs.telerik.com/blazor-ui/knowledge-base/@dataItem.FileName">@dataItem.Title</a>
+            </Template>
+            <FooterTemplate>
+                Total: @context.Count
+            </FooterTemplate>
+        </GridColumn>
+        <GridColumn Field="@nameof(KbModel.Component)"
+                    Width="240px">
+            <FilterCellTemplate>
+                <TelerikComboBox Data="@ComponentNames"
+                                 Value="@ComponentFilterValue"
+                                 ValueChanged="@( (string newValue) => OnComponentFilterChange(newValue, context) )"
+                                 Filterable="true"
+                                 FilterOperator="@StringFilterOperator.Contains"
+                                 ShowClearButton="true">
+                </TelerikComboBox>
+            </FilterCellTemplate>
+            <GroupHeaderTemplate>
+                @context.Value, @context.Count
+            </GroupHeaderTemplate>
+        </GridColumn>
+        <GridColumn Field="@nameof(KbModel.DateCreated)"
+                    Title="Created"
+                    DisplayFormat="{0:yyyy-MMM-dd}"
+                    FilterEditorFormat="yyyy-MMM-dd"
+                    Visible="false" />
+    </GridColumns>
+</TelerikGrid>
+
+<style>
+    .kb-grid td a {
+        color: var(--kendo-color-primary);
+    }
+</style>
+
+@code {
+    private string DocsPath { get; set; } = string.Empty; // "/Users/dimov/Work/repos/blazor-docs";
+    private const string ComponentsPath = "components";
+    private const string KBPath = "knowledge-base";
+    private const string TitleLinePrefix = "title:";
+
+    private readonly Dictionary<string, string> ComponentNameMap = new Dictionary<string, string>() {
+        { "autocomplete", "dropdowns" },
+        { "combo", "dropdowns" },
+        { "combobox", "dropdowns" },
+        { "dropdown", "dropdowns" },
+        { "dropdowns", "dropdowns" },
+        { "dropdownlist", "dropdowns" },
+        { "multicolumncombobox", "dropdowns" },
+        { "multiselect", "dropdowns" },
+
+        { "date", "dateinputs" },
+        { "dateinput", "dateinputs" },
+        { "datepicker", "dateinputs" },
+        { "datetimepicker", "dateinputs" },
+        { "daterangepicker", "dateinputs" },
+        { "pickers", "dateinputs" },
+
+        { "radialgauge", "gauges" },
+        { "arcgauge", "gauges" },
+        { "gauge", "gauges" },
+        { "lineargauge", "gauges" },
+
+        { "numeric", "numerictextbox" },
+        { "grids", "grid" },
+        { "loading", "loader" },
+
+        { "inputs", "textboxes" },
+        { "textbox", "textboxes" },
+        { "textarea", "textboxes" }
+    };
+
+    private List<string> ComponentNames { get; set; } = new();
+    private List<KbModel>? KBFiles { get; set; }
+
+    private string ComponentFilterValue { get; set; } = string.Empty;
+
+    private async Task OnComponentFilterChange(string newValue, FilterCellTemplateContext context)
+    {
+        ComponentFilterValue = newValue;
+
+        if (string.IsNullOrEmpty(ComponentFilterValue))
+        {
+            await context.ClearFilterAsync();
+        }
+        else
+        {
+            context.FilterDescriptor.FilterDescriptors.Cast<FilterDescriptor>().First().Value = ComponentFilterValue;
+            await context.FilterAsync();
+        }
+    }
+
+    private void OnButtonClick()
+    {
+        if (string.IsNullOrEmpty(DocsPath))
+        {
+            return;
+        }
+
+        var componentsDirectory = new DirectoryInfo(Path.Combine(DocsPath, ComponentsPath));
+        if (!componentsDirectory.Exists)
+        {
+            return;
+        }
+
+        ComponentNames = componentsDirectory.EnumerateDirectories().Select(x => x.Name).ToList();
+
+        ComponentNames.Add("barcode");
+        ComponentNames.Add("common");
+        ComponentNames.Add("qrcode");
+        ComponentNames.Add("radialgauge");
+        ComponentNames.Add("dpl");
+
+        NormalizeComponentNamesCollection();
+
+        ComponentNames = ComponentNames.OrderBy(x => x).ToList();
+
+        var kbDirectory = new DirectoryInfo(Path.Combine(DocsPath, KBPath));
+
+        var files = kbDirectory.EnumerateFiles();
+
+        KBFiles = new();
+
+        foreach (var file in files)
+        {
+            IEnumerable<string> kbLines = IO.File.ReadLines(file.FullName);
+
+            string title = kbLines.FirstOrDefault(x => x.StartsWith(TitleLinePrefix))?.Replace(TitleLinePrefix, "").Trim() ?? string.Empty;
+
+            string kbFileNameComponentCandidate = MapComponentNameExceptions(file.Name.Substring(0, file.Name.IndexOf("-")));
+
+            if (!ComponentNames.Contains(kbFileNameComponentCandidate))
+            {
+                kbFileNameComponentCandidate = "common";
+            }
+
+            KBFiles.Add(new KbModel()
+            {
+                FileName = file.Name.Replace(".md", ""),
+                Component = kbFileNameComponentCandidate,
+                Title = title,
+                DateCreated = file.CreationTime
+            });
+        }
+    }
+
+    private void OnGridStateInit(GridStateEventArgs<KbModel> args)
+    {
+        args.GridState.GroupDescriptors.Add(new GroupDescriptor()
+        {
+            Member = nameof(KbModel.Component),
+            MemberType = typeof(string)
+        });
+
+        args.GridState.SortDescriptors.Add(new SortDescriptor()
+        {
+            Member = nameof(KbModel.DateCreated),
+            SortDirection = ListSortDirection.Descending
+        });
+    }
+
+    private void NormalizeComponentNamesCollection()
+    {
+        List<string> newComponentNamesCollection = new();
+        foreach (var componentName in ComponentNames)
+        {
+            if (ComponentNameMap.ContainsKey(componentName))
+            {
+                string mappedComponentName = ComponentNameMap[componentName];
+
+                if (!newComponentNamesCollection.Contains(mappedComponentName))
+                {
+                    newComponentNamesCollection.Add(ComponentNameMap[componentName]);
+                }
+            }
+            else
+            {
+                newComponentNamesCollection.Add(componentName);
+            }
+        }
+
+        ComponentNames = newComponentNamesCollection;
+    }
+
+    private string MapComponentNameExceptions(string originalComponentName)
+    {
+        if (ComponentNameMap.ContainsKey(originalComponentName))
+        {
+            return ComponentNameMap[originalComponentName];
+        }
+
+        return originalComponentName;
+    }
+
+    public class KbModel
+    {
+        public string FileName { get; set; } = string.Empty;
+        public string Component { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
+        public DateTime DateCreated { get; set; }
+    }
+}
