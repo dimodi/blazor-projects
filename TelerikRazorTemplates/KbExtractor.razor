@@ -28,7 +28,7 @@
         <GridColumn Field="@nameof(KbModel.FileName)" Width="300px" Visible="false" />
         <GridColumn Field="@nameof(KbModel.Title)">
             <Template>
-                @{ var dataItem = (KbModel)context; }
+                @{ KbModel dataItem = (KbModel)context; }
                 <a href="https://docs.telerik.com/blazor-ui/knowledge-base/@dataItem.FileName">@dataItem.Title</a>
             </Template>
             <FooterTemplate>
@@ -128,7 +128,7 @@
             return;
         }
 
-        var componentsDirectory = new DirectoryInfo(Path.Combine(DocsPath, ComponentsPath));
+        DirectoryInfo componentsDirectory = new DirectoryInfo(Path.Combine(DocsPath, ComponentsPath));
         if (!componentsDirectory.Exists)
         {
             return;
@@ -144,15 +144,13 @@
 
         NormalizeComponentNamesCollection();
 
-        ComponentNames = ComponentNames.OrderBy(x => x).ToList();
+        DirectoryInfo kbDirectory = new DirectoryInfo(Path.Combine(DocsPath, KBPath));
 
-        var kbDirectory = new DirectoryInfo(Path.Combine(DocsPath, KBPath));
-
-        var files = kbDirectory.EnumerateFiles();
+        IEnumerable<FileInfo> files = kbDirectory.EnumerateFiles();
 
         KBFiles = new();
 
-        foreach (var file in files)
+        foreach (FileInfo file in files)
         {
             IEnumerable<string> kbLines = IO.File.ReadLines(file.FullName);
 
@@ -193,7 +191,7 @@
     private void NormalizeComponentNamesCollection()
     {
         List<string> newComponentNamesCollection = new();
-        foreach (var componentName in ComponentNames)
+        foreach (string componentName in ComponentNames)
         {
             if (ComponentNameMap.ContainsKey(componentName))
             {
@@ -210,7 +208,7 @@
             }
         }
 
-        ComponentNames = newComponentNamesCollection;
+        ComponentNames = newComponentNamesCollection.OrderBy(x => x).ToList();
     }
 
     private string MapComponentNameExceptions(string originalComponentName)
