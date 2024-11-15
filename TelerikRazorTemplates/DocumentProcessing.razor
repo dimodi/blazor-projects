@@ -34,12 +34,12 @@ Convert DOCS to HTML:
     string PlainTxtValue { get; set; } = string.Empty;
     string EditorValue { get; set; } = string.Empty;
 
-    private void ConvertHtmlToTxt(MouseEventArgs e)
+    private void ConvertHtmlToTxt(MouseEventArgs args)
     {
         HtmlFormatProvider htmlProvider = new HtmlFormatProvider();
-        RadFlowDocument document = htmlProvider.Import(HtmlValue);
+        RadFlowDocument document = htmlProvider.Import(HtmlValue, new TimeSpan(0, 0, 3));
         TxtFormatProvider txtProvider = new TxtFormatProvider();
-        PlainTxtValue = txtProvider.Export(document);
+        PlainTxtValue = txtProvider.Export(document, new TimeSpan(0, 0, 3));
     }
 
     async Task OnSelect(FileSelectEventArgs args)
@@ -58,11 +58,11 @@ Convert DOCS to HTML:
 
         await using MemoryStream ms = new MemoryStream(byteArray);
         await file.Stream.CopyToAsync(ms);
-        RadFlowDocument document = fileFormatProvider.Import(ms);
+        RadFlowDocument document = fileFormatProvider.Import(ms, new TimeSpan(0, 0, 3));
 
         using (MemoryStream resultStream = new MemoryStream())
         {
-            convertFormatProvider.Export(document, resultStream);
+            convertFormatProvider.Export(document, resultStream, new TimeSpan(0, 0, 3));
             EditorValue = System.Text.Encoding.UTF8.GetString(resultStream.ToArray());
         }
     }
