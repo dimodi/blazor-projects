@@ -1,52 +1,64 @@
-﻿@inject IJSRuntime js
+﻿@* .NET to JavaScript *@
+
+@inject IJSRuntime js
+
+<TelerikButton OnClick="@DotNetToJavaScript">.NET to JavaScript</TelerikButton>
+
+<p>@StringValueToUpdateFromCs</p>
+
+@* Move JavaScript code to a separate JS file *@
+<script suppress-error="BL9992">//
+    function updateStringValueFromCs(valueFromServer) {
+        return `JSInterop initiated by server at ${valueFromServer} ms.`;
+    }
+//</script>
+
+@code {
+    private string StringValueToUpdateFromCs { get; set; } = "String value to update from .NET";
+
+    private async Task DotNetToJavaScript()
+    {
+        StringValueToUpdateFromCs = await js.InvokeAsync<string>("updateStringValueFromCs", DateTime.Now.Millisecond);
+    }
+}
+
+@* =============== *@
+
+@* JavaScript to .NET *@
 
 @implements IDisposable
 
-<TelerikButton OnClick="@OnButtonClick1">Update Value 1</TelerikButton>
+<button id="buttonJsToCs">JavaScript to .NET</button>
 
-<button id="button2">Update Value 2</button>
+<p>@StringValueToUpdateFromJs</p>
 
-<p><code>Value</code>: @StringValue</p>
-
+@* Move JavaScript code to a separate JS file *@
 <script suppress-error="BL9992">//
     var dotNet;
 
     function saveDotNetRef(dotNetRef) {
         dotNet = dotNetRef;
 
-        var button = document.getElementById("button2");
+        var button = document.getElementById("buttonJsToCs");
         if (button) {
-            button.addEventListener("click", updateStringValue2);
+            button.addEventListener("click", updateStringValueFromJs);
         }
     }
 
-    function updateStringValue1() {
-        // Use this approach if the algorithm is triggered by C# code.
-        return "111 updated value 111";
-    }
-
-    function updateStringValue2() {
-        // Use this approach if the algorithm is triggered by JS code.
-        dotNet.invokeMethodAsync("UpdateStringValue2", "222 updated value 222");
+    function updateStringValueFromJs() {
+        dotNet.invokeMethodAsync("JavaScriptToDotNet", `JSInterop initiated by client at ${new Date().getMilliseconds()} ms.`);
     }
 //</script>
 
 @code {
-    // Replace <...> with the actual component name
-    private DotNetObjectReference<JavaScript>? DotNetRef;
+    private DotNetObjectReference<JavaScript>? DotNetRef { get; set; }
 
-    private string StringValue { get; set; } = "initial string value";
+    private string StringValueToUpdateFromJs { get; set; } = "String value to update from JavaScript";
 
-    private async Task OnButtonClick1()
+    [JSInvokable("JavaScriptToDotNet")]
+    public void JavaScriptToDotNet(string newStringValue)
     {
-        var newEditorValue = await js.InvokeAsync<string>("updateStringValue1");
-        StringValue = newEditorValue;
-    }
-
-    [JSInvokable("UpdateStringValue2")]
-    public void UpdateStringValue2(string newValue)
-    {
-        StringValue = newValue;
+        StringValueToUpdateFromJs = newStringValue;
         StateHasChanged();
     }
 
