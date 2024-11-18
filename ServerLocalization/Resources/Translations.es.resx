@@ -15,4 +15,16 @@
 	<data name="Greeting" xml:space="preserve">
 		<value>Hola, mundo!</value>
     </data>
+    <data name="Name">
+        <value>Nombre</value>
+    </data>
+    <data name="The Name field is required.">
+        <value>¡Escribe un nombre!</value>
+    </data>
+    <data name="BirthDate">
+        <value>Fecha de nacimiento</value>
+    </data>
+    <data name="The BirthDate field is required.">
+        <value>¡Escribe una fecha de nacimiento!</value>
+    </data>
 </root>

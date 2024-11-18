@@ -58,11 +58,47 @@ namespace ServerLocalization.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Birth Date.
+        /// </summary>
+        public static string BirthDate {
+            get {
+                return ResourceManager.GetString("BirthDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Hello, world!.
         /// </summary>
         public static string Greeting {
             get {
                 return ResourceManager.GetString("Greeting", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name.
+        /// </summary>
+        public static string Name {
+            get {
+                return ResourceManager.GetString("Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enter a birth date!.
+        /// </summary>
+        public static string The_BirthDate_field_is_required_ {
+            get {
+                return ResourceManager.GetString("The BirthDate field is required.", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enter a Name!.
+        /// </summary>
+        public static string The_Name_field_is_required_ {
+            get {
+                return ResourceManager.GetString("The Name field is required.", resourceCulture);
             }
         }
     }

@@ -2,6 +2,7 @@
 
 <PageTitle>Home</PageTitle>
 
+@using System.ComponentModel.DataAnnotations
 @using System.Globalization
 
 @* This Localizer does not require a service registration in Program.cs *@
@@ -13,6 +14,9 @@
 <ul>
     <li><b>CurrentCulture</b>: @CultureInfo.CurrentCulture</li>
     <li><b>CurrentUICulture</b>: @CultureInfo.CurrentUICulture</li>
+    <li><b>Date</b>: @DateTimeValue.ToShortDateString()</li>
+    <li><b>Number</b>: @NumericValue.ToString("N2")</li>
+    <li><b>Currency</b>: @NumericValue.ToString("C2")</li>
 </ul>
 
 <h2>Localized Messages</h2>
@@ -22,6 +26,15 @@
 <p><code>Localizer["Greeting"]</code>: @Localizer["Greeting"]</p>
 <p><code>TypedLocalizer["Greeting"]</code>: @TypedLocalizer["Greeting"]</p>
 
+<h3>DataAnnotation Attributes</h3>
+
+<TelerikForm Model="@Employee">
+    <FormValidation>
+        <TelerikValidationSummary />
+        <DataAnnotationsValidator />
+    </FormValidation>
+</TelerikForm>
+
 <h2>Telerik Messages</h2>
 
 <p><code>TelerikLocalizer["Grid_Edit"]</code>: @TelerikLocalizer["Grid_Edit"]</p>
@@ -30,16 +43,21 @@
 
 <TelerikPager Total="100" />
 
-<h2>Rendered Values</h2>
-
-<ul>
-    <li><b>Date</b>: @DateTimeValue.ToShortDateString()</li>
-    <li><b>Number</b>: @NumericValue.ToString("N2")</li>
-    <li><b>Currency</b>: @NumericValue.ToString("C2")</li>
-</ul>
-
 @code {
     private DateTime DateTimeValue { get; set; } = DateTime.Now;
 
     private double NumericValue = 123.45;
+
+    private Person Employee { get; set; } = new();
+
+    public class Person
+    {
+        [Display(Name = nameof(Translations.Name), ResourceType = typeof(Translations))]
+        [Required(ErrorMessageResourceType = typeof(Translations), ErrorMessageResourceName = "The_Name_field_is_required_")]
+        public string Name { get; set; } = string.Empty;
+
+        [Display(Name = nameof(Translations.BirthDate), ResourceType = typeof(Translations))]
+        [Required(ErrorMessageResourceType = typeof(Translations), ErrorMessageResourceName = "The_BirthDate_field_is_required_")]
+        public DateTime? BirthDate { get; set; }
+    }
 }

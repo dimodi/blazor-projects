@@ -15,4 +15,16 @@
 	<data name="Greeting" xml:space="preserve">
 		<value>Здравей, свят!</value>
     </data>
+    <data name="Name">
+        <value>Име</value>
+    </data>
+    <data name="The Name field is required.">
+        <value>Въведи име!</value>
+    </data>
+    <data name="BirthDate">
+        <value>Дата на раждане</value>
+    </data>
+    <data name="The BirthDate field is required.">
+        <value>Въведи дата на раждане!</value>
+    </data>
 </root>
