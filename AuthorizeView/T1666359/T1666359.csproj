@@ -11,10 +11,4 @@
   <ItemGroup>
     <PackageReference Include="Telerik.UI.for.Blazor" Version="*" />
   </ItemGroup>
-  <ItemGroup>
-    <None Remove="Services\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Services\" />
-  </ItemGroup>
 </Project>
