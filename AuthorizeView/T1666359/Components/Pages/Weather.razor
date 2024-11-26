@@ -8,7 +8,13 @@
 
 <AuthorizeView>
     <Authorized>
-        <p style="color:red">Authorized as @context.User.Identity?.Name</p>
+        <p style="color:green"><code>AuthorizeView</code>: Authorized as @context.User.Identity?.Name</p>
+    </Authorized>
+</AuthorizeView>
+
+<AuthorizeView Roles="Admin">
+    <Authorized>
+        <p style="color:red"><code>AuthorizeView</code>: Authorized in role Admin</p>
     </Authorized>
 </AuthorizeView>
 
