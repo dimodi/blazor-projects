@@ -34,7 +34,8 @@ namespace TelerikBlazorEF.Data
                 entity.HasOne<Employee>()
                     .WithMany()
                     .HasForeignKey(e => e.ManagerId)
-                    .OnDelete(DeleteBehavior.ClientSetNull);
+                    .IsRequired(false)
+                    .OnDelete(DeleteBehavior.SetNull);
             });
 
             base.OnModelCreating(modelBuilder);
