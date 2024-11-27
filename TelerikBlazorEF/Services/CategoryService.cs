@@ -9,14 +9,14 @@ namespace TelerikBlazorEF.Services
 
         public async Task<List<Category>> GetCategoriesAsync()
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using DbContextEF dbContext = await _contextFactory.CreateDbContextAsync();
 
             return dbContext.Categories.ToList();
         }
 
         public async Task<int> CreateCategoryAsync(Category newCategory)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using DbContextEF dbContext = await _contextFactory.CreateDbContextAsync();
 
             dbContext.Categories.Add(newCategory);
             await dbContext.SaveChangesAsync();
@@ -26,7 +26,7 @@ namespace TelerikBlazorEF.Services
 
         public async Task UpdateCategoryAsync(Category updatedCategory)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using DbContextEF dbContext = await _contextFactory.CreateDbContextAsync();
 
             Category? originalCategory = await dbContext.FindAsync<Category>(updatedCategory.Id);
 
@@ -40,7 +40,7 @@ namespace TelerikBlazorEF.Services
 
         public async Task DeleteCategoryAsync(Category category)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using DbContextEF dbContext = await _contextFactory.CreateDbContextAsync();
 
             Category? categoryToDelete = dbContext.Categories.FirstOrDefault(x => x.Id == category.Id);
 
@@ -60,7 +60,7 @@ namespace TelerikBlazorEF.Services
         {
             var wordGenerator = new NameGenerator();
 
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using DbContextEF dbContext = await _contextFactory.CreateDbContextAsync();
 
             if (!dbContext.Categories.Any())
             {
@@ -79,7 +79,7 @@ namespace TelerikBlazorEF.Services
 
         public async Task ClearData()
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using DbContextEF dbContext = await _contextFactory.CreateDbContextAsync();
 
             dbContext.Categories.RemoveRange(dbContext.Categories);
 

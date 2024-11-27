@@ -43,7 +43,8 @@ namespace TelerikBlazorEF.Data
 
         public DbContextEF(DbContextOptions<DbContextEF> options) : base(options)
         {
-            Database.EnsureCreated();
+            // Called once in Program.cs
+            //Database.EnsureCreated();
         }
     }
 }

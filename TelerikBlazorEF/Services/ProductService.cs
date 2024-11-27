@@ -13,14 +13,14 @@ namespace TelerikBlazorEF.Services
 
         public async Task<List<Product>> GetProductsAsync()
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using DbContextEF dbContext = await _contextFactory.CreateDbContextAsync();
 
             return dbContext.Products.Include(p => p.Category).ToList();
         }
 
         public async Task<DataSourceResult> GetProductsAsync(DataSourceRequest request)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using DbContextEF dbContext = await _contextFactory.CreateDbContextAsync();
 
             return await dbContext.Products.ToDataSourceResultAsync(request);
         }
@@ -37,7 +37,7 @@ namespace TelerikBlazorEF.Services
 
         public async Task<int> CreateProductAsync(Product newProduct)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using DbContextEF dbContext = await _contextFactory.CreateDbContextAsync();
 
             dbContext.Products.Add(newProduct);
             await dbContext.SaveChangesAsync();
@@ -47,7 +47,7 @@ namespace TelerikBlazorEF.Services
 
         public async Task UpdateProductAsync(Product updatedProduct)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using DbContextEF dbContext = await _contextFactory.CreateDbContextAsync();
 
             Product? originalProduct = await dbContext.FindAsync<Product>(updatedProduct.Id);
 
@@ -63,7 +63,7 @@ namespace TelerikBlazorEF.Services
 
         public async Task DeleteProductAsync(Product product)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using DbContextEF dbContext = await _contextFactory.CreateDbContextAsync();
 
             Product? productToDelete = dbContext.Products.FirstOrDefault(x => x.Id == product.Id);
 
@@ -83,7 +83,7 @@ namespace TelerikBlazorEF.Services
         {
             var wordGenerator = new NameGenerator();
 
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using DbContextEF dbContext = await _contextFactory.CreateDbContextAsync();
 
             if (!dbContext.Products.Any() && dbContext.Categories.Any())
             {
@@ -109,7 +109,7 @@ namespace TelerikBlazorEF.Services
 
         public async Task ClearData()
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using DbContextEF dbContext = await _contextFactory.CreateDbContextAsync();
 
             dbContext.Products.RemoveRange(dbContext.Products);
 

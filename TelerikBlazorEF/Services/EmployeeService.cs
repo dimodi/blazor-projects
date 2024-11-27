@@ -9,14 +9,14 @@ namespace TelerikBlazorEF.Services
 
         public async Task<List<Employee>> GetEmployeesAsync()
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using DbContextEF dbContext = await _contextFactory.CreateDbContextAsync();
 
             return dbContext.Employees.ToList();
         }
 
         public async Task<int> CreateEmployeeAsync(Employee newEmployee)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using DbContextEF dbContext = await _contextFactory.CreateDbContextAsync();
 
             dbContext.Employees.Add(newEmployee);
             await dbContext.SaveChangesAsync();
@@ -26,7 +26,7 @@ namespace TelerikBlazorEF.Services
 
         public async Task UpdateEmployeeAsync(Employee updatedEmployee)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using DbContextEF dbContext = await _contextFactory.CreateDbContextAsync();
 
             Employee? originalEmployee = await dbContext.FindAsync<Employee>(updatedEmployee.Id);
 
@@ -40,7 +40,7 @@ namespace TelerikBlazorEF.Services
 
         public async Task DeleteEmployeeAsync(Employee employee)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using DbContextEF dbContext = await _contextFactory.CreateDbContextAsync();
 
             Employee? employeeToDelete = dbContext.Employees.FirstOrDefault(x => x.Id == employee.Id);
 
@@ -60,7 +60,7 @@ namespace TelerikBlazorEF.Services
         {
             var wordGenerator = new NameGenerator();
 
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using DbContextEF dbContext = await _contextFactory.CreateDbContextAsync();
 
             if (!dbContext.Employees.Any())
             {
@@ -86,7 +86,7 @@ namespace TelerikBlazorEF.Services
 
         public async Task ClearData()
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using DbContextEF dbContext = await _contextFactory.CreateDbContextAsync();
 
             dbContext.Employees.RemoveRange(dbContext.Employees);
 
