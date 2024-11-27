@@ -19,13 +19,15 @@
                      Pageable="true"
                      Sortable="true"
                      FilterMode="@TreeListFilterMode.FilterRow"
-                     Width="60vw">
+                     Width="66vw">
         <TreeListColumns>
             <TreeListColumn Field="@nameof(Employee.Id)" Editable="false" Filterable="false" Width="80px" />
             <TreeListColumn Field="@nameof(Employee.FirstName)" Expandable="true" Title="First Name" />
             <TreeListColumn Field="@nameof(Employee.LastName)" Title="Last Name" />
             <TreeListColumn Field="@nameof(Employee.BirthDate)" Title="Birth Date" DisplayFormat="{0:d}" />
             <TreeListColumn Field="@nameof(Employee.Gender)" />
+            <TreeListColumn Field="@nameof(Employee.HasDriversLicense)" Title="Drivers License" />
+            <TreeListColumn Field="@nameof(Employee.Salary)" DisplayFormat="{0:c}" />
             <TreeListColumn Field="@nameof(Employee.ManagerId)" Title="Manager" Editable="false" Sortable="false" Filterable="false" Visible="false">
                 <Template>
                     @{ var dataItem = (Employee)context; }
