@@ -10,21 +10,21 @@ namespace TelerikBlazorEF.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Product>().ToTable("Products");
-            modelBuilder.Entity<Product>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-                entity.HasOne<Category>()
-                    .WithMany()
-                    .HasForeignKey(p => p.CategoryId)
-                    .IsRequired()
-                    .OnDelete(DeleteBehavior.Cascade);
-            });
-
             modelBuilder.Entity<Category>().ToTable("Categories");
             modelBuilder.Entity<Category>(entity =>
             {
                 entity.HasKey(e => e.Id);
+            });
+
+            modelBuilder.Entity<Product>().ToTable("Products");
+            modelBuilder.Entity<Product>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasOne(e => e.Category)
+                    .WithMany()
+                    .HasForeignKey(p => p.CategoryId)
+                    .IsRequired()
+                    .OnDelete(DeleteBehavior.Cascade);
             });
 
             modelBuilder.Entity<Employee>().ToTable("Employee");

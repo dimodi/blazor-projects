@@ -37,7 +37,20 @@
     <GridColumns>
         <GridColumn Field="@nameof(Product.Id)" Editable="false" Filterable="false" Width="80px" />
         <GridColumn Field="@nameof(Product.Name)" />
-        <GridColumn Field="@nameof(Product.CategoryId)" Title="Category">
+        <GridColumn Field="@( $"{nameof(Product.Category)}.{nameof(Category.Name)}" )" Title="Category (Nav)">
+            <EditorTemplate>
+                @{ var gridEditItem = (Product)context; }
+                <TelerikDropDownList Data="@CategoryData"
+                                     @bind-Value="@gridEditItem.CategoryId"
+                                     ValueField="@nameof(Category.Id)"
+                                     TextField="@nameof(Category.Name)"
+                                     DefaultText="Select Category..." />
+            </EditorTemplate>
+        </GridColumn>
+        <GridColumn Field="@nameof(Product.CategoryId)"
+                    Filterable="false"
+                    Sortable="false"
+                    Title="Category (FK)">
             <Template>
                 @{ var gridItem = (Product)context; }
                 @CategoryData.Find(x => x.Id == gridItem.CategoryId)?.Name

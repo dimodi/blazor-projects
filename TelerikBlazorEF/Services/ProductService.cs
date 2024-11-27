@@ -15,7 +15,7 @@ namespace TelerikBlazorEF.Services
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
 
-            return dbContext.Products.ToList();
+            return dbContext.Products.Include(p => p.Category).ToList();
         }
 
         public async Task<DataSourceResult> GetProductsAsync(DataSourceRequest request)
@@ -54,8 +54,12 @@ namespace TelerikBlazorEF.Services
             if (originalProduct != null)
             {
                 dbContext.Entry(originalProduct).State = EntityState.Detached;
+                updatedProduct.Category = null!;
                 dbContext.Update(updatedProduct);
+
                 await dbContext.SaveChangesAsync();
+
+                await dbContext.Entry(updatedProduct).Reference(c => c.Category).LoadAsync();
             }
         }
 
