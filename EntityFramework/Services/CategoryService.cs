@@ -7,6 +7,11 @@ namespace TelerikBlazorEF.Services
     {
         private readonly IDbContextFactory<DbContextEF> _contextFactory;
 
+        public CategoryService(IDbContextFactory<DbContextEF> contextFactory)
+        {
+            _contextFactory = contextFactory;
+        }
+
         public async Task<List<Category>> GetCategoriesAsync()
         {
             using DbContextEF dbContext = await _contextFactory.CreateDbContextAsync();
@@ -32,8 +37,7 @@ namespace TelerikBlazorEF.Services
 
             if (originalCategory != null)
             {
-                dbContext.Entry(originalCategory).State = EntityState.Detached;
-                dbContext.Update(updatedCategory);
+                dbContext.Entry(originalCategory).CurrentValues.SetValues(updatedCategory);
                 await dbContext.SaveChangesAsync();
             }
         }
@@ -49,11 +53,6 @@ namespace TelerikBlazorEF.Services
                 dbContext.Categories.Remove(categoryToDelete);
                 await dbContext.SaveChangesAsync();
             }
-        }
-
-        public CategoryService(IDbContextFactory<DbContextEF> contextFactory)
-        {
-            _contextFactory = contextFactory;
         }
 
         public async Task GenerateData(int categoryCount = 9)

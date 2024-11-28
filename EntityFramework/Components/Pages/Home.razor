@@ -162,9 +162,9 @@
 
         if (originalIndex >= 0)
         {
-            ProductData[originalIndex] = updatedProduct;
-
             await ProductService.UpdateProductAsync(updatedProduct);
+
+            ProductData[originalIndex] = updatedProduct;
         }
     }
 
@@ -183,9 +183,9 @@
     {
         var deletedProduct = (Product)args.Item;
 
-        ProductData.Remove(deletedProduct);
-
         await ProductService.DeleteProductAsync(deletedProduct);
+
+        ProductData.Remove(deletedProduct);
     }
 
     private async Task LoadData()

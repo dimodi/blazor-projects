@@ -9,6 +9,11 @@ namespace TelerikBlazorEF.Services
     {
         private readonly IDbContextFactory<DbContextEF> _contextFactory;
 
+        public ProductService(IDbContextFactory<DbContextEF> contextFactory)
+        {
+            _contextFactory = contextFactory;
+        }
+
         private DbContextEF? QueryableContext { get; set; }
 
         public async Task<List<Product>> GetProductsAsync()
@@ -40,6 +45,7 @@ namespace TelerikBlazorEF.Services
             using DbContextEF dbContext = await _contextFactory.CreateDbContextAsync();
 
             dbContext.Products.Add(newProduct);
+            await dbContext.Entry(newProduct).Reference(c => c.Category).LoadAsync();
             await dbContext.SaveChangesAsync();
 
             return newProduct.Id;
@@ -55,7 +61,6 @@ namespace TelerikBlazorEF.Services
             {
                 dbContext.Entry(originalProduct).CurrentValues.SetValues(updatedProduct);
                 await dbContext.Entry(updatedProduct).Reference(c => c.Category).LoadAsync();
-
                 await dbContext.SaveChangesAsync();
             }
         }
@@ -71,11 +76,6 @@ namespace TelerikBlazorEF.Services
                 dbContext.Products.Remove(productToDelete);
                 await dbContext.SaveChangesAsync();
             }
-        }
-
-        public ProductService(IDbContextFactory<DbContextEF> contextFactory)
-        {
-            _contextFactory = contextFactory;
         }
 
         public async Task GenerateData(int productCount = 123)

@@ -7,6 +7,11 @@ namespace TelerikBlazorEF.Services
     {
         private readonly IDbContextFactory<DbContextEF> _contextFactory;
 
+        public EmployeeService(IDbContextFactory<DbContextEF> contextFactory)
+        {
+            _contextFactory = contextFactory;
+        }
+
         public async Task<List<Employee>> GetEmployeesAsync()
         {
             using DbContextEF dbContext = await _contextFactory.CreateDbContextAsync();
@@ -32,8 +37,7 @@ namespace TelerikBlazorEF.Services
 
             if (originalEmployee != null)
             {
-                dbContext.Entry(originalEmployee).State = EntityState.Detached;
-                dbContext.Update(updatedEmployee);
+                dbContext.Entry(originalEmployee).CurrentValues.SetValues(updatedEmployee);
                 await dbContext.SaveChangesAsync();
             }
         }
@@ -49,11 +53,6 @@ namespace TelerikBlazorEF.Services
                 dbContext.Employees.Remove(employeeToDelete);
                 await dbContext.SaveChangesAsync();
             }
-        }
-
-        public EmployeeService(IDbContextFactory<DbContextEF> contextFactory)
-        {
-            _contextFactory = contextFactory;
         }
 
         public async Task GenerateData(int employeeCount = 50)
@@ -89,7 +88,6 @@ namespace TelerikBlazorEF.Services
             using DbContextEF dbContext = await _contextFactory.CreateDbContextAsync();
 
             dbContext.Employees.RemoveRange(dbContext.Employees);
-
             await dbContext.SaveChangesAsync();
         }
     }
