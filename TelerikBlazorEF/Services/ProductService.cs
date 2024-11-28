@@ -53,9 +53,8 @@ namespace TelerikBlazorEF.Services
 
             if (originalProduct != null)
             {
-                dbContext.Entry(originalProduct).State = EntityState.Detached;
+                dbContext.Entry(originalProduct).CurrentValues.SetValues(updatedProduct);
                 await dbContext.Entry(updatedProduct).Reference(c => c.Category).LoadAsync();
-                dbContext.Update(updatedProduct);
 
                 await dbContext.SaveChangesAsync();
             }
