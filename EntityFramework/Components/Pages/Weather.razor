@@ -70,8 +70,7 @@
 
         if (originalCategory != null)
         {
-            DbContextEF!.Categories.Entry(originalCategory).State = EntityState.Detached;
-            DbContextEF!.Categories.Update(updatedCategory);
+            DbContextEF!.Entry(originalCategory).CurrentValues.SetValues(updatedCategory);
             await DbContextEF!.SaveChangesAsync();
         }
     }
