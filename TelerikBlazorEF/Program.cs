@@ -46,10 +46,10 @@ builder.Services.Configure<KestrelServerOptions>(options =>
 
 var app = builder.Build();
 
-using var scope = app.Services.CreateScope();
-IDbContextFactory<DbContextEF> factory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<DbContextEF>>();
-using DbContextEF context = await factory.CreateDbContextAsync();
-await context.Database.EnsureCreatedAsync();
+using IServiceScope serviceScope = app.Services.CreateScope();
+IDbContextFactory<DbContextEF> dbFactory = serviceScope.ServiceProvider.GetRequiredService<IDbContextFactory<DbContextEF>>();
+using DbContextEF dbContext = await dbFactory.CreateDbContextAsync();
+await dbContext.Database.EnsureCreatedAsync();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
