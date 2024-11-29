@@ -93,7 +93,10 @@ namespace TelerikBlazorEF.Services
                         Name = $"{wordGenerator.Word(5, 9)} {i}",
                         Price = Random.Shared.Next(1, 100),
                         Quantity = Random.Shared.Next(0, 1000),
-                        ReleaseDate = DateTime.Today.AddYears(-Random.Shared.Next(1, 10)).AddMonths(Random.Shared.Next(1, 12)).AddDays(Random.Shared.Next(1, 30))
+                        ReleaseDate = DateTime.Today
+                            .AddYears(-Random.Shared.Next(1, 10))
+                            .AddMonths(Random.Shared.Next(1, 12))
+                            .AddDays(Random.Shared.Next(1, 30))
                     });
                 }
 

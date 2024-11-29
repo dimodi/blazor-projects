@@ -125,9 +125,9 @@
 
         if (originalIndex >= 0)
         {
-            CategoryData[originalIndex] = updatedCategory;
-
             await CategoryService.UpdateCategoryAsync(updatedCategory);
+
+            CategoryData[originalIndex] = updatedCategory;
         }
     }
 
@@ -149,9 +149,11 @@
     {
         var deletedCategory = (Category)args.Item;
 
+        await CategoryService.DeleteCategoryAsync(deletedCategory);
+
         CategoryData.Remove(deletedCategory);
 
-        await CategoryService.DeleteCategoryAsync(deletedCategory);
+        ProductData = ProductData.Where(x => x.CategoryId != deletedCategory.Id).ToList();
     }
 
     private async Task OnProductUpdate(GridCommandEventArgs args)
