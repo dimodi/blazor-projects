@@ -42,17 +42,12 @@ namespace TelerikBlazorEF.Services
             }
         }
 
-        public async Task DeleteCategoryAsync(Category category)
+        public async Task DeleteCategoryAsync(Category deletedCategory)
         {
             using DbContextEF dbContext = await _contextFactory.CreateDbContextAsync();
 
-            Category? categoryToDelete = dbContext.Categories.FirstOrDefault(x => x.Id == category.Id);
-
-            if (categoryToDelete != null)
-            {
-                dbContext.Categories.Remove(categoryToDelete);
-                await dbContext.SaveChangesAsync();
-            }
+            dbContext.Categories.Remove(deletedCategory);
+            await dbContext.SaveChangesAsync();
         }
 
         public async Task GenerateData(int categoryCount = 9)

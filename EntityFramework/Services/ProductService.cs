@@ -65,17 +65,12 @@ namespace TelerikBlazorEF.Services
             }
         }
 
-        public async Task DeleteProductAsync(Product product)
+        public async Task DeleteProductAsync(Product deletedProduct)
         {
             using DbContextEF dbContext = await _contextFactory.CreateDbContextAsync();
 
-            Product? productToDelete = dbContext.Products.FirstOrDefault(x => x.Id == product.Id);
-
-            if (productToDelete != null)
-            {
-                dbContext.Products.Remove(productToDelete);
-                await dbContext.SaveChangesAsync();
-            }
+            dbContext.Products.Remove(deletedProduct);
+            await dbContext.SaveChangesAsync();
         }
 
         public async Task GenerateData(int productCount = 123)
