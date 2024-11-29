@@ -3,9 +3,9 @@
 
 <TelerikGrid Data="@GridData"
              TItem="@SampleModel"
+             FilterMode="GridFilterMode.FilterRow"
              Pageable="true"
-             Sortable="true"
-             FilterMode="GridFilterMode.FilterRow">
+             Sortable="true">
     <GridColumns>
         <GridColumn Field="@nameof(SampleModel.Name)" />
         <GridColumn Field="@nameof(SampleModel.GroupName)" />
