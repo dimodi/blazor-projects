@@ -51,11 +51,11 @@
             };
 
             items.Add(newItem);
+        }
 
-            if (level < TreeLevels)
-            {
-                PopulateChildren(items, level + 1);
-            }
+        if (level < TreeLevels)
+        {
+            PopulateChildren(items, level + 1);
         }
     }
 
