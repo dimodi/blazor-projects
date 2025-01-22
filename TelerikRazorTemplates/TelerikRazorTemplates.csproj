@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <PackageReference Include="Telerik.UI.for.Blazor" Version="*" />
+    <PackageReference Include="Telerik.Licensing" Version="*" />
     <PackageReference Include="Telerik.Documents.SpreadsheetStreaming" Version="*" />
     <PackageReference Include="Telerik.Documents.Flow" Version="*" />
   </ItemGroup>
