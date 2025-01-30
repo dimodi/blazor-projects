@@ -89,7 +89,7 @@
                 Id = ++LastId,
                 Name = $"Product {LastId}",
                 CategoryId = Random.Shared.Next(1, categoryCount + 1),
-                Quantity = (short)Random.Shared.Next(0, 1000),
+                Quantity = Random.Shared.Next(0, 1000),
                 StartDate = DateTime.Now.AddDays(-Random.Shared.Next(60, 1000)),
                 IsActive = LastId % 4 > 0
             });

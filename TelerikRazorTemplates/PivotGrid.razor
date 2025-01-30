@@ -1,13 +1,41 @@
 ﻿@using Telerik.DataSource
 
+<TelerikPivotGridContainer>
+
+    <TelerikPivotGridConfigurator />
+
+    <TelerikPivotGridConfiguratorButton />
+
+    <TelerikPivotGrid Data="@PivotData"
+                      DataProviderType="@PivotGridDataProviderType.Local">
+        <PivotGridColumns>
+            <PivotGridColumn Name="@nameof(PivotModel.City)" Title="City" />
+        </PivotGridColumns>
+        <PivotGridRows>
+            <PivotGridRow Name="@nameof(PivotModel.Category)" Title="Category" />
+            <PivotGridRow Name="@nameof(PivotModel.Product)" />
+        </PivotGridRows>
+        <PivotGridMeasures>
+            <PivotGridMeasure Name="@nameof(PivotModel.ContractValue)"
+                              Title="Contract Value"
+                              Aggregate="@PivotGridAggregateType.Sum" />
+        </PivotGridMeasures>
+    </TelerikPivotGrid>
+
+</TelerikPivotGridContainer>
+
+<p>Same data in a Grid</p>
+
 <TelerikGrid Data="@PivotData"
              Groupable="true"
-             OnStateInit="@( (GridStateEventArgs<PivotModel> args) => OnGridStateInit(args) )">
+             OnStateInit="@( (GridStateEventArgs<PivotModel> args) => OnGridStateInit(args) )"
+             Height="400px">
     <GridAggregates>
         <GridAggregate Field="@nameof(PivotModel.ContractValue)" Aggregate="@GridAggregateType.Sum" />
     </GridAggregates>
     <GridColumns>
         <GridColumn Field="@nameof(PivotModel.Product)" />
+        <GridColumn Field="@nameof(PivotModel.Category)" />
         <GridColumn Field="@nameof(PivotModel.City)" />
         <GridColumn Field="@nameof(PivotModel.ContractDate)" />
         <GridColumn Field="@nameof(PivotModel.ContractValue)">
@@ -28,6 +56,12 @@
     {
         args.GridState.GroupDescriptors.Add(new GroupDescriptor()
         {
+            Member = nameof(PivotModel.Category),
+            MemberType = typeof(decimal)
+        });
+
+        args.GridState.GroupDescriptors.Add(new GroupDescriptor()
+        {
             Member = nameof(PivotModel.City),
             MemberType = typeof(decimal)
         });
@@ -42,17 +76,24 @@
     protected override void OnInitialized()
     {
         var dataItemCount = 100;
-        var productCount = 5 + 1;
-        var cityCount = 5 + 1;
+        var categoryCount = 3;
+        var productCount = 10 + 1; // effectively 6, as rnd.Next() will never return 6
+        var cityCount = 3 + 1; // effectively 3
+        var rnd = Random.Shared;
 
         for (int i = 1; i <= dataItemCount; i++)
         {
+            var productNumber = Random.Shared.Next(1, productCount);
+            var categoryNumber = productNumber % categoryCount + 1;
+            var cityNumber = rnd.Next(1, cityCount);
+
             PivotData.Add(new PivotModel()
             {
-                Product = $"Product {Random.Shared.Next(1, productCount)}",
-                City = $"City {Random.Shared.Next(1, cityCount)}",
-                ContractDate = DateTime.Now.AddDays(-Random.Shared.Next(1, 31)).AddMonths(-Random.Shared.Next(1, 12)).AddYears(-Random.Shared.Next(0, 5)),
-                ContractValue = Random.Shared.Next(123, 987)
+                Category = $"Category {categoryNumber}",
+                Product = $"Product {productNumber}",
+                City = $"City {cityNumber}",
+                ContractDate = DateTime.Now.AddDays(-rnd.Next(1, 31)).AddMonths(-rnd.Next(1, 12)).AddYears(-rnd.Next(0, 5)),
+                ContractValue = (productNumber == 3 || cityNumber == 2 || categoryNumber == 1) ? 0 : rnd.Next(123, 987)
             });
         }
 
@@ -61,6 +102,7 @@
 
     public class PivotModel
     {
+        public string Category { get; set; } = null!;
         public string Product { get; set; } = null!;
         public string City { get; set; } = null!;
         public DateTime ContractDate { get; set; }
