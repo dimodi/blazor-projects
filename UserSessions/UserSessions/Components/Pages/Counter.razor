@@ -1,0 +1,94 @@
+﻿@page "/counter"
+
+<PageTitle>Counter</PageTitle>
+
+<h1>Counter</h1>
+
+<p role="status">Current count: @currentCount</p>
+
+<TelerikButton OnClick="@IncrementCount"
+               ThemeColor="@ThemeConstants.Button.ThemeColor.Primary">
+    Click Me
+</TelerikButton>
+
+<h2>Authentication Architecture</h2>
+
+<ul>
+    <li>
+        Models
+        <ul>
+            <li><code>User</code>: encrypted password, random user-specific salt, <code>Role</code>, ID, personal details</li>
+            <li><code>Role</code> enum</li>
+            <li><code>Session</code>: user ID, Token, Persistent flag, Expiration <code>DateTime</code></li>
+        </ul>
+    </li>
+    <li>
+        Data Services
+        <ul>
+            <li><code>UserService</code></li>
+            <li><code>SessionService</code></li>
+        </ul>
+    </li>
+    <li>
+        <code>appsettings.json</code>
+        <ul>
+            <li>Knows the cookie name.</li>
+        </ul>
+    </li>
+    <li>
+        <code>UserController.cs</code>
+        <ul>
+            <li>Signs in the user with a new cookie.</li>
+            <li>Signs out the user and deletes the cookie.</li>
+            <li>Redirects to a page after sign in or sugn out.</li>
+            <li>Calls <code>UserService</code>, <code>SessionService</code>, <code>AuthenticationStateProvider</code>, and <code>ServiceUtils</code> methods.</li>
+        </ul>
+    </li>
+    <li>
+        Functional Services
+        <ul>
+            <li>
+                <code>AuthenticationStateProvider</code>
+                <ul>
+                    <li>Obtains the cookie name once from <code>appsettings.json</code> and provides it on demand to <code>App.razor</code> and <code>UserController</code>.</li>
+                    <li>Returns the current authentication state on demand.</li>
+                    <li>Signs in and populates the claims of a previously verified user.</li>
+                    <li>Signs out the user and clears the claims.</li>
+                    <li>Splits and reads the cookie value.</li>
+                    <li>Concatenates and creates the cookie value.</li>
+                    <li>Provides the session expiration period when persistent and not.</li>
+                </ul>
+            </li>
+            <li>
+                <code>ServiceUtils</code>
+                <ul>
+                    <li>Creates and saves the cookie in the browser.</li>
+                </ul>
+            </li>
+        </ul>
+    </li>
+    <li>
+        <code>App.razor</code>
+        <ul>
+            <li>Obtains previously saved cookie.</li>
+            <li>Verifies the user session in the DB. Saves a new cookie.</li>
+            <li>Passes the user Id and token to <code>Routes.razor</code></li>
+            <li>Calls <code>AuthenticationStateProvider</code> and <code>ServiceUtils</code> methods.</li>
+        </ul>
+    </li>
+    <li>
+        <code>Routes.razor</code>
+        <ul>
+            <li>Signs in the user in the <code>AuthenticationStateProvider</code>.</li>
+        </ul>
+    </li>
+</ul>
+
+@code {
+    private int currentCount = 0;
+
+    private void IncrementCount()
+    {
+        currentCount++;
+    }
+}

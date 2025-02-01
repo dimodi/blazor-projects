@@ -1,0 +1,163 @@
+﻿@page "/account-settings"
+
+@attribute [Authorize]
+
+@using System.Security.Claims
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavManager
+@inject UserService UserService
+
+<PageTitle>Account Settings</PageTitle>
+
+<h1>Account Settings</h1>
+
+<h2>Personal Information</h2>
+
+<TelerikForm Model="@UserToModify"
+             OnValidSubmit="@OnFormValidSubmit"
+             Width="300px">
+    <FormValidation>
+        <DataAnnotationsValidator />
+    </FormValidation>
+    <FormItems>
+        <FormItem Field="@nameof(UserEditable.Email)" />
+        <FormItem Field="@nameof(UserEditable.Name)" />
+        <FormItem Field="@nameof(UserEditable.Password)">
+            <Template>
+                <div class="k-form-field">
+                    <label class="k-label k-form-label" for="accountsettingsform-password"> Password </label>
+                    <div class="k-form-field-wrap">
+                        <TelerikTextBox Password="true" Id="accountsettingsform-password" @bind-Value="@UserToModify.Password" />
+                        <TelerikValidationMessage For="@( () => UserToModify.Password)" />
+                    </div>
+                </div>
+            </Template>
+        </FormItem>
+    </FormItems>
+    <FormButtons>
+        <TelerikButton Icon="@SvgIconsNS.SvgIcon.Check"
+                       ThemeColor="@ThemeConstants.Button.ThemeColor.Primary">Update</TelerikButton>
+    </FormButtons>
+</TelerikForm>
+
+<h2>Change Password</h2>
+
+<TelerikForm Model="@PasswordFormModel"
+             OnValidSubmit="@OnPasswordFormValidSubmit"
+             Width="300px">
+    <FormValidation>
+        <DataAnnotationsValidator />
+    </FormValidation>
+    <FormItems>
+        <FormItem Field="@nameof(Password.CurrentPassword)">
+            <Template>
+                <div class="k-form-field">
+                    <label class="k-label k-form-label" for="passwordform-oldpassword"> Current Password </label>
+                    <div class="k-form-field-wrap">
+                        <TelerikTextBox Password="true" Id="passwordform-oldpassword" @bind-Value="@PasswordFormModel.CurrentPassword" />
+                        <TelerikValidationMessage For="@( () => PasswordFormModel.CurrentPassword )" />
+                    </div>
+                </div>
+            </Template>
+        </FormItem>
+        <FormItem Field="@nameof(Password.NewPassword)">
+            <Template>
+                <div class="k-form-field">
+                    <label class="k-label k-form-label" for="passwordform-newpassword"> New Password </label>
+                    <div class="k-form-field-wrap">
+                        <TelerikTextBox Password="true" Id="passwordform-newpassword" @bind-Value="@PasswordFormModel.NewPassword" />
+                        <TelerikValidationMessage For="@( () => PasswordFormModel.NewPassword )" />
+                    </div>
+                </div>
+            </Template>
+        </FormItem>
+        <FormItem Field="@nameof(Password.ConfirmedPassword)">
+            <Template>
+                <div class="k-form-field">
+                    <label class="k-label k-form-label" for="passwordform-confirmpassword"> Confirm New Password </label>
+                    <div class="k-form-field-wrap">
+                        <TelerikTextBox Password="true" Id="passwordform-confirmpassword" @bind-Value="@PasswordFormModel.ConfirmedPassword" />
+                        <TelerikValidationMessage For="@( () => PasswordFormModel.ConfirmedPassword )" />
+                    </div>
+                </div>
+            </Template>
+        </FormItem>
+    </FormItems>
+    <FormButtons>
+        <TelerikButton Icon="@SvgIconsNS.SvgIcon.Check"
+                       ThemeColor="@ThemeConstants.Button.ThemeColor.Primary">Change Password</TelerikButton>
+    </FormButtons>
+</TelerikForm>
+
+@code {
+    private UserEditable UserToModify { get; set; } = new();
+
+    private Password PasswordFormModel { get; set; } = new();
+
+    [CascadingParameter]
+    public DialogFactory? TelerikDialogs { get; set; }
+
+    private async Task OnFormValidSubmit()
+    {
+        int? userId = await UserService.GetUserIdByCredentials(GetUserEmail(), UserToModify.Password);
+
+        if (!userId.HasValue)
+        {
+            await TelerikDialogs!.AlertAsync("Incorrect current password!");
+        }
+        else
+        {
+            User updatedUser = new()
+            {
+                Active = true,
+                Email = UserToModify.Email,
+                Id = UserToModify.Id,
+                Name = UserToModify.Name
+            };
+
+            await UserService.UpdateUserAsync(updatedUser);
+
+            await ((CustomAuthStateProvider)AuthenticationStateProvider).RefreshUserDetails();
+
+            await TelerikDialogs!.AlertAsync("User updated!");
+        }
+    }
+
+    private async Task OnPasswordFormValidSubmit()
+    {
+        int? userId = await UserService.GetUserIdByCredentials(GetUserEmail(), PasswordFormModel.CurrentPassword);
+
+        if (!userId.HasValue)
+        {
+            await TelerikDialogs!.AlertAsync("Incorrect current password!");
+        }
+        else
+        {
+            await UserService.UpdateUserPaswordAsync(userId.Value, PasswordFormModel.CurrentPassword, PasswordFormModel.NewPassword);
+
+            await TelerikDialogs!.AlertAsync("Password changed!");
+        }
+    }
+
+    private string GetUserEmail()
+    {
+        AuthenticationState authState = ((CustomAuthStateProvider)AuthenticationStateProvider).GetAuthenticationStateAsync().Result;
+
+        return authState.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email && !string.IsNullOrEmpty(x.Value))?.Value ?? string.Empty;
+    }
+
+    protected override void OnInitialized()
+    {
+        AuthenticationState authState = ((CustomAuthStateProvider)AuthenticationStateProvider).GetAuthenticationStateAsync().Result;
+
+        UserToModify = new()
+        {
+            Email = authState.User.Claims.First(x => x.Type == ClaimTypes.Email).Value,
+            Id = int.Parse(authState.User.Claims.First(x => x.Type == ClaimTypes.SerialNumber).Value),
+            Name = authState.User.Claims.First(x => x.Type == ClaimTypes.Name).Value
+        };
+
+        base.OnInitialized();
+    }
+}

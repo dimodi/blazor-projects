@@ -1,0 +1,29 @@
+﻿@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<Router AppAssembly="@typeof(Program).Assembly">
+    <Found Context="routeData">
+        <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(Layout.MainLayout)" />
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+    </Found>
+</Router>
+
+@code {
+    [Parameter]
+    public int UserId { get; set; }
+
+    [Parameter]
+    public string UserToken { get; set; } = string.Empty;
+
+    [Parameter]
+    public bool UserPersistent { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (UserId != default && !string.IsNullOrEmpty(UserToken))
+        {
+            await ((CustomAuthStateProvider)AuthenticationStateProvider).SignInFromCookie(UserId, UserToken, UserPersistent);
+        }
+
+        await base.OnInitializedAsync();
+    }
+}

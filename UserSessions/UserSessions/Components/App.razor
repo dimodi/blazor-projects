@@ -1,0 +1,95 @@
+﻿@inject IConfiguration Configuration
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject SessionService SessionService
+@inject UserService UserService
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <script src="_content/Telerik.UI.for.Blazor/js/telerik-blazor.js?@TelerikUiForBlazorVersion" defer suppress-error="BL9992"></script>
+    <link rel="stylesheet" href="_content/Telerik.UI.for.Blazor/css/kendo-theme-default/all.css?@TelerikUiForBlazorVersion" />
+    <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="app.css" />
+    <link rel="stylesheet" href="UserSessions.styles.css" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <HeadOutlet @rendermode="@( new InteractiveServerRenderMode(prerender: true) )" />
+</head>
+
+<body>
+    <Routes @rendermode="@( new InteractiveServerRenderMode(prerender: true) )"
+            UserId="@UserId"
+            UserToken="@UserToken"
+            UserPersistent="@UserPersistent" />
+    <script src="app.js" suppress-error="BL9992"></script>
+    <script src="_framework/blazor.web.js" autostart="false" suppress-error="BL9992"></script>
+</body>
+
+</html>
+
+@code {
+    [CascadingParameter]
+    public HttpContext? HttpContext { get; set; }
+
+    private string? TelerikUiForBlazorVersion { get; set; }
+
+    private int UserId { get; set; }
+    private string UserToken { get; set; } = string.Empty;
+    private bool UserPersistent { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        GetTelerikBlazorVersion();
+
+        await RefreshUserAuthentication();
+
+        await base.OnInitializedAsync();
+    }
+
+    private async Task RefreshUserAuthentication()
+    {
+        if (HttpContext == null)
+        {
+            return;
+        }
+
+        CustomAuthStateProvider authStateProvider = (CustomAuthStateProvider)AuthenticationStateProvider;
+
+        string userCookieValue = authStateProvider.GetUserCookieValue(HttpContext);
+
+        if (!string.IsNullOrEmpty(userCookieValue))
+        {
+            (UserId, UserPersistent, UserToken) = await SessionService.GetSessionDetailsAsync(userCookieValue);
+
+            if (UserId != default && !string.IsNullOrEmpty(UserToken))
+            {
+                bool userIsActive = await UserService.GetUserActiveAsync(UserId);
+
+                if (userIsActive)
+                {
+                    authStateProvider.SetUserAuthCookie(HttpContext, UserId, UserToken, UserPersistent);
+                }
+                else
+                {
+                    await SessionService.DeleteUserSessionsAsync(UserId);
+
+                    UserId = default;
+                    UserPersistent = false;
+                    UserToken = string.Empty;
+
+                    authStateProvider.DeleteUserAuthCookie(HttpContext);
+                }
+            }
+        }
+    }
+
+    private void GetTelerikBlazorVersion()
+    {
+        string telerikBlazorAssemblyVersion = typeof(TelerikRootComponent).Assembly.GetName().Version?.ToString() ?? "0.0.0.0";
+        int lastDotIndex = telerikBlazorAssemblyVersion.LastIndexOf(".");
+        TelerikUiForBlazorVersion = telerikBlazorAssemblyVersion.Substring(0, lastDotIndex);
+    }
+}

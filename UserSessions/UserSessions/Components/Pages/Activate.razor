@@ -1,0 +1,64 @@
+﻿@page "/activate"
+
+@inject UserService UserService
+
+<PageTitle>Activate Account</PageTitle>
+
+<h1>Activate Account</h1>
+
+<TelerikLoaderContainer Visible="@LoaderContainerVisible" />
+
+@if (ActivatedUser != null && ActivatedUser.Active && ActivationSuccess.HasValue)
+{
+    if (ActivationSuccess.Value)
+    {
+        <p style="color:green">User @ActivatedUser.Email activated successfully! You can <NavLink href="/sign-in">sign in</NavLink> now.</p>
+    }
+    else
+    {
+        <p style="color:green">User already active. You can <NavLink href="/sign-in">sign in</NavLink> now.</p>
+    }
+}
+else if (ActivatedUser != null && !ActivatedUser.Active)
+{
+    <p style="color:red">User activation token has expired.</p>
+}
+else if (ActivationSuccess.HasValue)
+{
+    <p style="color:red">Invalid parameters!</p>
+}
+else if (!LoaderContainerVisible)
+{
+    <p style="color:red">No activation parameters!</p>
+}
+
+@code {
+    private bool LoaderContainerVisible { get; set; } = true;
+
+    private User? ActivatedUser { get; set; }
+
+    [SupplyParameterFromQuery]
+    private int UserId { get; set; }
+
+    [SupplyParameterFromQuery]
+    private string ActivationToken { get; set; } = string.Empty;
+
+    private bool? ActivationSuccess { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (UserId != default && !string.IsNullOrEmpty(ActivationToken))
+            {
+                (ActivatedUser, ActivationSuccess) = await UserService.ActivateUserAsync(UserId, ActivationToken);
+            }
+
+            LoaderContainerVisible = false;
+
+            StateHasChanged();
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
+}

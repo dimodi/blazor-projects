@@ -1,0 +1,200 @@
+﻿@page "/"
+
+@using System.Security.Claims
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavManager
+@inject SessionService SessionService
+@inject UserService UserService
+
+<PageTitle>Home</PageTitle>
+
+<p>Outside <code>AuthorizeView</code>:</p>
+<ul>
+    <li>Email: <strong>@GetUserEmail()</strong></li>
+    <li>Role: <strong>@GetUserRole()</strong></li>
+</ul>
+
+<AuthorizeView>
+    <Authorized>
+        <p style="color:green"><code>AuthorizeView</code>: Authorized as @context.User.Identity?.Name</p>
+
+        <TelerikButton OnClick="@SignOut" Icon="@SvgIconsNS.SvgIcon.Logout">Sign Out</TelerikButton>
+    </Authorized>
+    <NotAuthorized>
+        <p style="color:blue"><code>AuthorizeView</code>: Not authorized</p>
+    </NotAuthorized>
+</AuthorizeView>
+
+<AuthorizeView Roles="Admin">
+    <Authorized Context="authContext">
+        <p style="color:red"><code>AuthorizeView</code>: Authorized in role Admin</p>
+
+    </Authorized>
+    <NotAuthorized>
+        @*<p style="color:blue"><code>AuthorizeView</code>: Not authorized in role Admin</p>*@
+    </NotAuthorized>
+</AuthorizeView>
+
+<h2>Users</h2>
+
+<TelerikGrid Data="@Users"
+             EditMode="@GridEditMode.Inline"
+             OnCreate="@OnUserGridCreate"
+             OnDelete="@OnUserGridDelete"
+             OnUpdate="@OnUserGridUpdate"
+             Class="no-wrap">
+    <GridToolBarTemplate>
+        <GridCommandButton Command="Add" Icon="@SvgIconsNS.SvgIcon.Plus" />
+    </GridToolBarTemplate>
+    <GridColumns>
+        <GridColumn Field="@nameof(User.Id)" Editable="false" Width="80px" />
+        <GridColumn Field="@nameof(User.Email)" Width="240px" />
+        <GridColumn Field="@nameof(User.Name)" Width="240px" />
+        <GridColumn Field="@nameof(User.Password)">
+            <EditorTemplate>
+                @{ var editItem = (User)context; }
+                @if (editItem.Id == default)
+                {
+                    <TelerikTextBox @bind-Value="@editItem.Password" Password="true" />
+                }
+                else
+                {
+                    @editItem.Password
+                }
+            </EditorTemplate>
+        </GridColumn>
+        <GridColumn Field="@nameof(User.Salt)" Editable="false" />
+        <GridColumn Field="@nameof(User.Role)" Width="160px" />
+        <GridColumn Field="@nameof(User.Active)" Width="120px" />
+        <GridCommandColumn Width="160px">
+            @{ var user = (User)context; }
+            <GridCommandButton Command="Edit" Icon="@SvgIconsNS.SvgIcon.Pencil" />
+            <GridCommandButton Command="Save" Icon="@SvgIconsNS.SvgIcon.Save" ShowInEdit="true" />
+            <GridCommandButton Command="Cancel" Icon="@SvgIconsNS.SvgIcon.Cancel" ShowInEdit="true" />
+            <GridCommandButton Command="Delete" Icon="@SvgIconsNS.SvgIcon.Trash" />
+            @if (!user.Active)
+            {
+                <GridCommandButton Command="Activate" Icon="@SvgIconsNS.SvgIcon.ThumbUpOutline"
+                                   OnClick="@( () => OnActivateButtonClick(user.Id, user.ActivationToken) )" />
+            }
+        </GridCommandColumn>
+    </GridColumns>
+</TelerikGrid>
+
+<style>
+    .no-wrap .k-table-td {
+        white-space: nowrap;
+    }
+</style>
+
+<h2>Sessions</h2>
+
+<TelerikGrid Data="@Sessions"
+             OnDelete="@OnSessionGridDelete">
+    <GridColumns>
+        <GridColumn Field="@nameof(Session.UserId)" Width="80px" />
+        <GridColumn Field="@nameof(Session.Token)" />
+        <GridColumn Field="@nameof(Session.Pesistent)" Width="160px" />
+        <GridColumn Field="@nameof(Session.Expires)" DisplayFormat="{0:yyyy-MM-dd HH:mm:ss}" Width="240px" />
+        <GridCommandColumn Width="160px">
+            <GridCommandButton Command="Delete" Icon="@SvgIconsNS.SvgIcon.Trash" />
+        </GridCommandColumn>
+    </GridColumns>
+</TelerikGrid>
+
+@code {
+    /// TODO: Refactor User classes
+    /// TODO: Implement https://learn.microsoft.com/en-us/aspnet/core/security/authentication/cookie
+
+    private List<Session> Sessions { get; set; } = new();
+    private List<User> Users { get; set; } = new();
+
+    private UserNew UserToSignUp { get; set; } = new();
+
+    [CascadingParameter]
+    public DialogFactory? TelerikDialogs { get; set; }
+
+    private async Task OnActivateButtonClick(int userId, string activationToken)
+    {
+        if (TelerikDialogs != null)
+        {
+            await TelerikDialogs.AlertAsync($"{NavManager.BaseUri}activate?userid={userId}&activationtoken={activationToken}");
+        }
+    }
+
+    private async Task OnUserGridCreate(GridCommandEventArgs args)
+    {
+        User createdUser = (User)args.Item;
+
+        createdUser.Id = await UserService.CreateUserAsync(createdUser);
+
+        Users.Add(createdUser);
+    }
+
+    private async Task OnUserGridDelete(GridCommandEventArgs args)
+    {
+        User deletedUser = (User)args.Item;
+
+        await UserService.DeleteUserAsync(deletedUser);
+
+        Users.Remove(deletedUser);
+    }
+
+    private async Task OnUserGridUpdate(GridCommandEventArgs args)
+    {
+        User updatedUser = (User)args.Item;
+
+        await UserService.UpdateUserAsync(updatedUser);
+
+        int originalItemIndex = Users.FindIndex(x => x.Id == updatedUser.Id);
+        if (originalItemIndex >= 0)
+        {
+            Users[originalItemIndex] = updatedUser;
+        }
+    }
+
+    private async Task OnSessionGridDelete(GridCommandEventArgs args)
+    {
+        Session deletedSession = (Session)args.Item;
+
+        await SessionService.DeleteSessionAsync(deletedSession);
+
+        Sessions.Remove(deletedSession);
+    }
+
+    private async Task SignOut()
+    {
+        await ((CustomAuthStateProvider)AuthenticationStateProvider).SignOut();
+
+        NavManager.NavigateTo($"User/SignOut", forceLoad: true);
+    }
+
+    private string GetUserEmail()
+    {
+        AuthenticationState authState = ((CustomAuthStateProvider)AuthenticationStateProvider).GetAuthenticationStateAsync().Result;
+
+        return authState.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email && !string.IsNullOrEmpty(x.Value))?.Value ?? string.Empty;
+    }
+
+    private string GetUserRole()
+    {
+        AuthenticationState authState = ((CustomAuthStateProvider)AuthenticationStateProvider).GetAuthenticationStateAsync().Result;
+
+        return authState.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Role && !string.IsNullOrEmpty(x.Value))?.Value ?? string.Empty;
+    }
+
+    private string GetEscapedUrl()
+    {
+        var uri = new Uri(NavManager.Uri).GetComponents(UriComponents.PathAndQuery, UriFormat.Unescaped);
+        return Uri.EscapeDataString(uri);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Users = await UserService.GetUsersAsync();
+        Sessions = await SessionService.GetSessionsAsync();
+
+        await base.OnInitializedAsync();
+    }
+}

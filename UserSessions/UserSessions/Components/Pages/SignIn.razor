@@ -1,0 +1,89 @@
+﻿@page "/sign-in"
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IJSRuntime js
+@inject NavigationManager NavManager
+
+<PageTitle>Sign In</PageTitle>
+
+<h1>Sign In</h1>
+
+<AuthorizeView>
+    <Authorized>
+        <p style="color:green"><code>AuthorizeView</code>: Authorized as @context.User.Identity?.Name</p>
+
+        <TelerikButton OnClick="@SignOut" Icon="@SvgIconsNS.SvgIcon.Logout">Sign Out</TelerikButton>
+    </Authorized>
+    <NotAuthorized>
+
+        @if (InvalidCredentials)
+        {
+            <p><strong>Invalid credentials or non-active account!</strong></p>
+        }
+
+        @UserToSignIn.Email
+
+        <TelerikForm Model="@UserToSignIn"
+                     OnValidSubmit="@OnFormValidSubmit"
+                     Width="300px"
+                     OnUpdate="@( () => { } )">
+            <FormValidation>
+                <DataAnnotationsValidator />
+            </FormValidation>
+            <FormItems>
+                <FormItem Field="@nameof(UserSignable.Email)" />
+                <FormItem Field="@nameof(UserSignable.Password)">
+                    <Template>
+                        <div class="k-form-field">
+                            <label class="k-label k-form-label" for="userform-password"> Password </label>
+                            <div class="k-form-field-wrap">
+                                <TelerikTextBox @bind-Value="@UserToSignIn.Password"
+                                                DebounceDelay="0"
+                                                Id="userform-password"
+                                                Password="true" />
+                                <TelerikValidationMessage For="@( () => UserToSignIn.Password )" />
+                            </div>
+                        </div>
+                    </Template>
+                </FormItem>
+                <FormItem Field="@nameof(UserSignable.PersistSession)" />
+            </FormItems>
+            <FormButtons>
+                <TelerikButton Icon="@SvgIconsNS.SvgIcon.Login"
+                               ThemeColor="@ThemeConstants.Button.ThemeColor.Primary">Sign In</TelerikButton>
+            </FormButtons>
+        </TelerikForm>
+
+        <form method="post" action="User/SignIn" id="sign-in-form">
+            <input type="hidden" name="email" value="@UserToSignIn.Email" />
+            <input type="hidden" name="password" value="@UserToSignIn.Password" />
+            <input type="hidden" name="remember" value="@UserToSignIn.PersistSession.ToString().ToLowerInvariant()" />
+            <input type="hidden" name="redirectUri" value="/" />
+        </form>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    [SupplyParameterFromQuery(Name = "invalidcredentials")]
+    public bool InvalidCredentials { get; set; }
+
+    private UserSignable UserToSignIn { get; set; } = new() { PersistSession = true };
+
+    private async Task OnFormValidSubmit()
+    {
+        await js.InvokeVoidAsync("submitSignInForm");
+    }
+
+    private async Task SignOut()
+    {
+        await ((CustomAuthStateProvider)AuthenticationStateProvider).SignOut();
+
+        NavManager.NavigateTo($"User/SignOut?redirectUri={GetEscapedUrl()}", forceLoad: true);
+    }
+
+    private string GetEscapedUrl()
+    {
+        var uri = new Uri(NavManager.Uri).GetComponents(UriComponents.PathAndQuery, UriFormat.Unescaped);
+        return Uri.EscapeDataString(uri);
+    }
+}

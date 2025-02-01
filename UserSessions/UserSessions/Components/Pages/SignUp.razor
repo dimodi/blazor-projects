@@ -1,0 +1,87 @@
+﻿@page "/sign-up"
+
+@inject NavigationManager NavManager
+@inject UserService UserService
+
+<PageTitle>Sign Up</PageTitle>
+
+<h1>Sign Up</h1>
+
+<AuthorizeView>
+    <Authorized>
+        <p>Sign out to create a new user.</p>
+    </Authorized>
+    <NotAuthorized>
+        <TelerikForm Model="@UserToSignUp"
+                     OnValidSubmit="@OnFormValidSubmit"
+                     Width="300px">
+            <FormValidation>
+                <DataAnnotationsValidator />
+            </FormValidation>
+            <FormItems>
+                <FormItem Field="@nameof(UserNew.Email)" />
+                <FormItem Field="@nameof(UserNew.Name)" />
+                <FormItem Field="@nameof(UserNew.Password)">
+                    <Template>
+                        <div class="k-form-field">
+                            <label class="k-label k-form-label" for="signupform-password"> Password </label>
+                            <div class="k-form-field-wrap">
+                                <TelerikTextBox Password="true" Id="signupform-password" @bind-Value="@UserToSignUp.Password" />
+                                <TelerikValidationMessage For="@( () => UserToSignUp.Password)" />
+                            </div>
+                        </div>
+                    </Template>
+                </FormItem>
+                <FormItem Field="@nameof(UserNew.ConfirmedPassword)">
+                    <Template>
+                        <div class="k-form-field">
+                            <label class="k-label k-form-label" for="signupform-confirmedpassword"> Confirm Password </label>
+                            <div class="k-form-field-wrap">
+                                <TelerikTextBox Password="true" Id="signupform-confirmedpassword" @bind-Value="@UserToSignUp.ConfirmedPassword" />
+                                <TelerikValidationMessage For="@( () => UserToSignUp.ConfirmedPassword)" />
+                            </div>
+                        </div>
+                    </Template>
+                </FormItem>
+            </FormItems>
+            <FormButtons>
+                <TelerikButton Icon="@SvgIconsNS.SvgIcon.Login"
+                               ThemeColor="@ThemeConstants.Button.ThemeColor.Primary">Sign Up</TelerikButton>
+            </FormButtons>
+        </TelerikForm>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private UserNew UserToSignUp { get; set; } = new();
+
+    [CascadingParameter]
+    public DialogFactory? TelerikDialogs { get; set; }
+
+    private async Task OnFormValidSubmit()
+    {
+        bool userExists = await UserService.CheckIfUserEmailExists(UserToSignUp.Email);
+
+        if (userExists)
+        {
+            await TelerikDialogs!.AlertAsync("User already exists!");
+        }
+        else
+        {
+            User newUser = new()
+            {
+                Email = UserToSignUp.Email,
+                Name = UserToSignUp.Name,
+                Password = UserToSignUp.Password
+            };
+
+            await UserService.CreateUserAsync(newUser);
+
+            UserToSignUp = new();
+
+            await TelerikDialogs!.AlertAsync("User created!");
+
+            NavManager.NavigateTo("/");
+        }
+    }
+}
