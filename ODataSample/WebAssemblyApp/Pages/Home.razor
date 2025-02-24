@@ -1,0 +1,51 @@
+﻿@page "/"
+
+@using Telerik.Blazor.Extensions
+
+@inject HttpClient HttpClient
+
+<PageTitle>Home</PageTitle>
+
+<h1>Telerik Blazor OData Grid</h1>
+
+<TelerikGrid OnRead="@OnGridRead"
+             TItem="@SampleModel"
+             FilterMode="GridFilterMode.FilterRow"
+             Pageable="true"
+             Sortable="true">
+    <GridToolBar>
+        <GridToolBarSearchBoxTool />
+    </GridToolBar>
+    <GridColumns>
+        <GridColumn Field="@nameof(SampleModel.Id)" Width="160px" />
+        <GridColumn Field="@nameof(SampleModel.StringProperty)" />
+        <GridColumn Field="@nameof(SampleModel.IntProperty)" Width="160px" />
+        <GridColumn Field="@nameof(SampleModel.DecimalProperty)" Width="160px" />
+        <GridColumn Field="@nameof(SampleModel.DateTimeProperty)" />
+        <GridColumn Field="@nameof(SampleModel.DateOnlyProperty)" />
+        <GridColumn Field="@nameof(SampleModel.TimeOnlyProperty)" Width="170px" />
+        <GridColumn Field="@nameof(SampleModel.BoolProperty)" Width="140px" />
+    </GridColumns>
+</TelerikGrid>
+
+@ODataUrl
+
+@code {
+    private List<SampleModel> GridData { get; set; } = new();
+
+    private const string ODataEndpoint = "https://localhost:7005/odata/SampleModels/?";
+
+    private string ODataUrl { get; set; } = string.Empty;
+
+    private async Task OnGridRead(GridReadEventArgs args)
+    {
+        string oDataString = args.Request.ToODataString();
+
+        ODataUrl = ODataEndpoint + oDataString;
+
+        ODataResponse<SampleModel>? oDataResponse = await HttpClient.GetFromJsonAsync<ODataResponse<SampleModel>>(ODataEndpoint + oDataString);
+
+        args.Data = oDataResponse?.Data ?? new List<SampleModel>();
+        args.Total = oDataResponse?.Count ?? 0;
+    }
+}
