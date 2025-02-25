@@ -12,13 +12,15 @@
              TItem="@SampleModel"
              FilterMode="GridFilterMode.FilterRow"
              Pageable="true"
+             Resizable="true"
              Sortable="true">
     <GridToolBar>
         <GridToolBarSearchBoxTool />
     </GridToolBar>
     <GridColumns>
         <GridColumn Field="@nameof(SampleModel.Id)" Width="160px" />
-        <GridColumn Field="@nameof(SampleModel.StringProperty)" />
+        <GridColumn Field="@nameof(SampleModel.StringProperty)" Width="180px" />
+        <GridColumn Field="@nameof(SampleModel.CharProperty)" Width="120px" />
         <GridColumn Field="@nameof(SampleModel.IntProperty)" Width="160px" />
         <GridColumn Field="@nameof(SampleModel.DecimalProperty)" Width="160px" />
         <GridColumn Field="@nameof(SampleModel.DateTimeProperty)" />
@@ -28,7 +30,7 @@
     </GridColumns>
 </TelerikGrid>
 
-@ODataUrl
+<p><code>ODataUrl</code>: @ODataUrl</p>
 
 @code {
     private List<SampleModel> GridData { get; set; } = new();

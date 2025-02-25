@@ -27,6 +27,6 @@ app.UseRouting();
 
 app.UseCors();
 
-app.UseEndpoints(endpoints => endpoints.MapControllers());
+app.MapControllers();
 
 app.Run();
