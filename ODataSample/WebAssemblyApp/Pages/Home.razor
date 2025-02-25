@@ -30,7 +30,7 @@
     </GridColumns>
 </TelerikGrid>
 
-<p><code>ODataUrl</code>: @ODataUrl</p>
+<p style="margin-top:1em;font-size:1.5em;"><code>ODataUrl</code>: @ODataUrl</p>
 
 @code {
     private List<SampleModel> GridData { get; set; } = new();
@@ -45,7 +45,7 @@
 
         ODataUrl = ODataEndpoint + oDataString;
 
-        ODataResponse<SampleModel>? oDataResponse = await HttpClient.GetFromJsonAsync<ODataResponse<SampleModel>>(ODataEndpoint + oDataString);
+        ODataResponse<SampleModel>? oDataResponse = await HttpClient.GetFromJsonAsync<ODataResponse<SampleModel>>(ODataUrl);
 
         args.Data = oDataResponse?.Data ?? new List<SampleModel>();
         args.Total = oDataResponse?.Count ?? 0;
