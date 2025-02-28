@@ -1,0 +1,263 @@
+﻿@using System.ComponentModel.DataAnnotations
+@using Telerik.DataSource
+@using Telerik.DataSource.Extensions
+
+<TelerikTreeList Data="@TreeListData"
+                 IdField="@nameof(Employee.Id)"
+                 ItemsField="@nameof(Employee.Items)"
+                 ConfirmDelete="true"
+                 EditMode="@TreeListEditMode.Inline"
+                 OnCreate="@OnTreeListCreate"
+                 OnDelete="@OnTreeListDelete"
+                 OnUpdate="@OnTreeListUpdate"
+                 Height="400px">
+    <TreeListToolBarTemplate>
+        <TreeListCommandButton Command="Add">Add Item</TreeListCommandButton>
+    </TreeListToolBarTemplate>
+    <TreeListColumns>
+        <TreeListColumn Field="@nameof(Employee.Id)" Editable="false" Width="60px" />
+        <TreeListColumn Field="@nameof(Employee.Name)" Expandable="true" />
+        <TreeListColumn Field="@nameof(Employee.Notes)" EditorType="@TreeListEditorType.TextArea" Width="120px">
+            <Template>
+                @{ var dataItem = (Employee)context; }
+                <div style="white-space:pre">@dataItem.Notes</div>
+            </Template>
+        </TreeListColumn>
+        <TreeListColumn Field="@nameof(Employee.Salary)" DisplayFormat="{0:C2}" Width="130px" />
+        <TreeListColumn Field="@nameof(Employee.HireDate)" DisplayFormat="{0:d}" Width="140px" />
+        <TreeListColumn Field="@nameof(Employee.IsDriver)" Width="80px" />
+        <TreeListCommandColumn Width="200px">
+            <TreeListCommandButton Command="Add">Add</TreeListCommandButton>
+            <TreeListCommandButton Command="Edit">Edit</TreeListCommandButton>
+            <TreeListCommandButton Command="Save" ShowInEdit="true">Save</TreeListCommandButton>
+            <TreeListCommandButton Command="Cancel" ShowInEdit="true">Cancel</TreeListCommandButton>
+            <TreeListCommandButton Command="Delete">Delete</TreeListCommandButton>
+        </TreeListCommandColumn>
+    </TreeListColumns>
+</TelerikTreeList>
+
+@code {
+    private IEnumerable<Employee>? TreeListData { get; set; }
+
+    private EmployeeService TreeListEmployeeService { get; set; } = new();
+
+    private async Task OnTreeListCreate(TreeListCommandEventArgs args)
+    {
+        var createdItem = (Employee)args.Item;
+        var parentItem = (Employee?)args.ParentItem;
+
+        await TreeListEmployeeService.Create(createdItem, parentItem);
+
+        TreeListData = await TreeListEmployeeService.Read();
+    }
+
+    private async Task OnTreeListDelete(TreeListCommandEventArgs args)
+    {
+        var deletedItem = (Employee)args.Item;
+
+        await TreeListEmployeeService.Delete(deletedItem);
+
+        TreeListData = await TreeListEmployeeService.Read();
+    }
+
+    private async Task OnTreeListUpdate(TreeListCommandEventArgs args)
+    {
+        var updatedItem = (Employee)args.Item;
+
+        await TreeListEmployeeService.Update(updatedItem);
+
+        TreeListData = await TreeListEmployeeService.Read();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        TreeListData = await TreeListEmployeeService.Read();
+    }
+
+    public class Employee
+    {
+        public int Id { get; set; }
+        public bool HasChildren { get; set; }
+        public List<Employee>? Items { get; set; }
+        [Required]
+        public string Name { get; set; } = string.Empty;
+        public string Notes { get; set; } = string.Empty;
+        [Required]
+        public decimal? Salary { get; set; }
+        [Required]
+        public DateTime? HireDate { get; set; }
+        public bool IsDriver { get; set; }
+
+        public override bool Equals(object? obj)
+        {
+            return obj is Employee && ((Employee)obj).Id == Id;
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+    }
+
+    #region Data Service
+
+    public class EmployeeService
+    {
+        private List<Employee> Items { get; set; } = new();
+
+        private readonly int TreeLevelCount;
+        private readonly int RootItemCount;
+        private readonly int ChildItemCount;
+
+        private int LastId { get; set; }
+        private Random Rnd { get; set; } = Random.Shared;
+
+        public async Task<int> Create(Employee employee, Employee? parentEmployee)
+        {
+            await SimulateAsyncOperation();
+
+            employee.Id = ++LastId;
+
+            List<Employee> items;
+
+            if (parentEmployee != null)
+            {
+                parentEmployee.HasChildren = true;
+                parentEmployee.Items = parentEmployee.Items ?? new List<Employee>();
+                items = parentEmployee.Items;
+            }
+            else
+            {
+                items = Items;
+            }
+
+            items.Insert(0, employee);
+
+            return LastId;
+        }
+
+        public async Task<bool> Delete(Employee employee)
+        {
+            await SimulateAsyncOperation();
+
+            (List<Employee> items, int itemIndex, Employee deletedItem) = FindItem(Items, employee, true);
+
+            if (deletedItem != null)
+            {
+                items.Remove(deletedItem);
+                return true;
+            }
+
+            return false;
+        }
+
+        public async Task<List<Employee>> Read()
+        {
+            await SimulateAsyncOperation();
+
+            return Items;
+        }
+
+        public async Task<DataSourceResult> Read(DataSourceRequest request)
+        {
+            return await Items.ToDataSourceResultAsync(request);
+        }
+
+        public async Task<bool> Update(Employee employee)
+        {
+            await SimulateAsyncOperation();
+
+            (List<Employee> items, int itemIndex, Employee updatedItem) = FindItem(Items, employee, false);
+
+            if (updatedItem != null)
+            {
+                items[itemIndex] = employee;
+                return true;
+            }
+
+            return false;
+        }
+
+        private async Task SimulateAsyncOperation()
+        {
+            await Task.Delay(100);
+        }
+
+        private (List<Employee> items, int itemIndex, Employee item) FindItem(List<Employee> items, Employee item, bool resetHasChildren)
+        {
+            for (int i = 0; i < items.Count; i++)
+            {
+                if (items[i].Id == item.Id)
+                {
+                    return (items, i, items[i]);
+                }
+
+                if (items[i].Items?.Count > 0)
+                {
+                    (List<Employee> childItems, int childItemIndex, Employee childItem) = FindItem(items[i].Items!, item, resetHasChildren);
+                    if (childItem != null)
+                    {
+                        if (resetHasChildren && items[i].Items!.Count == 1)
+                        {
+                            items[i].HasChildren = false;
+                        }
+
+                        return (childItems, childItemIndex, childItem);
+                    }
+                }
+            }
+
+            return default;
+        }
+
+        private void PopulateItems(List<Employee> items, int level)
+        {
+            for (int i = 1; i <= (level == 1 ? RootItemCount : ChildItemCount); i++)
+            {
+                var itemId = ++LastId;
+
+                var newItem = new Employee()
+                {
+                    Id = itemId,
+                    HasChildren = level < TreeLevelCount,
+                    Name = $"Employee Name {itemId}", // {level}-{i}
+                    Notes = $"Multi-line\nnotes {itemId}",
+                    Salary = Rnd.Next(1_000, 10_000) * 1.23m,
+                    HireDate = DateTime.Today.AddDays(-Rnd.Next(365, 3650)),
+                    IsDriver = itemId % 2 == 0
+                };
+
+                items.Add(newItem);
+            }
+
+            if (level < TreeLevelCount)
+            {
+                PopulateChildren(items, level + 1);
+            }
+        }
+
+        private void PopulateChildren(List<Employee> items, int level)
+        {
+            foreach (var item in items)
+            {
+                item.Items = new List<Employee>();
+
+                PopulateItems(item.Items, level);
+            }
+        }
+
+        public EmployeeService(int treeLevelCount = 3, int rootItemCount = 3, int childItemCount = 2)
+        {
+            TreeLevelCount = treeLevelCount;
+            RootItemCount = rootItemCount;
+            ChildItemCount = childItemCount;
+
+            List<Employee> items = new();
+            PopulateItems(items, 1);
+
+            Items = items;
+        }
+    }
+
+    #endregion Data Service
+}
