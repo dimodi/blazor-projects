@@ -110,7 +110,7 @@
         private readonly int ChildItemCount;
 
         private int LastId { get; set; }
-        private Random Rnd { get; set; } = Random.Shared;
+        private readonly Random Rnd = Random.Shared;
 
         public async Task<int> Create(Employee employee, Employee? parentEmployee)
         {
@@ -118,20 +118,16 @@
 
             employee.Id = ++LastId;
 
-            List<Employee> items;
-
             if (parentEmployee != null)
             {
                 parentEmployee.HasChildren = true;
                 parentEmployee.Items = parentEmployee.Items ?? new List<Employee>();
-                items = parentEmployee.Items;
+                parentEmployee.Items.Insert(0, employee);
             }
             else
             {
-                items = Items;
+                Items.Insert(0, employee);
             }
-
-            items.Insert(0, employee);
 
             return LastId;
         }
@@ -140,11 +136,26 @@
         {
             await SimulateAsyncOperation();
 
-            (List<Employee> items, int itemIndex, Employee deletedItem) = FindItem(Items, employee, true);
+            FindItem(Items, employee);
 
-            if (deletedItem != null)
+            if (FoundChildItem != null)
             {
-                items.Remove(deletedItem);
+                if (FoundParentItem != null)
+                {
+                    FoundParentItem?.Items?.Remove(FoundChildItem);
+                    if (FoundParentItem?.Items?.Count == 0)
+                    {
+                        FoundParentItem.Items = null;
+                        FoundParentItem.HasChildren = false;
+                    }
+                }
+                else
+                {
+                    Items.Remove(FoundChildItem);
+                }
+
+                ResetFoundItems();
+
                 return true;
             }
 
@@ -167,11 +178,21 @@
         {
             await SimulateAsyncOperation();
 
-            (List<Employee> items, int itemIndex, Employee updatedItem) = FindItem(Items, employee, false);
+            FindItem(Items, employee);
 
-            if (updatedItem != null)
+            if (FoundChildItem != null)
             {
-                items[itemIndex] = employee;
+                if (FoundParentItem != null)
+                {
+                    FoundParentItem.Items![FoundChildItemIndex] = employee;
+                }
+                else
+                {
+                    Items[FoundChildItemIndex] = employee;
+                }
+
+                ResetFoundItems();
+
                 return true;
             }
 
@@ -183,31 +204,46 @@
             await Task.Delay(100);
         }
 
-        private (List<Employee> items, int itemIndex, Employee item) FindItem(List<Employee> items, Employee item, bool resetHasChildren)
+        private Employee? FoundParentItem { get; set; }
+        private int FoundChildItemIndex { get; set; }
+        private Employee? FoundChildItem { get; set; }
+
+        private void ResetFoundItems()
         {
+            FoundParentItem = null;
+            FoundChildItemIndex = default;
+            FoundChildItem = null;
+        }
+
+        private void FindItem(List<Employee> items, Employee item)
+        {
+            Employee? parentCandidate;
+
             for (int i = 0; i < items.Count; i++)
             {
                 if (items[i].Id == item.Id)
                 {
-                    return (items, i, items[i]);
+                    FoundChildItemIndex = i;
+                    FoundChildItem = item;
+                    return;
                 }
 
                 if (items[i].Items?.Count > 0)
                 {
-                    (List<Employee> childItems, int childItemIndex, Employee childItem) = FindItem(items[i].Items!, item, resetHasChildren);
-                    if (childItem != null)
+                    parentCandidate = items[i];
+                    FindItem(items[i].Items!, item);
+
+                    if (FoundChildItem != null)
                     {
-                        if (resetHasChildren && items[i].Items!.Count == 1)
+                        if (parentCandidate.Items!.Contains(FoundChildItem))
                         {
-                            items[i].HasChildren = false;
+                            FoundParentItem = parentCandidate;
                         }
 
-                        return (childItems, childItemIndex, childItem);
+                        return;
                     }
                 }
             }
-
-            return default;
         }
 
         private void PopulateItems(List<Employee> items, int level)
