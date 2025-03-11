@@ -1,0 +1,40 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <script src="_content/Telerik.UI.for.Blazor/js/telerik-blazor.js?@TelerikUiForBlazorVersion" defer></script>
+    <link rel="stylesheet" href="_content/Telerik.UI.for.Blazor/css/kendo-theme-default/all.css?@TelerikUiForBlazorVersion" />
+    <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="app.css" />
+    <link rel="stylesheet" href="DockerBlazorApp.styles.css" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <HeadOutlet @rendermode="@InteractiveServer" />
+</head>
+
+<body class="k-body">
+    <Routes @rendermode="@InteractiveServer" />
+    <script src="_framework/blazor.web.js" autostart="false"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            Blazor.start();
+        });
+    </script>
+</body>
+
+</html>
+
+@code {
+    private string? TelerikUiForBlazorVersion { get; set; }
+
+    protected override void OnInitialized()
+    {
+        string telerikBlazorAssemblyVersion = typeof(TelerikRootComponent).Assembly.GetName().Version?.ToString() ?? "0.0.0.0";
+        int lastDotIndex = telerikBlazorAssemblyVersion.LastIndexOf(".");
+        TelerikUiForBlazorVersion = telerikBlazorAssemblyVersion.Substring(0, lastDotIndex);
+
+        base.OnInitialized();
+    }
+}
