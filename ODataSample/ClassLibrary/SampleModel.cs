@@ -11,4 +11,5 @@ public class SampleModel
     public DateOnly DateOnlyProperty { get; set; }
     public TimeOnly TimeOnlyProperty { get; set; }
     public bool BoolProperty { get; set; }
+    public SampleEnum EnumProperty { get; set; }
 }

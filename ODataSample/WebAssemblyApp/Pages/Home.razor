@@ -1,5 +1,7 @@
 ﻿@page "/"
 
+@using System.Text.Json
+@using System.Text.Json.Serialization
 @using Telerik.Blazor.Extensions
 
 @inject HttpClient HttpClient
@@ -27,6 +29,7 @@
         <GridColumn Field="@nameof(SampleModel.DateOnlyProperty)" />
         <GridColumn Field="@nameof(SampleModel.TimeOnlyProperty)" Width="170px" />
         <GridColumn Field="@nameof(SampleModel.BoolProperty)" Width="140px" />
+        <GridColumn Field="@nameof(SampleModel.EnumProperty)" Width="140px" />
     </GridColumns>
 </TelerikGrid>
 
@@ -45,7 +48,10 @@
 
         ODataUrl = ODataEndpoint + oDataString;
 
-        ODataResponse<SampleModel>? oDataResponse = await HttpClient.GetFromJsonAsync<ODataResponse<SampleModel>>(ODataUrl);
+        var serializerOptions = new JsonSerializerOptions();
+        serializerOptions.Converters.Add(new JsonStringEnumConverter());
+
+        ODataResponse<SampleModel>? oDataResponse = await HttpClient.GetFromJsonAsync<ODataResponse<SampleModel>>(ODataUrl, serializerOptions);
 
         args.Data = oDataResponse?.Data ?? new List<SampleModel>();
         args.Total = oDataResponse?.Count ?? 0;

@@ -52,6 +52,7 @@ namespace ODataProject.Controllers
                     DateOnlyProperty = new DateOnly(rnd.Next(2000, 2030), rnd.Next(1, 13), rnd.Next(1, 29)),
                     DateTimeProperty = new DateTime(rnd.Next(2000, 2030), rnd.Next(1, 13), rnd.Next(1, 29), rnd.Next(0, 24), rnd.Next(0, 60), rnd.Next(1, 60)),
                     DecimalProperty = rnd.Next(0, 10000) * 1.23m,
+                    EnumProperty = (SampleEnum)rnd.Next(1, 4),
                     IntProperty = rnd.Next(0, 10000),
                     StringProperty = $"String {(char)rnd.Next(97, 123)}{(char)rnd.Next(97, 123)}{(char)rnd.Next(97, 123)} {i}",
                     TimeOnlyProperty = new TimeOnly(rnd.Next(0, 24), rnd.Next(0, 60), rnd.Next(0, 60))
