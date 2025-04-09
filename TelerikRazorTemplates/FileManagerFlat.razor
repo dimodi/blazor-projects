@@ -1,0 +1,159 @@
+﻿@*@using Microsoft.AspNetCore.Hosting;
+@inject IWebHostEnvironment HostingEnvironment*@
+
+@using Microsoft.AspNetCore.StaticFiles
+@using System.IO
+
+<p>Path: @FlatDirectoryPath</p>
+
+<TelerikFileManager Data="@FlatData"
+                    @bind-Path="@FlatDirectoryPath"
+                    OnDownload="@OnFileManagerDownload"
+                    Height="400px">
+</TelerikFileManager>
+
+@code {
+    private string FlatDirectoryPath { get; set; } = string.Empty;
+
+    private List<FlatFileEntry> FlatData { get; set; } = new List<FlatFileEntry>();
+
+    private static string StartPath { get; set; } = string.Empty;
+
+    private async Task OnFileManagerDownload(FileManagerDownloadEventArgs args)
+    {
+        FileEntry file = (FileEntry)args.Item;
+        string filePathWithoutStartSeparator = file.Path.IndexOf(Path.DirectorySeparatorChar) == 0 ? file.Path.Substring(1) : file.Path;
+        string fullFilePath = Path.Combine(StartPath, filePathWithoutStartSeparator);
+        byte[] fileBytes = await System.IO.File.ReadAllBytesAsync(fullFilePath);
+        MemoryStream fileStream = new(fileBytes);
+
+        args.FileName = file.Name;
+        args.Stream = fileStream;
+        args.MimeType = "application/octet-stream"; // default
+
+        FileExtensionContentTypeProvider mimeProvider = new();
+        string? mimeType;
+        mimeProvider.TryGetContentType(file.Extension, out mimeType);
+        if (!String.IsNullOrEmpty(mimeType))
+        {
+            args.MimeType = mimeType;
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        StartPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+
+        FlatData = await LoadFlatDataAsync();
+
+        await base.OnInitializedAsync();
+    }
+
+    public async Task<List<FlatFileEntry>> LoadFlatDataAsync()
+    {
+        await Task.CompletedTask;
+
+        List<FlatFileEntry> data = new();
+
+        string rootPath = Path.Combine(StartPath);
+        DirectoryInfo rootDirectory = new(rootPath);
+
+        IEnumerable<FileInfo> files = rootDirectory.EnumerateFiles();
+        foreach (FileInfo file in files)
+        {
+            FlatFileEntry entry = ConvertToFlatEntry(file, null);
+            data.Add(entry);
+        }
+
+        IEnumerable<DirectoryInfo> directories = rootDirectory.EnumerateDirectories();
+        foreach (DirectoryInfo directory in directories)
+        {
+            PopulateFlatEntryItemsRecursive(data, directory, null);
+        }
+
+        return data;
+    }
+
+    private void PopulateFlatEntryItemsRecursive(List<FlatFileEntry> data, DirectoryInfo directoryInfo, string? parentId)
+    {
+        FlatFileEntry directoryEntry = ConvertToFlatEntry(directoryInfo, parentId);
+        data.Add(directoryEntry);
+
+        IEnumerable<FileInfo> files = directoryInfo.EnumerateFiles();
+
+        foreach (var file in files)
+        {
+            FlatFileEntry entry = ConvertToFlatEntry(file, directoryEntry.Id);
+            data.Add(entry);
+        }
+
+        IEnumerable<DirectoryInfo> directories = directoryInfo.EnumerateDirectories();
+
+        foreach (DirectoryInfo directory in directories)
+        {
+            PopulateFlatEntryItemsRecursive(data, directory, directoryEntry.Id);
+        }
+    }
+
+    private static FlatFileEntry ConvertToFlatEntry(DirectoryInfo directory, string? parentId)
+    {
+        FlatFileEntry entry = new()
+        {
+            ParentId = parentId,
+            Name = directory.Name,
+            IsDirectory = true,
+            HasDirectories = directory.GetDirectories().Count() > 0,
+            DateCreated = directory.CreationTime,
+            DateCreatedUtc = directory.CreationTimeUtc,
+            DateModified = directory.LastWriteTime,
+            DateModifiedUtc = directory.LastWriteTimeUtc,
+            // Trim the real path to avoid exposing it
+            Path = directory.FullName.Substring(directory.FullName.IndexOf(StartPath) + StartPath.Length),
+            Extension = directory.Extension,
+            Size = 2 * 1024 * directory.GetFiles().LongCount()
+        };
+
+        return entry;
+    }
+
+    private static FlatFileEntry ConvertToFlatEntry(FileInfo file, string? parentId)
+    {
+        FlatFileEntry entry = new()
+        {
+            ParentId = parentId,
+            Name = Path.GetFileNameWithoutExtension(file.FullName),
+            IsDirectory = false,
+            HasDirectories = false,
+            DateCreated = file.CreationTime,
+            DateCreatedUtc = file.CreationTimeUtc,
+            DateModified = file.LastWriteTime,
+            DateModifiedUtc = file.LastWriteTimeUtc,
+            // Trim the real path to avoid exposing it
+            Path = file.FullName.Substring(file.FullName.IndexOf(StartPath) + StartPath.Length),
+            Extension = file.Extension,
+            Size = file.Length
+        };
+
+        return entry;
+    }
+
+    public class FlatFileEntry : FileEntry
+    {
+        public string? ParentId { get; set; }
+    }
+
+    public class FileEntry
+    {
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string Name { get; set; } = string.Empty;
+        public long Size { get; set; }
+        public string Path { get; set; } = string.Empty;
+        public string Extension { get; set; } = string.Empty;
+        public bool IsDirectory { get; set; }
+        public bool HasDirectories { get; set; }
+        public DateTime DateCreated { get; set; }
+        public DateTime DateCreatedUtc { get; set; }
+        public DateTime DateModified { get; set; }
+        public DateTime DateModifiedUtc { get; set; }
+    }
+}

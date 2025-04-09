@@ -1,340 +1,117 @@
-﻿@*@using Microsoft.AspNetCore.Hosting;
-@inject IWebHostEnvironment HostingEnvironment*@
-
-@using Microsoft.AspNetCore.StaticFiles
-@using System.IO
-
-@inject NavigationManager NavigationManager
-
-<h2>Flat Data</h2>
+﻿@using System.IO
 
 <p>Path: @FlatDirectoryPath</p>
 
 <TelerikFileManager Data="@FlatData"
                     @bind-Path="@FlatDirectoryPath"
-                    NameField="@(nameof(FileEntry.Name))"
-                    SizeField="@(nameof(FileEntry.Size))"
-                    PathField="@(nameof(FileEntry.Path))"
-                    ExtensionField="@(nameof(FileEntry.Extension))"
-                    IsDirectoryField="@(nameof(FileEntry.IsDirectory))"
-                    HasDirectoriesField="@(nameof(FileEntry.HasDirectories))"
-                    DateCreatedField="@(nameof(FileEntry.DateCreated))"
-                    DateCreatedUtcField="@(nameof(FileEntry.DateCreatedUtc))"
-                    DateModifiedField="@(nameof(FileEntry.DateModified))"
-                    DateModifiedUtcField="@(nameof(FileEntry.DateModifiedUtc))"
-                    ParentIdField="@(nameof(FlatFileEntry.ParentId))"
-                    OnDownload="@OnFileManagerDownload"
-                    Height="350px">
-</TelerikFileManager>
-
-<h2>Hierarchical Data</h2>
-
-<p>Path: @HierarchicalDirectoryPath</p>
-
-<TelerikFileManager Data="@HierarchicalData"
-                    @bind-Path="@HierarchicalDirectoryPath"
-                    NameField="@(nameof(FileEntry.Name))"
-                    SizeField="@(nameof(FileEntry.Size))"
-                    PathField="@(nameof(FileEntry.Path))"
-                    ExtensionField="@(nameof(FileEntry.Extension))"
-                    IsDirectoryField="@(nameof(FileEntry.IsDirectory))"
-                    HasDirectoriesField="@(nameof(FileEntry.HasDirectories))"
-                    DateCreatedField="@(nameof(FileEntry.DateCreated))"
-                    DateCreatedUtcField="@(nameof(FileEntry.DateCreatedUtc))"
-                    DateModifiedField="@(nameof(FileEntry.DateModified))"
-                    DateModifiedUtcField="@(nameof(FileEntry.DateModifiedUtc))"
-                    ParentIdField="@(nameof(FlatFileEntry.ParentId))"
-                    ItemsField="@(nameof(HierarchicalFileEntry.Items))"
-                    DirectoriesField="@(nameof(HierarchicalFileEntry.Directories))"
-                    OnDownload="@OnFileManagerDownload"
-                    Height="350px">
+                    Height="90vh">
 </TelerikFileManager>
 
 @code {
-    private string FlatDirectoryPath { get; set; } = string.Empty;
-    private string HierarchicalDirectoryPath { get; set; } = string.Empty;
-
-    private List<HierarchicalFileEntry> HierarchicalData { get; set; } = new List<HierarchicalFileEntry>();
     private List<FlatFileEntry> FlatData { get; set; } = new List<FlatFileEntry>();
 
-    private const int ActionDelay = 1;
+    private readonly string RootPath = string.Empty;
+    private string FlatDirectoryPath { get; set; } = string.Empty;
 
-    private static string StartPath { get; set; } = null!;
-
-    private async Task OnFileManagerDownload(FileManagerDownloadEventArgs args)
-    {
-        var file = (FileEntry)args.Item;
-        //var fileBytes = new byte[file.Size];
-        var filePathWithoutStartSeparator = file.Path.IndexOf(Path.DirectorySeparatorChar) == 0 ? file.Path.Substring(1) : file.Path;
-        var fullFilePath = Path.Combine(StartPath, filePathWithoutStartSeparator);
-        var fileBytes = await System.IO.File.ReadAllBytesAsync(fullFilePath);
-        var fileStream = new MemoryStream(fileBytes);
-
-        args.FileName = file.Name;
-        args.Stream = fileStream;
-        args.MimeType = "application/octet-stream"; // default
-
-        var mimeProvider = new FileExtensionContentTypeProvider();
-        string? mimeType;
-        mimeProvider.TryGetContentType(file.Extension, out mimeType);
-        if (!String.IsNullOrEmpty(mimeType))
-        {
-            args.MimeType = mimeType;
-        }
-    }
+    private int FolderLevelCount { get; set; } = 3;
+    private int FilesInFolderCount { get; set; } = 5;
+    private int FoldersInFolderCount { get; set; } = 2;
+    private int FolderNameCounter { get; set; }
+    private readonly List<string> FileExtensions = new() {
+        ".txt", ".pdf", ".docx", ".xlsx", ".png", ".jpg", ".gif", ".zip", ".css", ".html", ".mp3", ".mpg"
+    };
 
     protected override async Task OnInitializedAsync()
     {
-        StartPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+        await Task.CompletedTask;
 
-        await LoadFlatDataAsync();
-        await LoadHierarchicalDataAsync();
+        FlatDirectoryPath = RootPath;
+
+        FlatData = LoadFlatDataAsync();
 
         await base.OnInitializedAsync();
     }
 
-    #region Flat File Data
-
-    private async Task LoadFlatDataAsync()
+    private List<FlatFileEntry> LoadFlatDataAsync()
     {
-        if (FlatData == null || FlatData.Count == 0)
-        {
-            FlatData = await ReadFlatDataAsync();
-        }
-    }
+        List<FlatFileEntry> data = new List<FlatFileEntry>();
 
-    private async Task<List<FlatFileEntry>> ReadFlatDataAsync()
-    {
-        await Task.Delay(ActionDelay);
+        string rootDataPath = string.IsNullOrEmpty(RootPath) ? "/" : RootPath;
 
-        return ReadCustomFlatData();
-    }
-
-    public List<FlatFileEntry> ReadCustomFlatData()
-    {
-        var entries = new List<FlatFileEntry>();
-
-        var rootPath = Path.Combine(StartPath);
-        var rootDirectory = new DirectoryInfo(rootPath);
-
-        var files = rootDirectory.EnumerateFiles();
-        foreach (var file in files)
-        {
-            var entry = ConvertToFlatEntry(file, null);
-            entries.Add(entry);
-        }
-
-        var directories = rootDirectory.EnumerateDirectories();
-        foreach (var directory in directories)
-        {
-            PopulateFlatEntryItemsRecursive(entries, directory, null);
-        }
-
-        return entries;
-    }
-
-    private void PopulateFlatEntryItemsRecursive(List<FlatFileEntry> entries, DirectoryInfo directoryInfo, string? parentId)
-    {
-        var directoryEntry = ConvertToFlatEntry(directoryInfo, parentId);
-        entries.Add(directoryEntry);
-
-        var files = directoryInfo.EnumerateFiles();
-
-        foreach (var file in files)
-        {
-            var entry = ConvertToFlatEntry(file, directoryEntry.Id);
-            entries.Add(entry);
-        }
-
-        var directories = directoryInfo.EnumerateDirectories();
-
-        foreach (var directory in directories)
-        {
-            PopulateFlatEntryItemsRecursive(entries, directory, directoryEntry.Id);
-        }
-    }
-
-    private static FlatFileEntry ConvertToFlatEntry(DirectoryInfo directory, string? parentId)
-    {
-        var entry = new FlatFileEntry()
-        {
-            ParentId = parentId,
-            Name = directory.Name,
-            IsDirectory = true,
-            HasDirectories = directory.GetDirectories().Count() > 0,
-            DateCreated = directory.CreationTime,
-            DateCreatedUtc = directory.CreationTimeUtc,
-            DateModified = directory.LastWriteTime,
-            DateModifiedUtc = directory.LastWriteTimeUtc,
-            // trim the real path to avoid exposing it
-            // for security purposes
-            Path = directory.FullName.Substring(directory.FullName.IndexOf(StartPath) + StartPath.Length),
-            Extension = directory.Extension,
-            Size = 2 * 1024 * directory.GetFiles().LongCount()
-        };
-
-        return entry;
-    }
-
-    private static FlatFileEntry ConvertToFlatEntry(FileInfo file, string? parentId)
-    {
-        var entry = new FlatFileEntry()
-        {
-            ParentId = parentId,
-            Name = Path.GetFileNameWithoutExtension(file.FullName),
-            IsDirectory = false,
-            HasDirectories = false,
-            DateCreated = file.CreationTime,
-            DateCreatedUtc = file.CreationTimeUtc,
-            DateModified = file.LastWriteTime,
-            DateModifiedUtc = file.LastWriteTimeUtc,
-            // trim the real path to avoid exposing it
-            // for security purposes
-            Path = file.FullName.Substring(file.FullName.IndexOf(StartPath) + StartPath.Length),
-            Extension = file.Extension,
-            Size = file.Length
-        };
-
-        return entry;
-    }
-
-    #endregion Flat File Data
-
-    #region Hierarchical File Data
-
-    private async Task LoadHierarchicalDataAsync()
-    {
-        if (HierarchicalData == null || HierarchicalData.Count == 0)
-        {
-            HierarchicalData = await ReadHierarchicalDataAsync();
-        }
-    }
-
-    private async Task<List<HierarchicalFileEntry>> ReadHierarchicalDataAsync()
-    {
-        await Task.Delay(ActionDelay);
-
-        return ReadCustomHierarchicalData();
-    }
-
-    private List<HierarchicalFileEntry> ReadCustomHierarchicalData()
-    {
-        var rootPath = Path.Combine(StartPath);
-        var rootDirectory = new DirectoryInfo(rootPath);
-        var directories = rootDirectory.EnumerateDirectories();
-        var files = rootDirectory.EnumerateFiles();
-
-        var data = new List<HierarchicalFileEntry>();
-
-        foreach (var directory in directories)
-        {
-            var entry = ConvertToHierarchicalEntry(directory);
-            data.Add(entry);
-        }
-
-        foreach (var file in files)
-        {
-            var entry = ConvertToHierarchicalEntry(file);
-            data.Add(entry);
-        }
+        PopulateChildren(data, null, rootDataPath, 1);
 
         return data;
     }
 
-    private static HierarchicalFileEntry ConvertToHierarchicalEntry(DirectoryInfo directory)
+    private void PopulateChildren(List<FlatFileEntry> data, string? parentId, string parentPath, int level)
     {
-        var directories = directory.GetDirectories()
-            .Select(x => ConvertToHierarchicalEntry(x))
-            .ToList();
-        var files = directory.GetFiles()
-            .Select(x => ConvertToHierarchicalEntry(x))
-            .ToList();
-        var items = directories.Union(files).ToList();
+        var rnd = Random.Shared;
 
-        var entry = new HierarchicalFileEntry()
+        for (int i = 1; i <= FilesInFolderCount; i++)
         {
-            Name = directory.Name,
-            IsDirectory = true,
-            HasDirectories = directory.GetDirectories().Count() > 0,
-            Items = items,
-            Directories = directories,
-            DateCreated = directory.CreationTime,
-            DateCreatedUtc = directory.CreationTimeUtc,
-            DateModified = directory.LastWriteTime,
-            DateModifiedUtc = directory.LastWriteTimeUtc,
-            // trim the real path to avoid exposing it
-            // for security purposes
-            Path = directory.FullName.Substring(directory.FullName.IndexOf(StartPath) + StartPath.Length),
-            Extension = directory.Extension,
-            Size = 2 * 1024 * directory.GetFiles().LongCount()
-        };
+            string itemId = Guid.NewGuid().ToString();
+            string itemExtension = FileExtensions[rnd.Next(0, FileExtensions.Count)];
+            string itemName = $"{itemExtension.Substring(1)}-file-{(FolderNameCounter != default ? string.Concat(FolderNameCounter, "-") : string.Empty)}{i}";
+            string itemPath = Path.Combine(parentPath, string.Concat(itemName, itemExtension));
 
-        return entry;
-    }
+            data.Add(new FlatFileEntry()
+            {
+                Id = itemId,
+                ParentId = parentId,
+                Name = itemName,
+                IsDirectory = false,
+                HasDirectories = false,
+                DateCreated = DateTime.Now,
+                DateCreatedUtc = DateTime.Now.ToUniversalTime(),
+                DateModified = DateTime.Now,
+                DateModifiedUtc = DateTime.Now.ToUniversalTime(),
+                Path = itemPath,
+                Extension = itemExtension,
+                Size = rnd.Next(1_000, 3_000_000)
+            });
+        }
 
-    private static HierarchicalFileEntry ConvertToHierarchicalEntry(FileInfo file)
-    {
-        var entry = new HierarchicalFileEntry()
+        if (level < FolderLevelCount)
         {
-            Name = Path.GetFileNameWithoutExtension(file.FullName),
-            IsDirectory = false,
-            HasDirectories = false,
-            Items = new List<HierarchicalFileEntry>(),
-            Directories = new List<HierarchicalFileEntry>(),
-            DateCreated = file.CreationTime,
-            DateCreatedUtc = file.CreationTimeUtc,
-            DateModified = file.LastWriteTime,
-            DateModifiedUtc = file.LastWriteTimeUtc,
-            // trim the real path to avoid exposing it
-            // for security purposes
-            Path = file.FullName.Substring(file.FullName.IndexOf(StartPath) + StartPath.Length),
-            Extension = file.Extension,
-            Size = file.Length
-        };
+            for (int i = 1; i <= FoldersInFolderCount; i++)
+            {
+                var itemId = Guid.NewGuid().ToString();
+                var itemName = $"folder-{++FolderNameCounter}";
+                var itemPath = Path.Combine(parentPath, itemName);
 
-        return entry;
+                data.Add(new FlatFileEntry()
+                {
+                    Id = itemId,
+                    ParentId = parentId,
+                    Name = itemName,
+                    IsDirectory = true,
+                    HasDirectories = level < FolderLevelCount - 1,
+                    DateCreated = DateTime.Now,
+                    DateCreatedUtc = DateTime.Now.ToUniversalTime(),
+                    DateModified = DateTime.Now,
+                    DateModifiedUtc = DateTime.Now.ToUniversalTime(),
+                    Path = itemPath,
+                    Size = rnd.Next(100_000, 10_000_000)
+                });
+
+                PopulateChildren(data, itemId, itemPath, level + 1);
+            }
+        }
     }
 
-    #endregion Hierarchical File Data
-
-    #region Class Definitions
-
-    public class HierarchicalFileEntry : FileEntry
-    {
-        public List<HierarchicalFileEntry> Items { get; set; } = new List<HierarchicalFileEntry>();
-
-        public List<HierarchicalFileEntry> Directories { get; set; } = new List<HierarchicalFileEntry>();
-    }
-
-    public class FlatFileEntry : FileEntry
-    {
-        public string? ParentId { get; set; }
-    }
-
-    public class FileEntry
+    public class FlatFileEntry
     {
         public string Id { get; set; } = Guid.NewGuid().ToString();
-
-        public string Name { get; set; } = null!;
-
+        public string? ParentId { get; set; }
+        public string Name { get; set; } = string.Empty;
         public long Size { get; set; }
-
-        public string Path { get; set; } = null!;
-
+        public string Path { get; set; } = string.Empty;
         public string Extension { get; set; } = string.Empty;
-
         public bool IsDirectory { get; set; }
-
         public bool HasDirectories { get; set; }
-
         public DateTime DateCreated { get; set; }
-
         public DateTime DateCreatedUtc { get; set; }
-
         public DateTime DateModified { get; set; }
-
         public DateTime DateModifiedUtc { get; set; }
     }
-
-    #endregion Class Definitions
 }

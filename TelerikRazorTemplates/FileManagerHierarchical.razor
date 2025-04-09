@@ -1,0 +1,153 @@
+﻿@*@using Microsoft.AspNetCore.Hosting;
+    @inject IWebHostEnvironment HostingEnvironment*@
+
+@using Microsoft.AspNetCore.StaticFiles
+@using System.IO
+
+<p>Path: @HierarchicalDirectoryPath</p>
+
+<TelerikFileManager Data="@HierarchicalData"
+                    @bind-Path="@HierarchicalDirectoryPath"
+                    OnDownload="@OnFileManagerDownload"
+                    Height="400px">
+</TelerikFileManager>
+
+@code {
+    private string HierarchicalDirectoryPath { get; set; } = string.Empty;
+
+    private List<HierarchicalFileEntry> HierarchicalData { get; set; } = new();
+
+    private static string StartPath { get; set; } = string.Empty;
+
+    private async Task OnFileManagerDownload(FileManagerDownloadEventArgs args)
+    {
+        FileEntry file = (FileEntry)args.Item;
+        string filePathWithoutStartSeparator = file.Path.IndexOf(Path.DirectorySeparatorChar) == 0 ? file.Path.Substring(1) : file.Path;
+        string fullFilePath = Path.Combine(StartPath, filePathWithoutStartSeparator);
+        byte[] fileBytes = await System.IO.File.ReadAllBytesAsync(fullFilePath);
+        MemoryStream fileStream = new(fileBytes);
+
+        args.FileName = file.Name;
+        args.Stream = fileStream;
+        args.MimeType = "application/octet-stream"; // default
+
+        FileExtensionContentTypeProvider mimeProvider = new();
+        string? mimeType;
+        mimeProvider.TryGetContentType(file.Extension, out mimeType);
+        if (!String.IsNullOrEmpty(mimeType))
+        {
+            args.MimeType = mimeType;
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        StartPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+
+        HierarchicalData = await LoadHierarchicalDataAsync();
+
+        await base.OnInitializedAsync();
+    }
+
+    private async Task<List<HierarchicalFileEntry>> LoadHierarchicalDataAsync()
+    {
+        await Task.CompletedTask;
+
+        string rootPath = Path.Combine(StartPath);
+        DirectoryInfo rootDirectory = new(rootPath);
+        IEnumerable<DirectoryInfo> directories = rootDirectory.EnumerateDirectories();
+        IEnumerable<FileInfo> files = rootDirectory.EnumerateFiles();
+
+        List<HierarchicalFileEntry> data = new();
+
+        foreach (DirectoryInfo directory in directories)
+        {
+            HierarchicalFileEntry entry = ConvertToHierarchicalEntry(directory);
+            data.Add(entry);
+        }
+
+        foreach (var file in files)
+        {
+            HierarchicalFileEntry entry = ConvertToHierarchicalEntry(file);
+            data.Add(entry);
+        }
+
+        return data;
+    }
+
+    private static HierarchicalFileEntry ConvertToHierarchicalEntry(DirectoryInfo directory)
+    {
+        List<HierarchicalFileEntry> directories = directory.GetDirectories()
+            .Select(x => ConvertToHierarchicalEntry(x))
+            .ToList();
+
+        List<HierarchicalFileEntry> files = directory.GetFiles()
+            .Select(x => ConvertToHierarchicalEntry(x))
+            .ToList();
+
+        List<HierarchicalFileEntry> items = directories.Union(files).ToList();
+
+        HierarchicalFileEntry entry = new()
+        {
+            Name = directory.Name,
+            IsDirectory = true,
+            HasDirectories = directory.GetDirectories().Count() > 0,
+            Items = items,
+            Directories = directories,
+            DateCreated = directory.CreationTime,
+            DateCreatedUtc = directory.CreationTimeUtc,
+            DateModified = directory.LastWriteTime,
+            DateModifiedUtc = directory.LastWriteTimeUtc,
+            // Trim the real path to avoid exposing it
+            Path = directory.FullName.Substring(directory.FullName.IndexOf(StartPath) + StartPath.Length),
+            Extension = directory.Extension,
+            Size = 2 * 1024 * directory.GetFiles().LongCount()
+        };
+
+        return entry;
+    }
+
+    private static HierarchicalFileEntry ConvertToHierarchicalEntry(FileInfo file)
+    {
+        HierarchicalFileEntry entry = new()
+        {
+            Name = Path.GetFileNameWithoutExtension(file.FullName),
+            IsDirectory = false,
+            HasDirectories = false,
+            Items = new List<HierarchicalFileEntry>(),
+            Directories = new List<HierarchicalFileEntry>(),
+            DateCreated = file.CreationTime,
+            DateCreatedUtc = file.CreationTimeUtc,
+            DateModified = file.LastWriteTime,
+            DateModifiedUtc = file.LastWriteTimeUtc,
+            // Trim the real path to avoid exposing it
+            Path = file.FullName.Substring(file.FullName.IndexOf(StartPath) + StartPath.Length),
+            Extension = file.Extension,
+            Size = file.Length
+        };
+
+        return entry;
+    }
+
+    public class HierarchicalFileEntry : FileEntry
+    {
+        public List<HierarchicalFileEntry> Items { get; set; } = new List<HierarchicalFileEntry>();
+
+        public List<HierarchicalFileEntry> Directories { get; set; } = new List<HierarchicalFileEntry>();
+    }
+
+    public class FileEntry
+    {
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string Name { get; set; } = string.Empty;
+        public long Size { get; set; }
+        public string Path { get; set; } = string.Empty;
+        public string Extension { get; set; } = string.Empty;
+        public bool IsDirectory { get; set; }
+        public bool HasDirectories { get; set; }
+        public DateTime DateCreated { get; set; }
+        public DateTime DateCreatedUtc { get; set; }
+        public DateTime DateModified { get; set; }
+        public DateTime DateModifiedUtc { get; set; }
+    }
+}
