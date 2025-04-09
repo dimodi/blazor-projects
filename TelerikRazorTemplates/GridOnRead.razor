@@ -1,4 +1,7 @@
-﻿<TelerikGrid Data="@GridData"
+﻿@using Telerik.DataSource
+@using Telerik.DataSource.Extensions
+
+<TelerikGrid OnRead="@OnGridRead"
              TItem="@Product"
              FilterMode="GridFilterMode.FilterRow"
              Pageable="true"
@@ -15,6 +18,15 @@
 
 @code {
     private List<Product> GridData { get; set; } = new();
+
+    private async Task OnGridRead(GridReadEventArgs args)
+    {
+        DataSourceResult result = await GridData.ToDataSourceResultAsync(args.Request);
+
+        args.Data = result.Data;
+        args.Total = result.Total;
+        args.AggregateResults = result.AggregateResults;
+    }
 
     protected override void OnInitialized()
     {
