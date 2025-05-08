@@ -7,13 +7,15 @@
     <TelerikPivotGridConfiguratorButton />
 
     <TelerikPivotGrid Data="@PivotData"
-                      DataProviderType="@PivotGridDataProviderType.Local">
+                      DataProviderType="@PivotGridDataProviderType.Local"
+                      ColumnHeadersWidth="160px">
         <PivotGridColumns>
+            <PivotGridColumn Name="@nameof(PivotModel.Country)" Title="Country" />
             <PivotGridColumn Name="@nameof(PivotModel.City)" Title="City" />
         </PivotGridColumns>
         <PivotGridRows>
             <PivotGridRow Name="@nameof(PivotModel.Category)" Title="Category" />
-            <PivotGridRow Name="@nameof(PivotModel.Product)" />
+            <PivotGridRow Name="@nameof(PivotModel.Product)" Title="Product" />
         </PivotGridRows>
         <PivotGridMeasures>
             <PivotGridMeasure Name="@nameof(PivotModel.ContractValue)"
@@ -23,6 +25,12 @@
     </TelerikPivotGrid>
 
 </TelerikPivotGridContainer>
+
+@*<style>
+    div.k-pivotgrid {
+        grid-template-columns: 400px 1fr !important;
+    }
+</style>*@
 
 <p>Same data in a Grid</p>
 
@@ -36,6 +44,7 @@
     <GridColumns>
         <GridColumn Field="@nameof(PivotModel.Product)" />
         <GridColumn Field="@nameof(PivotModel.Category)" />
+        <GridColumn Field="@nameof(PivotModel.Country)" />
         <GridColumn Field="@nameof(PivotModel.City)" />
         <GridColumn Field="@nameof(PivotModel.ContractDate)" />
         <GridColumn Field="@nameof(PivotModel.ContractValue)">
@@ -56,13 +65,19 @@
     {
         args.GridState.GroupDescriptors.Add(new GroupDescriptor()
         {
-            Member = nameof(PivotModel.Category),
+            Member = nameof(PivotModel.Country),
             MemberType = typeof(decimal)
         });
 
         args.GridState.GroupDescriptors.Add(new GroupDescriptor()
         {
             Member = nameof(PivotModel.City),
+            MemberType = typeof(decimal)
+        });
+
+        args.GridState.GroupDescriptors.Add(new GroupDescriptor()
+        {
+            Member = nameof(PivotModel.Category),
             MemberType = typeof(decimal)
         });
 
@@ -77,8 +92,9 @@
     {
         var dataItemCount = 100;
         var categoryCount = 3;
-        var productCount = 10 + 1; // effectively 6, as rnd.Next() will never return 6
-        var cityCount = 3 + 1; // effectively 3
+        var productCount = 10 + 1;
+        var countryCount = 2;
+        var cityCount = 4 + 1;
         var rnd = Random.Shared;
 
         for (int i = 1; i <= dataItemCount; i++)
@@ -86,11 +102,13 @@
             var productNumber = Random.Shared.Next(1, productCount);
             var categoryNumber = productNumber % categoryCount + 1;
             var cityNumber = rnd.Next(1, cityCount);
+            var countryNumber = cityNumber % countryCount + 1;
 
             PivotData.Add(new PivotModel()
             {
                 Category = $"Category {categoryNumber}",
                 Product = $"Product {productNumber}",
+                Country = $"Country {countryNumber}",
                 City = $"City {cityNumber}",
                 ContractDate = DateTime.Now.AddDays(-rnd.Next(1, 31)).AddMonths(-rnd.Next(1, 12)).AddYears(-rnd.Next(0, 5)),
                 ContractValue = (productNumber == 3 || cityNumber == 2 || categoryNumber == 1) ? 0 : rnd.Next(123, 987)
@@ -102,9 +120,10 @@
 
     public class PivotModel
     {
-        public string Category { get; set; } = null!;
-        public string Product { get; set; } = null!;
-        public string City { get; set; } = null!;
+        public string Category { get; set; } = string.Empty;
+        public string Product { get; set; } = string.Empty;
+        public string Country { get; set; } = string.Empty;
+        public string City { get; set; } = string.Empty;
         public DateTime ContractDate { get; set; }
         public decimal ContractValue { get; set; }
     }
