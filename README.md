@@ -4,6 +4,7 @@ Blazor projects and sample files for testing and support:
 
 * `AuthorizeView` - an app that uses `<AuthorizeView>`, `Roles`, and `@attribute [Authorize]` to render content and Telerik components conditionally.
 * `BlazorWasmWithService` - a WebAssembly app with a client-side data service that gets its data from a remote server end point.
+* `BlazorWasmWithServiceEF` - similar to the previous item, but uses Entity Framework (SQLite) on the server. The [`DataSourceRequest` is serialized](https://www.telerik.com/blazor-ui/documentation/knowledge-base/grid-datasourcerequest-on-server).
 * `DockerBlazorApp` - a Telerik Blazor Web App that is configured to be published to a Docker container.
 * `EntityFramework` - an app with an Entity Framework (SQLite) CRUD data service and Telerik databound components.
 * `Files` - a collection of images and documents for testing of components like FileSelect, PDF Viewer, an Upload.
