@@ -1,0 +1,34 @@
+﻿@using System.Linq.Expressions
+
+<div style="border: 1px solid #ccc; margin: 1em 0; padding: 1em;">
+    <h2>Telerik DatePicker in RCL</h2>
+    <TelerikDatePicker Value="@Value"
+                       ValueChanged="@DatePickerValueChanged"
+                       ValueExpression="@ValueExpression"
+                       T="@(DateTime?)"
+                       Width="@Width" />
+</div>
+
+@code {
+    [Parameter]
+    public DateTime? Value { get; set; } = DateTime.Today;
+
+    [Parameter]
+    public EventCallback<DateTime?> ValueChanged { get; set; }
+
+    [Parameter]
+    public Expression<Func<DateTime?>>? ValueExpression { get; set; }
+
+    [Parameter]
+    public string Width { get; set; } = "max-content";
+
+    private async Task DatePickerValueChanged(DateTime? newValue)
+    {
+        Value = newValue;
+
+        if (ValueChanged.HasDelegate)
+        {
+            await ValueChanged.InvokeAsync(newValue);
+        }
+    }
+}

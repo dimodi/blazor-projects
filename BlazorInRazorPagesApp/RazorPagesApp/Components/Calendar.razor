@@ -1,0 +1,8 @@
+﻿<div style="border: 1px solid #ccc; margin: 1em 0; padding: 1em;">
+    <h2>Telerik Calendar in Razor Pages Project</h2>
+    <TelerikCalendar @bind-Value="@CalendarValue" />
+</div>
+
+@code {
+    private DateTime CalendarValue { get; set; } = DateTime.Today;
+}

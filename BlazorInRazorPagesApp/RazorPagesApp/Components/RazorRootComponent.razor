@@ -1,0 +1,10 @@
+﻿<TelerikRootContainer>
+    <Calendar />
+    <RclDatePicker @bind-Value="@RclDatePickerValue" Width="200px" />
+    <p>RclDatePickerValue: @RclDatePickerValue?.ToString("yyyy-MMM-dd")</p>
+    <Counter />
+</TelerikRootContainer>
+
+@code {
+    private DateTime? RclDatePickerValue { get; set; } = DateTime.Today.AddDays(2);
+}
