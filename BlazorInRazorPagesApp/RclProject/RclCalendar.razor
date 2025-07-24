@@ -1,8 +1,26 @@
 ﻿<div style="border: 1px solid #ccc; margin: 1em 0; padding: 1em;">
-    <h2>Telerik Calendar in RCL</h2>
-    <TelerikCalendar @bind-Value="@CalendarValue" />
+    <h2>Telerik Calendar in RCL Project</h2>
+    <TelerikCalendar Value="@Value"
+                     ValueChanged="@CalendarValueChanged" />
 </div>
 
 @code {
-    private DateTime CalendarValue { get; set; } = DateTime.Today;
+    [Parameter]
+    public DateTime Value { get; set; } = DateTime.Today;
+
+    [Parameter]
+    public EventCallback<DateTime> ValueChanged { get; set; }
+
+    [Parameter]
+    public string Width { get; set; } = "max-content";
+
+    private async Task CalendarValueChanged(DateTime newValue)
+    {
+        Value = newValue;
+
+        if (ValueChanged.HasDelegate)
+        {
+            await ValueChanged.InvokeAsync(newValue);
+        }
+    }
 }

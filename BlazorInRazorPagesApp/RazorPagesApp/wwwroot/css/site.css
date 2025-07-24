@@ -4,8 +4,7 @@ html {
 
 body {
   /* prevent margin collapse and wrong positiong of Telerik popups */
-  margin: -0.1px 0 0;
-  padding-top: 0.1px;
+  margin: 0;
 }
 
 @media (min-width: 768px) {
