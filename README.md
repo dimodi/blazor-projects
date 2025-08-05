@@ -15,3 +15,5 @@ Blazor projects and sample files for testing and support:
 * `TelerikRazorTemplates` - a collection of isolated `.razor` files to quickly start experimenting with Telerik Blazor components.
 * `UploadMinimalApi` - a WebAssembly app that uploads files to Minimal API with CORS and Antiforgery tokens. **Set both `MinimalApi` and `WasmAppMinApi` as startup projects.**
 * `UserSessions` - an app that uses custom cookie-based persistent authentication.
+* `WebApiPlay` - a Web API project for experiments with Swagger
+
