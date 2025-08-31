@@ -36,7 +36,7 @@ namespace UserSessions.Data
     }
 
     public class User : UserEditable
-	{
+    {
         public bool Active { get; set; }
 
         public Role Role { get; set; } = Role.Default;
@@ -46,7 +46,7 @@ namespace UserSessions.Data
         public string ActivationToken { get; set; } = string.Empty;
 
         public DateTime? ActivationTokenDeadline { get; set; }
-	}
+    }
 
     #region Custom Validator
 

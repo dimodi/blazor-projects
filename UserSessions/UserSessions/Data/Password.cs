@@ -2,9 +2,9 @@
 
 namespace UserSessions.Data
 {
-	internal class Password
-	{
-		[Required]
+    internal class Password
+    {
+        [Required]
         [Display(Name = "Current Password")]
         internal string CurrentPassword { get; set; } = string.Empty;
 
