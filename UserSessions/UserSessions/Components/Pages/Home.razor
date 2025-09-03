@@ -93,10 +93,30 @@
 <TelerikGrid Data="@Sessions"
              OnDelete="@OnSessionGridDelete">
     <GridColumns>
-        <GridColumn Field="@nameof(Session.UserId)" Width="80px" />
-        <GridColumn Field="@nameof(Session.Token)" />
-        <GridColumn Field="@nameof(Session.Pesistent)" Width="160px" />
-        <GridColumn Field="@nameof(Session.Expires)" DisplayFormat="{0:yyyy-MM-dd HH:mm:ss}" Width="240px" />
+        <GridColumn Field="@nameof(Session.UserId)" Width="80px">
+            <Template>
+                @{ var dataItem = (Session)context; }
+                @dataItem.UserId
+            </Template>
+        </GridColumn>
+        <GridColumn Field="@nameof(Session.Token)">
+            <Template>
+                @{ var dataItem = (Session)context; }
+                @dataItem.Token
+            </Template>
+        </GridColumn>
+        <GridColumn Field="@nameof(Session.Pesistent)" Width="160px">
+            <Template>
+                @{ var dataItem = (Session)context; }
+                @dataItem.Pesistent
+            </Template>
+        </GridColumn>
+        <GridColumn Field="@nameof(Session.Expires)" DisplayFormat="{0:yyyy-MM-dd HH:mm:ss}" Width="240px">
+            <Template>
+                @{ var dataItem = (Session)context; }
+                @dataItem.Expires.ToString("yyyy-MM-dd HH:mm:ss")
+            </Template>
+        </GridColumn>
         <GridCommandColumn Width="160px">
             <GridCommandButton Command="Delete" Icon="@SvgIconsNS.SvgIcon.Trash" />
         </GridCommandColumn>
