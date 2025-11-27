@@ -24,6 +24,7 @@
                                        CategoryField="@(nameof(StockDataPoint.Date))">
             </StockChartNavigatorSeries>
         </StockChartNavigatorSeriesItems>
+        <StockChartNavigatorSelect From="@DateTime.Today.AddDays(-60)" To="@DateTime.Today.AddDays(-30)" />
     </StockChartNavigator>
 
 </TelerikStockChart>
@@ -35,16 +36,16 @@
     {
         Random rnd = Random.Shared;
         int maxFluctuation = 30;
-        int previousClose = 100;
+        int previousClose = 300;
         int minValue = maxFluctuation + 1;
-        int daysBack = 28;
+        int daysBack = 90;
 
         for (int i = 1; i <= daysBack; i++)
         {
-            int open = Math.Max(rnd.Next(previousClose - maxFluctuation, previousClose + maxFluctuation), minValue);
-            int low = rnd.Next(open - maxFluctuation, open);
-            int high = rnd.Next(low, open + maxFluctuation);
-            int close = Math.Max(rnd.Next(low, high), minValue);
+            int open = Math.Max(rnd.Next(previousClose - maxFluctuation, previousClose + maxFluctuation + 1), minValue);
+            int low = rnd.Next(open - maxFluctuation, open + 1);
+            int high = rnd.Next(low, open + maxFluctuation + 1);
+            int close = Math.Max(rnd.Next(low, high + 1), minValue);
 
             StockChartData.Add(new StockDataPoint()
             {
@@ -63,15 +64,10 @@
     public class StockDataPoint
     {
         public DateTime Date { get; set; }
-
         public decimal Open { get; set; }
-
         public decimal Close { get; set; }
-
         public decimal High { get; set; }
-
         public decimal Low { get; set; }
-
         public int Volume { get; set; }
     }
 }
