@@ -1,0 +1,77 @@
+﻿<TelerikStockChart DateField="@nameof(StockDataPoint.Date)">
+
+    <StockChartCategoryAxes>
+        <StockChartCategoryAxis BaseUnit="@ChartCategoryAxisBaseUnit.Days" />
+    </StockChartCategoryAxes>
+
+    <StockChartSeriesItems>
+        <StockChartSeries Type="StockChartSeriesType.Candlestick"
+                          Name="Stock 1"
+                          Data="@StockChartData"
+                          OpenField="@nameof(StockDataPoint.Open)"
+                          CloseField="@nameof(StockDataPoint.Close)"
+                          HighField="@nameof(StockDataPoint.High)"
+                          LowField="@nameof(StockDataPoint.Low)">
+        </StockChartSeries>
+    </StockChartSeriesItems>
+
+    <StockChartNavigator>
+        <StockChartNavigatorSeriesItems>
+            <StockChartNavigatorSeries Type="StockChartSeriesType.Line"
+                                       Name="Stock 1"
+                                       Data="@StockChartData"
+                                       Field="@(nameof(StockDataPoint.Volume))"
+                                       CategoryField="@(nameof(StockDataPoint.Date))">
+            </StockChartNavigatorSeries>
+        </StockChartNavigatorSeriesItems>
+    </StockChartNavigator>
+
+</TelerikStockChart>
+
+@code {
+    public List<StockDataPoint> StockChartData { get; set; } = new();
+
+    protected override void OnInitialized()
+    {
+        Random rnd = Random.Shared;
+        int maxFluctuation = 30;
+        int previousClose = 100;
+        int minValue = maxFluctuation + 1;
+        int daysBack = 28;
+
+        for (int i = 1; i <= daysBack; i++)
+        {
+            int open = Math.Max(rnd.Next(previousClose - maxFluctuation, previousClose + maxFluctuation), minValue);
+            int low = rnd.Next(open - maxFluctuation, open);
+            int high = rnd.Next(low, open + maxFluctuation);
+            int close = Math.Max(rnd.Next(low, high), minValue);
+
+            StockChartData.Add(new StockDataPoint()
+            {
+                Date = DateTime.Today.AddDays(i - daysBack - 1),
+                Open = open * 1.23m,
+                Close = close * 1.23m,
+                High = high * 1.23m,
+                Low = low * 1.23m,
+                Volume = rnd.Next(0, 10_000)
+            });
+
+            previousClose = close;
+        }
+    }
+
+    public class StockDataPoint
+    {
+        public DateTime Date { get; set; }
+
+        public decimal Open { get; set; }
+
+        public decimal Close { get; set; }
+
+        public decimal High { get; set; }
+
+        public decimal Low { get; set; }
+
+        public int Volume { get; set; }
+    }
+}
