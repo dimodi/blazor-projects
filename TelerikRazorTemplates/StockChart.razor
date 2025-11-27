@@ -36,7 +36,7 @@
     {
         Random rnd = Random.Shared;
         int maxFluctuation = 30;
-        int previousClose = 300;
+        int previousClose = 200;
         int minValue = maxFluctuation + 1;
         int daysBack = 90;
 
@@ -44,7 +44,7 @@
         {
             int open = Math.Max(rnd.Next(previousClose - maxFluctuation, previousClose + maxFluctuation + 1), minValue);
             int low = rnd.Next(open - maxFluctuation, open + 1);
-            int high = rnd.Next(low, open + maxFluctuation + 1);
+            int high = rnd.Next(open, open + maxFluctuation + 1);
             int close = Math.Max(rnd.Next(low, high + 1), minValue);
 
             StockChartData.Add(new StockDataPoint()
