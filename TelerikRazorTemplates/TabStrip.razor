@@ -1,15 +1,15 @@
-﻿<TelerikTabStrip @bind-ActiveTabIndex="@ActiveTab">
-    <TabStripTab Title="Tab 1">
+﻿<TelerikTabStrip @bind-ActiveTabId="@ActiveTabId">
+    <TabStripTab Title="Tab 1" Id="tab1">
         Content 1
     </TabStripTab>
-    <TabStripTab Title="Tab 2">
+    <TabStripTab Title="Tab 2" Id="tab2">
         Content 2
     </TabStripTab>
-    <TabStripTab Title="Tab 3">
+    <TabStripTab Title="Tab 3" Id="tab3">
         Content 3
     </TabStripTab>
 </TelerikTabStrip>
 
 @code {
-    private int ActiveTab { get; set; }
+    private string ActiveTabId { get; set; } = "tab1";
 }

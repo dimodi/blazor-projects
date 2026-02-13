@@ -1,0 +1,58 @@
+﻿<TelerikChat @ref="@ChatRef"
+             Data="@ChatData"
+             AuthorId="@ChatAuthors["jamie"].Id"
+             Height="600px"
+             OnSendMessage="@OnChatSendMessage"
+             Width="400px">
+</TelerikChat>
+
+@code {
+    private TelerikChat<Message>? ChatRef;
+    private List<Message> ChatData { get; set; } = new();
+
+    private readonly Dictionary<string, Author> ChatAuthors = new() {
+        { "jane", new Author() { Id = "jane", Name = "Jane", ImageUrl = "https://demos.telerik.com/blazor-ui/images/chat/avatar-jane.jpg" } },
+        { "jamie", new Author() { Id = "jamie", Name = "Jamie", ImageUrl = "https://demos.telerik.com/blazor-ui/images/chat/avatar-jamie.jpg" } }
+    };
+
+    private void OnChatSendMessage(ChatSendMessageEventArgs args)
+    {
+        var userMessage = new Message
+        {
+            AuthorName = ChatAuthors["jamie"].Name,
+            AuthorId = ChatAuthors["jamie"].Id,
+            AuthorImageUrl = ChatAuthors["jamie"].ImageUrl,
+            Text = args.Message
+        };
+
+        ChatData.Add(userMessage);
+
+        ChatRef?.Refresh();
+    }
+
+    public class Message
+    {
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string AuthorId { get; set; } = string.Empty;
+        public string AuthorName { get; set; } = string.Empty;
+        public string AuthorImageUrl { get; set; } = string.Empty;
+        public IEnumerable<FileSelectFileInfo> Files { get; set; } = new List<FileSelectFileInfo>();
+        public bool IsDeleted { get; set; }
+        public bool IsPinned { get; set; }
+        public bool IsTyping { get; set; }
+        public string ReplyToId { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
+        public List<string> SuggestedActions { get; set; } = new();
+        public string Text { get; set; } = string.Empty;
+        public DateTime Timestamp { get; set; } = DateTime.Now;
+    }
+
+    public class Author
+    {
+        public string Id { get; set; } = string.Empty;
+
+        public string ImageUrl { get; set; } = string.Empty;
+
+        public string Name { get; set; } = string.Empty;
+    }
+}
