@@ -144,7 +144,7 @@
             DateTime dt = DateTime.Now;
             int daysSinceMonday = dt.DayOfWeek - DayOfWeek.Monday;
 
-            return new DateTime(dt.Year, dt.Month, dt.Day - daysSinceMonday, 8, 0, 0);
+            return new DateTime(dt.Year, dt.Month, dt.Day, 8, 0, 0).AddDays(-daysSinceMonday);
         }
     }
 
